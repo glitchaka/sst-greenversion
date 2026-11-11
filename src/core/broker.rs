@@ -1,0 +1,182 @@
+//! Closed wire contract. No executable, command, script, environment or file operation.
+use anyhow::{Result, ensure};
+use serde::{Deserialize, Serialize};
+
+pub const VERSION: u32 = 2;
+pub const MAX_FRAME: usize = 8192;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ProcessIdentity {
+    pub pid: u32,
+    /// Exact Windows FILETIME (100 ns since 1601), NOT sysinfo's Unix seconds.
+    pub created: u64,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum Operation {
+    Inspect,
+    Suspend,
+    Resume,
+    Kill,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Request {
+    pub version: u32,
+    pub nonce: [u8; 16],
+    pub client: ProcessIdentity,
+    pub session: u32,
+    pub operation: Operation,
+    pub target: ProcessIdentity,
+}
+
+impl Request {
+    pub fn validate(&self) -> Result<()> {
+        ensure!(self.version == VERSION, "unsupported broker protocol");
+        ensure!(self.nonce != [0; 16], "invalid request nonce");
+        ensure!(self.session > 0, "interactive session required");
+        ensure!(
+            self.client.pid > 4 && self.client.created > 0,
+            "invalid client identity"
+        );
+        ensure!(self.target.pid > 4, "invalid target PID");
+        ensure!(
+            self.operation == Operation::Inspect || self.target.created > 0,
+            "mutating broker operations require exact target creation time"
+        );
+        ensure!(
+            self.target.pid != self.client.pid,
+            "self targeting is forbidden"
+        );
+        Ok(())
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(tag = "status", deny_unknown_fields)]
+pub enum Outcome {
+    Inspected {
+        identity: ProcessIdentity,
+        image: String,
+        critical: bool,
+        protection: u32,
+        session: u32,
+    },
+    Completed,
+    Rejected {
+        reason: String,
+    },
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Response {
+    pub version: u32,
+    pub nonce: [u8; 16],
+    pub operation: Operation,
+    pub target: ProcessIdentity,
+    pub outcome: Outcome,
+}
+
+impl Response {
+    pub fn validate(&self, request: &Request) -> Result<()> {
+        ensure!(
+            self.version == VERSION && self.nonce == request.nonce,
+            "broker response version/nonce mismatch"
+        );
+        ensure!(
+            self.target == request.target && self.operation == request.operation,
+            "broker response operation/identity mismatch"
+        );
+        match &self.outcome {
+            Outcome::Inspected {
+                identity, image, ..
+            } => {
+                ensure!(
+                    request.operation == Operation::Inspect,
+                    "unexpected inspect response"
+                );
+                ensure!(
+                    identity.pid == request.target.pid && identity.created > 0,
+                    "invalid inspected process identity"
+                );
+                ensure!(
+                    !image.is_empty()
+                        && image.len() <= 4096
+                        && !image.chars().any(char::is_control),
+                    "invalid image in response"
+                );
+            }
+            Outcome::Completed => ensure!(
+                request.operation != Operation::Inspect,
+                "missing inspect result"
+            ),
+            Outcome::Rejected { reason } => ensure!(
+                !reason.is_empty() && reason.len() <= 2048 && !reason.chars().any(char::is_control),
+                "invalid rejection"
+            ),
+        }
+        Ok(())
+    }
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn request(operation: Operation, created: u64) -> Request {
+        Request {
+            version: VERSION,
+            nonce: [7; 16],
+            client: ProcessIdentity {
+                pid: 100,
+                created: 123,
+            },
+            session: 1,
+            operation,
+            target: ProcessIdentity {
+                pid: 200,
+                created,
+            },
+        }
+    }
+
+    #[test]
+    fn inspect_may_bootstrap_without_creation_time() {
+        assert!(request(Operation::Inspect, 0).validate().is_ok());
+    }
+
+    #[test]
+    fn mutations_require_exact_creation_time() {
+        for operation in [Operation::Suspend, Operation::Resume, Operation::Kill] {
+            assert!(request(operation, 0).validate().is_err());
+            assert!(request(operation, 456).validate().is_ok());
+        }
+    }
+
+    #[test]
+    fn inspect_response_returns_exact_identity() {
+        let request = request(Operation::Inspect, 0);
+        let response = Response {
+            version: VERSION,
+            nonce: request.nonce,
+            operation: Operation::Inspect,
+            target: request.target,
+            outcome: Outcome::Inspected {
+                identity: ProcessIdentity {
+                    pid: request.target.pid,
+                    created: 456,
+                },
+                image: r"C:\Windows\System32\notepad.exe".into(),
+                critical: false,
+                protection: 0,
+                session: 1,
+            },
+        };
+        assert!(response.validate(&request).is_ok());
+    }
+}

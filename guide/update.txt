@@ -1,0 +1,31 @@
+SST — Actualización: update
+
+Acción por defecto:
+  update                   equivale a update status
+
+Estado:
+  update status
+
+Buscar nueva versión:
+  update check
+
+Preparar/instalar actualización:
+  update install
+
+Ayuda:
+  update help
+  update -h
+  update --help
+
+`check` consulta el canal solamente cuando el operador lo solicita. `install` descarga y verifica una actualización de forma explícita, y autoriza aplicarla al cerrar esa misma sesión gráfica de SST. Abrir SST nunca comprueba, descarga ni aplica automáticamente actualizaciones pendientes. Una actualización previamente descargada no se aplica por el mero hecho de reiniciar SST.
+
+No confundir:
+  update                    actualiza SST
+  instp update              actualiza repositorios de paquetes instp
+  intel update              limpia/actualiza estado de fuentes/caché de inteligencia
+
+Aviso de nueva versión al abrir SST:
+  - SST consulta el manifiesto remoto en segundo plano, sin bloquear la consola.
+  - Si existe una versión superior, muestra un aviso dentro de SST.
+  - No descarga ni aplica una actualización automáticamente.
+  - Solo 'update install' autoriza descargar y aplicar la versión.

@@ -1,0 +1,93 @@
+use std::net::Ipv4Addr;
+
+#[derive(Debug, Clone, Copy)]
+pub struct EchoReply {
+    pub address: Ipv4Addr,
+    pub status: u32,
+    pub elapsed_ms: u32,
+}
+
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Clone, Serialize)]
+pub struct ScanRow {
+    pub ip: Ipv4Addr,
+    pub mac: String,
+    pub hostname: String,
+    pub latency_ms: Option<u32>,
+    pub discovery: String,
+    pub mac_scope: String,
+    pub vendor: Option<String>,
+    pub known: bool,
+    pub inventory_name: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct TrafficRow {
+    pub pid: u32,
+    pub process: String,
+    pub path: String,
+    pub cpu_percent: f32,
+    pub memory_mib: f64,
+    pub connections: usize,
+    pub upload_bps: u64,
+    pub download_bps: u64,
+    pub ppid: Option<u32>,
+    pub foreground: bool,
+    pub signature: String,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct ConnectionRow {
+    pub protocol: String,
+    pub local: String,
+    pub remote: String,
+    pub state: String,
+    pub pid: u32,
+    pub process: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PresenceRecord {
+    pub id: String,
+    pub mac: String,
+    pub ip: String,
+    pub hostname: String,
+    #[serde(default)]
+    pub mac_scope: String,
+    #[serde(default)]
+    pub vendor: Option<String>,
+    #[serde(default)]
+    pub discovery: String,
+    pub first_seen: String,
+    pub last_seen: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct NetworkProvider {
+    pub name: String,
+    pub kind: String,
+    pub host: String,
+    pub active: bool,
+    #[serde(default)]
+    pub user_env: Option<String>,
+    #[serde(default)]
+    pub secret_env: Option<String>,
+    #[serde(default)]
+    pub community_env: Option<String>,
+}
+
+#[derive(Debug, Clone, Copy, Default)]
+pub struct ByteCounters {
+    pub sent: u64,
+    pub received: u64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct LanUsageRow {
+    pub device: String,
+    pub ip: String,
+    pub mac: String,
+    pub download_bps: u64,
+    pub upload_bps: u64,
+}
