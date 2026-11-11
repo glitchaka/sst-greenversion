@@ -80,24 +80,53 @@ fn wrapped_lines(input: &str, max_width: usize) -> Vec<ReportLine> {
 fn color_line(line: &ReportLine) -> String {
     if line.text.is_empty() { return String::new(); }
     let text = line.text.trim_start();
-    let tone = if line.heading {
-        theme::ACCENT
-    } else if text.starts_with("CRÍTICO") || text.starts_with("CRITICO")
+    if line.heading {
+        return format!("{}{}{}", theme::ACCENT, line.text, theme::RESET);
+    }
+    if text.starts_with("CRÍTICO") || text.starts_with("CRITICO")
         || text.starts_with("ERROR") || text.starts_with("DENEGADO")
     {
-        theme::BAD
-    } else if text.starts_with("ADVERTENCIA") || text.starts_with("ATENCIÓN")
+        return format!("{}{}{}", theme::BAD, line.text, theme::RESET);
+    }
+    if text.starts_with("ADVERTENCIA") || text.starts_with("ATENCIÓN")
         || text.starts_with("ATENCION")
     {
-        theme::WARN
-    } else if text.starts_with("OK") || text.starts_with("CORRECTO") {
-        theme::GOOD
-    } else if text.contains(':') && !text.starts_with("http") {
-        theme::LABEL
-    } else {
-        theme::TEXT
-    };
-    format!("{tone}{}{reset}", line.text, reset = theme::RESET)
+        return format!("{}{}{}", theme::WARN, line.text, theme::RESET);
+    }
+    // Style the label and the real value separately. Coloring an entire
+    // record the same shade made system reports difficult to scan.
+    if let Some((label, value)) = line.text.split_once(':')
+        && (3..=40).contains(&label.trim().chars().count())
+        && label.trim().chars().any(char::is_alphabetic)
+    {
+        let status_field = matches!(
+            label.trim().to_ascii_lowercase().as_str(),
+            "estado" | "status" | "salud" | "health" | "resultado"
+        );
+        let value_upper = value.trim().to_uppercase();
+        let value_tone = if status_field && matches!(
+            value_upper.as_str(), "CRÍTICO" | "CRITICO" | "ERROR" | "FALLO"
+                | "DESCONECTADO" | "BLOQUEADO" | "DOWN"
+        ) {
+            theme::BAD
+        } else if status_field && matches!(
+            value_upper.as_str(), "ADVERTENCIA" | "DEGRADADO" | "PENDIENTE"
+        ) {
+            theme::WARN
+        } else if status_field && matches!(
+            value_upper.as_str(), "OPERATIVO" | "OPERATIVA" | "CONECTADO"
+                | "ACTIVO" | "OK" | "UP"
+        ) {
+            theme::GOOD
+        } else {
+            theme::TEXT
+        };
+        return format!(
+            "{}{}:{}{}{}{}",
+            theme::LABEL, label, theme::RESET, value_tone, value, theme::RESET
+        );
+    }
+    format!("{}{}{}", theme::TEXT, line.text, theme::RESET)
 }
 
 pub fn show_report(
@@ -176,6 +205,16 @@ pub fn show_report(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn labels_and_values_have_distinct_visual_roles() {
+        let row = ReportLine { text: "Estado: OPERATIVO".to_owned(), heading: false };
+        let text = color_line(&row);
+        assert!(text.contains(theme::LABEL));
+        assert!(text.contains(theme::GOOD));
+        let row = ReportLine { text: "Hostname: PC-01".to_owned(), heading: false };
+        assert!(color_line(&row).contains(theme::TEXT));
+    }
 
     #[test]
     fn evidence_is_wrapped_without_truncation_or_fake_rows() {
