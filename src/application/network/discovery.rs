@@ -1267,7 +1267,10 @@ fn render_monitor_screen(
     }
     screen.section(&format!("RED EN VIVO   /   {network}"), &overview);
 
-    let max_hosts = height.saturating_sub(17).saturating_div(2).clamp(1, 9);
+    // The monitor owns the entire viewport. Use all available lines rather
+    // than imposing the previous nine-device dashboard-card limit.
+    let available = height.saturating_sub(20).max(1);
+    let max_hosts = if width >= 78 { available } else { available.saturating_div(2).max(1) };
     let table = render_monitor_rows(display_rows, misses, width, max_hosts);
     screen.section(&format!("EQUIPOS DETECTADOS   /   {}", display_rows.len()), &table);
 
