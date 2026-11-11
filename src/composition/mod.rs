@@ -178,7 +178,7 @@ pub fn build_engine() -> Result<(Box<dyn crate::core::ports::ShellEngine>, Vec<S
     registry.register(Arc::new(SwitchBuiltin::new(switch_service)))?;
     registry.register(Arc::new(WakeOnLanBuiltin::new(wol_service)))?;
     registry.register(Arc::new(DiagnosticsBuiltin::new(diagnostics_service)))?;
-    registry.register(Arc::new(SystemBuiltin::new(system_service)))?;
+    registry.register(Arc::new(SystemBuiltin::new(system_service, Arc::clone(&terminal))))?;
     registry.register(Arc::new(TriageBuiltin::new(Arc::clone(&security_service), Arc::clone(&terminal))))?;
     registry.register(Arc::new(IntelBuiltin::new(security_service)))?;
     registry.register(Arc::new(InstpBuiltin::new(
