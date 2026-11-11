@@ -179,16 +179,25 @@ slint::slint! {
     component TerminalSectionFrame inherits Rectangle {
         background: transparent;
         border-width: 1px;
-        border-color: #665c54;
-        border-radius: 9px;
+        border-color: #817467;
+        border-radius: 11px;
 
+        // Industrial-orange section markers are vector shapes, not ASCII.
         Rectangle {
             x: 1px;
             y: 7px;
-            width: 3px;
-            height: min(24px, parent.height - 14px);
+            width: 4px;
+            height: min(26px, parent.height - 14px);
             border-radius: 2px;
-            background: #bdae93;
+            background: #fe8019;
+        }
+        Rectangle {
+            x: 12px;
+            y: 0px;
+            width: min(42px, parent.width - 24px);
+            height: 2px;
+            border-radius: 1px;
+            background: #d79921;
         }
     }
 
