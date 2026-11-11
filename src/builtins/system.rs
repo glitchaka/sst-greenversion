@@ -4,7 +4,8 @@ use anyhow::{Result, bail};
 
 use crate::{
     application::system::SystemService,
-    core::{CommandContext, CommandOutput},
+    core::{CommandContext, CommandOutput, ports::TerminalFactory},
+    presentation::tool_screen,
 };
 
 use super::BuiltinCommand;
@@ -16,11 +17,12 @@ const ALIASES: &[&str] = &[
 
 pub struct SystemBuiltin {
     service: Arc<SystemService>,
+    terminal: Arc<dyn TerminalFactory>,
 }
 
 impl SystemBuiltin {
-    pub fn new(service: Arc<SystemService>) -> Self {
-        Self { service }
+    pub fn new(service: Arc<SystemService>, terminal: Arc<dyn TerminalFactory>) -> Self {
+        Self { service, terminal }
     }
 }
 
@@ -41,8 +43,25 @@ impl BuiltinCommand for SystemBuiltin {
         &self,
         invoked_name: &str,
         args: &[String],
-        _context: CommandContext<'_>,
+        context: CommandContext<'_>,
     ) -> Result<CommandOutput> {
+        if invoked_name == "sys"
+            && (args.is_empty() || (args.len() == 1 && args[0] == "--view"))
+            && context.stdin.is_none()
+            && (crate::adapters::terminal::io::output_sender().is_some()
+                || args.iter().any(|arg| arg == "--view"))
+        {
+            // No made-up telemetry: use the same system service as sys info,
+            // sys memory and sys disks, then display it in one native view.
+            let mut report = String::from("SISTEMA\n");
+            report.push_str(&self.service.execute(&["info".to_owned()])?.stdout);
+            report.push_str("\nMEMORIA\n");
+            report.push_str(&self.service.execute(&["memory".to_owned()])?.stdout);
+            report.push_str("\nDISCOS\n");
+            report.push_str(&self.service.execute(&["disks".to_owned()])?.stdout);
+            tool_screen::show_report(self.terminal.as_ref(), "ESTADO DEL SISTEMA", "sys", &report)?;
+            return Ok(CommandOutput::ok(""));
+        }
         if invoked_name == "sys" {
             if args.first().is_some_and(|arg| arg.eq_ignore_ascii_case("hostname"))
                 && args.len() > 1
