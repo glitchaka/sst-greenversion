@@ -25,7 +25,7 @@ fn is_heading(text: &str) -> bool {
     !text.is_empty()
         && text.chars().count() <= 68
         && text.chars().any(char::is_alphabetic)
-        && text.chars().filter(char::is_alphabetic).all(|ch| !ch.is_lowercase())
+        && text.chars().filter(|ch| ch.is_alphabetic()).all(|ch| !ch.is_lowercase())
         && !text.contains(": ")
 }
 
