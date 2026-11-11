@@ -1,0 +1,23 @@
+name: SST Green · Windows compilation
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows-check:
+    runs-on: windows-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Check Windows Rust project
+        run: cargo check --locked
+      - name: Compile regression tests (without executing privileged operations)
+        run: cargo test --locked --no-run
