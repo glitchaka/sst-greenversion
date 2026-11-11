@@ -422,22 +422,22 @@ fn ensure_https(url: &str) -> Result<()> {
     Ok(())
 }
 
-fn parse_version(value: &str) -> Option<(u64, u64, u64, u64)> {
+fn parse_version(value: &str) -> Option<(u64, u64, u64, String, u64)> {
     let value = value.trim().trim_start_matches('v');
     let (core, suffix) = value.split_once('-').unwrap_or((value, ""));
     let mut parts = core.split('.');
     let major = parts.next()?.parse().ok()?;
     let minor = parts.next()?.parse().ok()?;
     let patch = parts.next()?.parse().ok()?;
-    if parts.next().is_some() {
-        return None;
-    }
-    let build = if suffix.is_empty() {
-        u64::MAX
+    if parts.next().is_some() { return None; }
+    let (channel, build) = if suffix.is_empty() {
+        ("stable".to_owned(), u64::MAX)
     } else {
-        suffix.strip_prefix("blue.")?.parse().ok()?
+        let (channel, build) = suffix.rsplit_once('.')?;
+        if !matches!(channel, "blue" | "green") { return None; }
+        (channel.to_owned(), build.parse().ok()?)
     };
-    Some((major, minor, patch, build))
+    Some((major, minor, patch, channel, build))
 }
 
 fn is_newer(candidate: &str, current: &str) -> Result<bool> {
@@ -445,7 +445,10 @@ fn is_newer(candidate: &str, current: &str) -> Result<bool> {
         .with_context(|| format!("versión candidata inválida: {candidate}"))?;
     let current = parse_version(current)
         .with_context(|| format!("versión local inválida: {current}"))?;
-    Ok(candidate > current)
+    // An updater must never install Blue over Green or Green over Blue.
+    if candidate.3 != current.3 { return Ok(false); }
+    Ok((candidate.0, candidate.1, candidate.2, candidate.4)
+       > (current.0, current.1, current.2, current.4))
 }
 
 pub(crate) fn independent_updater_path(paths: &AppPaths, version: &str) -> PathBuf {
@@ -535,5 +538,16 @@ mod startup_policy_tests {
         assert!(!entry.contains("configured_manifest_url("));
         assert!(entry.contains("take_explicit_install_authorization()"));
         assert!(entry.contains("if result.is_ok() && update::take_explicit_install_authorization()"));
+    }
+}
+
+#[cfg(test)]
+mod green_channel_tests {
+    use super::{is_newer, parse_version};
+    #[test]
+    fn green_updates_cannot_be_replaced_by_blue_channel() {
+        assert!(parse_version("0.1.9-green.1").is_some());
+        assert!(!is_newer("0.1.9-blue.999", "0.1.9-green.1").unwrap());
+        assert!(is_newer("0.1.9-green.2", "0.1.9-green.1").unwrap());
     }
 }
