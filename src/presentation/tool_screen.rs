@@ -108,6 +108,7 @@ pub fn show_report(
 ) -> Result<()> {
     let mut terminal = factory.alternate_screen()?;
     let mut scroll = 0usize;
+    let mut last_drawn: Option<(u16, u16, usize)> = None;
     loop {
         let (cols, rows) = terminal.size()?;
         let width = usize::from(cols).max(28);
@@ -117,38 +118,44 @@ pub fn show_report(
         let max_scroll = lines.len().saturating_sub(page_size);
         scroll = scroll.min(max_scroll);
 
-        let mut view = format!(
-            "  {accent}SST{reset}  {title_color}{title}{reset}  {muted}/  {command}{reset}\r\n",
-            accent = theme::ACCENT, reset = theme::RESET,
-            title_color = theme::TITLE, muted = theme::MUTED,
-        );
-        view.push_str(&format!(
-            "  {label}VISTA DE HERRAMIENTA{reset}     {muted}Datos del comando, sin métricas simuladas{reset}\r\n\r\n",
-            label = theme::LABEL, reset = theme::RESET, muted = theme::MUTED,
-        ));
+        // A static report must not repaint on every key-poll. Redraw only
+        // after navigation or resize to avoid flashing the full PTY.
+        if last_drawn != Some((cols, rows, scroll)) {
+            let mut view = format!(
+                "  {accent}SST{reset}  {title_color}{title}{reset}  {muted}/  {command}{reset}\r\n",
+                accent = theme::ACCENT, reset = theme::RESET,
+                title_color = theme::TITLE, muted = theme::MUTED,
+            );
+            view.push_str(&format!(
+                "  {label}VISTA DE HERRAMIENTA{reset}     {muted}Datos del comando, sin métricas simuladas{reset}\r\n\r\n",
+                label = theme::LABEL, reset = theme::RESET, muted = theme::MUTED,
+            ));
 
-        for line in lines.iter().skip(scroll).take(page_size) {
-            view.push_str("    ");
-            view.push_str(&color_line(line));
-            view.push_str("\r\n");
-        }
-        for _ in lines.iter().skip(scroll).take(page_size).count()..page_size {
-            view.push_str("\r\n");
-        }
+            for line in lines.iter().skip(scroll).take(page_size) {
+                view.push_str("    ");
+                view.push_str(&color_line(line));
+                view.push_str("\r\n");
+            }
+            for _ in lines.iter().skip(scroll).take(page_size).count()..page_size {
+                view.push_str("\r\n");
+            }
 
-        let last = (scroll + page_size).min(lines.len());
-        view.push_str(&format!(
-            "\r\n  {muted}LÍNEAS {first}–{last} / {total}     ↑↓ desplazarse  PgUp/PgDn página  Inicio/Fin  Esc/Q volver{reset}",
-            first = if lines.is_empty() { 0 } else { scroll + 1 },
-            total = lines.len(), muted = theme::MUTED, reset = theme::RESET,
-        ));
-        terminal.clear()?;
-        terminal.set_panels(vec![TerminalPanel {
-            start_row: 0,
-            rows: u16::try_from(height.saturating_sub(2)).unwrap_or(u16::MAX),
-        }])?;
-        terminal.write(&view)?;
-        terminal.flush()?;
+            let last = (scroll + page_size).min(lines.len());
+            view.push_str(&format!(
+                "\r\n  {muted}LÍNEAS {first}–{last} / {total}     ↑↓ desplazarse  PgUp/PgDn página  Inicio/Fin  Esc/Q volver{reset}",
+                first = if lines.is_empty() { 0 } else { scroll + 1 },
+                total = lines.len(), muted = theme::MUTED, reset = theme::RESET,
+            ));
+            terminal.clear()?;
+            terminal.set_panels(vec![TerminalPanel {
+                start_row: 0,
+                rows: u16::try_from(height.saturating_sub(2)).unwrap_or(u16::MAX),
+            }])?;
+            terminal.write(&view)?;
+            terminal.flush()?;
+
+            last_drawn = Some((cols, rows, scroll));
+        }
 
         match terminal.poll_key(Duration::from_millis(180))? {
             Some(TerminalKey::Escape | TerminalKey::Char('q') | TerminalKey::Char('Q')) => break,
