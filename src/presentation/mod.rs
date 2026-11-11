@@ -15,3 +15,6 @@ pub mod gui_slint;
 pub mod shell;
 pub mod report;
 pub mod tui_style;
+
+pub mod theme;
+pub mod tool_screen;
