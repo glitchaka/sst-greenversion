@@ -6,13 +6,10 @@
 
 use crate::core::ports::TerminalPanel;
 
-pub const RESET: &str = "\x1b[0m";
-pub const ACCENT: &str = "\x1b[1;38;2;235;219;178m";
-pub const LABEL: &str = "\x1b[38;2;189;174;147m";
-pub const GOOD: &str = "\x1b[1;38;2;184;187;38m";
-pub const WARN: &str = "\x1b[1;38;2;250;189;47m";
-pub const BAD: &str = "\x1b[1;38;2;251;73;52m";
-pub const CONTENT: &str = "\x1b[38;2;213;196;161m";
+// A single palette shared by all native fullscreen tools.
+pub use super::theme::{BAD, GOOD, LABEL, RESET, WARN};
+pub const ACCENT: &str = super::theme::ACCENT;
+pub const CONTENT: &str = super::theme::TEXT;
 
 /// One alternate-screen view; body text is kept independent of native panel
 /// strokes. Even a non-Slint stdout produces semantic headings and statuses.
@@ -31,6 +28,7 @@ impl LiveScreen {
         let start = self.line;
         self.text.push_str("  ");
         self.text.push_str(ACCENT);
+        self.text.push_str("▌ ");
         self.text.push_str(title);
         self.text.push_str(RESET);
         self.text.push('\n');
