@@ -107,17 +107,18 @@ mod viewport_regression_tests {
     use super::{RestoreViewportGuard, valid_terminal_viewport};
 
     #[test]
-    fn legacy_cyan_and_blue_accents_are_neutralized_globally() {
+    fn tool_palette_keeps_semantic_statuses_but_removes_old_cyan() {
         assert_eq!(super::gruvbox_terminal_color(super::Rgb(69, 209, 241)),
-            super::Rgb(0xEB, 0xDB, 0xB2));
-        assert_eq!(super::gruvbox_terminal_color(super::Rgb(80, 150, 255)),
-            super::Rgb(0xD5, 0xC4, 0xA1));
-        assert_eq!(super::gruvbox_terminal_color(super::Rgb(69, 133, 136)),
+            super::Rgb(0xFE, 0x80, 0x19));
+        assert_eq!(super::gruvbox_terminal_color(super::Rgb(142, 205, 255)),
+            super::Rgb(0xFE, 0x80, 0x19));
+        assert_eq!(super::gruvbox_terminal_color(super::Rgb(183, 228, 247)),
             super::Rgb(0xEB, 0xDB, 0xB2));
         assert_eq!(super::gruvbox_terminal_color(super::Rgb(184, 187, 38)),
             super::Rgb(184, 187, 38));
         assert_eq!(super::gruvbox_terminal_color(super::Rgb(251, 73, 52)),
             super::Rgb(251, 73, 52));
+
     }
 
     #[test]
@@ -1426,19 +1427,25 @@ impl TerminalModel {
 // states remain distinguishable.
 fn gruvbox_terminal_color(color: Rgb) -> Rgb {
     let Rgb(r, g, b) = color;
-    if b > 135 && b > r.saturating_add(28) && b > g.saturating_add(12) {
-        // Loud blue structural accents become readable Gruvbox warm text.
-        return Rgb(0xD5, 0xC4, 0xA1);
+    // Bright cyan/blue display accents become industrial orange *only*
+    // inside fullscreen tools, not in the normal terminal or SST logo.
+    if b >= 175 && b > r.saturating_add(55) && b > g.saturating_add(20) {
+        return Rgb(0xFE, 0x80, 0x19);
+    }
+    // Cool near-white text becomes readable warm architectural cream.
+    if b >= 165 && b > r.saturating_add(18) && b > g.saturating_add(7) {
+        return Rgb(0xEB, 0xDB, 0xB2);
+    }
+    // Desaturated blue-gray labels become warm neutral labels.
+    if b >= 125 && b > r.saturating_add(12) && b > g.saturating_add(6) {
+        return Rgb(0xBD, 0xAE, 0x93);
     }
     if b >= 120 && b.saturating_add(5) >= g && g > r.saturating_add(18) {
-        // Bright cyan, including embedded legacy truecolor escape sequences.
         return Rgb(0xEB, 0xDB, 0xB2);
     }
     color
 }
 
-// Used for tool screens only. The default console, SST logo and island retain
-// their authored colors instead of being globally recolored.
 fn tool_background_color(color: Rgb) -> Rgb {
     let Rgb(r, g, b) = color;
     if r < 70 && b > r.saturating_add(7) && b > g.saturating_add(6) {
