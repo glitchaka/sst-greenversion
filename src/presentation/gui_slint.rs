@@ -273,6 +273,7 @@ slint::slint! {
         background: transparent;
 
         in property <image> terminal-image;
+        in property <bool> tool-view-active: false;
         in property <int> report-heading-count: 0;
         in property <float> report-grid-left: 0.0;
         in property <float> report-grid-top: 0.0;
@@ -352,6 +353,18 @@ slint::slint! {
                             ? preserve
                             : cover;
                 opacity: root.background-image-opacity;
+            }
+
+            // A tool owns the entire content surface. Its high-contrast
+            // background suppresses wallpaper only in alternate-screen mode.
+            // Ordinary SST keeps its original background and full-width PTY.
+            Rectangle {
+                visible: root.tool-view-active;
+                x: 0;
+                y: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(26, 30, 28, 0.96);
             }
 
             Image {
@@ -1310,6 +1323,7 @@ impl TerminalModel {
             let font_px = (self.appearance.font_size as f32 * self.scale).round().max(8.0);
             let font_key = font_px.round() as u16;
             let default_fg = parse_rgb(&self.appearance.font_color).unwrap_or(FG);
+            let tool_mode = self.session.raw_mode();
 
             for row in 0..rows {
                 for col in 0..cols {
@@ -1327,6 +1341,12 @@ impl TerminalModel {
 
                     if cell.inverse() {
                         std::mem::swap(&mut fg, &mut bg);
+                    }
+                    if tool_mode {
+                        fg = gruvbox_terminal_color(fg);
+                        if paint_background {
+                            bg = tool_background_color(bg);
+                        }
                     }
 
                     let index = row as usize * cols as usize + col as usize;
@@ -1417,6 +1437,17 @@ fn gruvbox_terminal_color(color: Rgb) -> Rgb {
     color
 }
 
+// Used for tool screens only. The default console, SST logo and island retain
+// their authored colors instead of being globally recolored.
+fn tool_background_color(color: Rgb) -> Rgb {
+    let Rgb(r, g, b) = color;
+    if r < 70 && b > r.saturating_add(7) && b > g.saturating_add(6) {
+        Rgb(0x23, 0x28, 0x25)
+    } else {
+        color
+    }
+}
+
 fn terminal_color(value: vt100::Color, default: Rgb) -> Rgb {
     const COLORS: [Rgb; 16] = [
         Rgb(0x28, 0x28, 0x28),
@@ -1439,8 +1470,8 @@ fn terminal_color(value: vt100::Color, default: Rgb) -> Rgb {
 
     match value {
         vt100::Color::Default => default,
-        vt100::Color::Rgb(r, g, b) => gruvbox_terminal_color(Rgb(r, g, b)),
-        vt100::Color::Idx(i) if i < 16 => gruvbox_terminal_color(COLORS[i as usize]),
+        vt100::Color::Rgb(r, g, b) => Rgb(r, g, b),
+        vt100::Color::Idx(i) if i < 16 => COLORS[i as usize],
         vt100::Color::Idx(i) if i >= 232 => {
             let v = 8 + (i - 232) * 10;
             Rgb(v, v, v)
@@ -1448,7 +1479,7 @@ fn terminal_color(value: vt100::Color, default: Rgb) -> Rgb {
         vt100::Color::Idx(i) => {
             let i = i - 16;
             let component = |n| if n == 0 { 0 } else { 55 + n * 40 };
-            gruvbox_terminal_color(Rgb(component(i / 36), component(i / 6 % 6), component(i % 6)))
+            Rgb(component(i / 36), component(i / 6 % 6), component(i % 6))
         }
     }
 }
@@ -2340,6 +2371,7 @@ pub fn run() -> Result<()> {
                     ui.set_report_f_row(row);
                     ui.set_report_f_width((cols * cell_width / factor).max(0.0));
                 }
+                ui.set_tool_view_active(model.session.raw_mode());
                 ui.set_monitor_panel_count(panels.len().min(4) as i32);
                 if !panels.is_empty() {
                     let (left, top, cell_width, cell_height) = model.geometry();
