@@ -19,8 +19,21 @@ jobs:
   windows-check:
     runs-on: windows-latest
     timeout-minutes: 40
+    env:
+      # Compile-only test input: pinned third-party mirror of the official
+      # IEEE registries. This CI job never publishes executables or datasets.
+      SST_IEEE_MAL_CSV: ${{ github.workspace }}\\.ci-ieee\\oui.csv
+      SST_IEEE_MAM_CSV: ${{ github.workspace }}\\.ci-ieee\\mam.csv
+      SST_IEEE_MAS_CSV: ${{ github.workspace }}\\.ci-ieee\\oui36.csv
     steps:
       - uses: actions/checkout@v4
+      - name: Fetch pinned IEEE mirror for compile-only verification
+        uses: actions/checkout@v4
+        with:
+          repository: StewAlexander-com/maclookup.py
+          ref: 65f556005f63a22ae353e6f129440dbdb3c29c06
+          path: .ci-ieee
+          persist-credentials: false
       - uses: dtolnay/rust-toolchain@stable
       - name: Check Windows Rust project
         run: cargo check --locked
