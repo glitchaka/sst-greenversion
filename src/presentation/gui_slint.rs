@@ -176,28 +176,218 @@ slint::slint! {
         }
     }
 
+    // Full-window industrial views: real Slint geometry behind the VT100
+    // text surface. These are not terminal text borders or side widgets.
     component TerminalSectionFrame inherits Rectangle {
-        background: transparent;
+        background: #292f2e;
         border-width: 1px;
-        border-color: #817467;
-        border-radius: 11px;
+        border-color: #50605a;
+        border-radius: 12px;
 
-        // Industrial-orange section markers are vector shapes, not ASCII.
         Rectangle {
             x: 1px;
-            y: 7px;
-            width: 4px;
-            height: min(26px, parent.height - 14px);
-            border-radius: 2px;
-            background: #fe8019;
+            y: 1px;
+            width: parent.width - 2px;
+            height: min(37px, parent.height - 2px);
+            background: #37413d;
+            border-radius: 11px;
         }
         Rectangle {
-            x: 12px;
+            x: 1px;
+            y: 9px;
+            width: 5px;
+            height: min(25px, parent.height - 18px);
+            border-radius: 2px;
+            background: #fa8e35;
+        }
+        Rectangle {
+            x: 19px;
             y: 0px;
-            width: min(42px, parent.width - 24px);
+            width: min(74px, parent.width - 39px);
+            height: 3px;
+            border-radius: 2px;
+            background: #e9a54d;
+        }
+        Rectangle {
+            x: parent.width - 42px;
+            y: 12px;
+            width: 16px;
             height: 2px;
+            background: #6e857b;
+        }
+        Rectangle {
+            x: parent.width - 22px;
+            y: 12px;
+            width: 9px;
+            height: 2px;
+            background: #6e857b;
+        }
+    }
+
+    component GreenToolHero inherits Rectangle {
+        background: #303b37;
+        border-color: #66746a;
+        border-width: 1px;
+        border-radius: 11px;
+
+        Rectangle {
+            x: 0px;
+            y: 0px;
+            width: 7px;
+            height: parent.height;
+            background: #f28c36;
+            border-radius: 3px;
+        }
+        Rectangle {
+            x: 15px;
+            y: 0px;
+            width: min(132px, parent.width - 30px);
+            height: 3px;
+            background: #f3dbb6;
             border-radius: 1px;
-            background: #d79921;
+        }
+        Rectangle {
+            x: parent.width - 86px;
+            y: parent.height - 10px;
+            width: 38px;
+            height: 2px;
+            background: #bbd5b9;
+        }
+        Rectangle {
+            x: parent.width - 42px;
+            y: parent.height - 10px;
+            width: 24px;
+            height: 2px;
+            background: #f28c36;
+        }
+    }
+
+    component GreenMetricCard inherits Rectangle {
+        in property <string> metric-label;
+        in property <string> metric-value;
+        in property <string> metric-detail;
+        in property <float> metric-ratio: -1.0;
+
+        background: #303835;
+        border-radius: 11px;
+        border-width: 1px;
+        border-color: #61736b;
+
+        Rectangle {
+            x: 0px;
+            y: 0px;
+            width: 5px;
+            height: parent.height;
+            background: #ee8c3d;
+            border-radius: 2px;
+        }
+
+        Text {
+            x: 16px;
+            y: 10px;
+            width: parent.width - 26px;
+            height: 20px;
+            text: root.metric-label;
+            color: #c4d5c9;
+            font-family: "Segoe UI Variable";
+            font-size: 11px;
+            font-weight: 700;
+            overflow: elide;
+        }
+
+        Text {
+            x: 16px;
+            y: 31px;
+            width: parent.width - 25px;
+            height: 31px;
+            text: root.metric-value;
+            color: #f3e9d4;
+            font-family: "Segoe UI Variable";
+            font-size: 22px;
+            font-weight: 800;
+            overflow: elide;
+            vertical-alignment: center;
+        }
+
+        Text {
+            x: 16px;
+            y: 65px;
+            width: parent.width - 25px;
+            height: 18px;
+            text: root.metric-detail;
+            color: #adbfb4;
+            font-family: "Segoe UI Variable";
+            font-size: 11px;
+            overflow: elide;
+        }
+
+        Rectangle {
+            visible: root.metric-ratio >= 0.0;
+            x: 16px;
+            y: parent.height - 15px;
+            width: parent.width - 32px;
+            height: 6px;
+            background: #4d5852;
+            border-radius: 3px;
+            clip: true;
+
+            Rectangle {
+                width: parent.width * root.metric-ratio;
+                height: parent.height;
+                background: #e8a04a;
+                border-radius: 3px;
+            }
+        }
+    }
+
+    component GreenSystemOverview inherits Rectangle {
+        in property <string> host-name;
+        in property <string> os-name;
+        in property <string> cpu-count;
+        in property <string> memory-used;
+        in property <string> memory-total;
+        in property <float> memory-ratio: 0.0;
+        in property <string> disk-count;
+
+        background: transparent;
+        border-width: 0px;
+
+        GreenMetricCard {
+            x: 0px;
+            y: 0px;
+            width: (parent.width - 30px) / 4;
+            height: parent.height;
+            metric-label: "EQUIPO  /  WINDOWS";
+            metric-value: root.host-name;
+            metric-detail: root.os-name;
+        }
+        GreenMetricCard {
+            x: (parent.width - 30px) / 4 + 10px;
+            y: 0px;
+            width: (parent.width - 30px) / 4;
+            height: parent.height;
+            metric-label: "PROCESADORES";
+            metric-value: root.cpu-count;
+            metric-detail: "Núcleos lógicos";
+        }
+        GreenMetricCard {
+            x: ((parent.width - 30px) / 4 + 10px) * 2;
+            y: 0px;
+            width: (parent.width - 30px) / 4;
+            height: parent.height;
+            metric-label: "MEMORIA  /  MIB";
+            metric-value: root.memory-used;
+            metric-detail: "de " + root.memory-total + " MiB";
+            metric-ratio: root.memory-ratio;
+        }
+        GreenMetricCard {
+            x: ((parent.width - 30px) / 4 + 10px) * 3;
+            y: 0px;
+            width: (parent.width - 30px) / 4;
+            height: parent.height;
+            metric-label: "ALMACENAMIENTO";
+            metric-value: root.disk-count;
+            metric-detail: "Unidades detectadas";
         }
     }
 
@@ -284,6 +474,23 @@ slint::slint! {
 
         in property <image> terminal-image;
         in property <bool> tool-view-active: false;
+        in property <float> tool-hero-left: 16.0;
+        in property <float> tool-hero-top: 48.0;
+        in property <float> tool-hero-width: 800.0;
+        in property <float> tool-hero-height: 40.0;
+        in property <bool> system-overview-visible: false;
+        in property <float> system-overview-left: 16.0;
+        in property <float> system-overview-top: 128.0;
+        in property <float> system-overview-width: 800.0;
+        in property <float> system-overview-height: 110.0;
+        in property <string> system-host: "";
+        in property <string> system-os: "";
+        in property <string> system-cpu-count: "";
+        in property <string> system-memory-used: "";
+        in property <string> system-memory-total: "";
+        in property <float> system-memory-ratio: 0.0;
+        in property <string> system-disk-count: "";
+
         in property <int> report-heading-count: 0;
         in property <float> report-grid-left: 0.0;
         in property <float> report-grid-top: 0.0;
@@ -377,6 +584,51 @@ slint::slint! {
                 background: rgba(26, 30, 28, 0.96);
             }
 
+            // Distinct screen for active tools; the console remains
+            // completely unobstructed when no tool is running.
+            GreenToolHero {
+                visible: root.tool-view-active;
+                x: root.tool-hero-left * 1px;
+                y: root.tool-hero-top * 1px;
+                width: root.tool-hero-width * 1px;
+                height: root.tool-hero-height * 1px;
+            }
+
+            // Draw only for a TUI that explicitly supplies semantic sections.
+            // The normal terminal (and its logo) has no vector overlays.
+            TerminalSectionFrame {
+                visible: root.monitor-panel-count > 0;
+                x: root.monitor-grid-left * 1px;
+                y: (root.monitor-grid-top + root.monitor-a-row * root.monitor-line-height) * 1px;
+                width: root.monitor-grid-width * 1px;
+                height: (root.monitor-a-rows * root.monitor-line-height) * 1px;
+            }
+
+            TerminalSectionFrame {
+                visible: root.monitor-panel-count > 1;
+                x: root.monitor-grid-left * 1px;
+                y: (root.monitor-grid-top + root.monitor-b-row * root.monitor-line-height) * 1px;
+                width: root.monitor-grid-width * 1px;
+                height: (root.monitor-b-rows * root.monitor-line-height) * 1px;
+            }
+
+            TerminalSectionFrame {
+                visible: root.monitor-panel-count > 2;
+                x: root.monitor-grid-left * 1px;
+                y: (root.monitor-grid-top + root.monitor-c-row * root.monitor-line-height) * 1px;
+                width: root.monitor-grid-width * 1px;
+                height: (root.monitor-c-rows * root.monitor-line-height) * 1px;
+            }
+
+            TerminalSectionFrame {
+                visible: root.monitor-panel-count > 3;
+                x: root.monitor-grid-left * 1px;
+                y: (root.monitor-grid-top + root.monitor-d-row * root.monitor-line-height) * 1px;
+                width: root.monitor-grid-width * 1px;
+                height: (root.monitor-d-rows * root.monitor-line-height) * 1px;
+            }
+
+
             Image {
                 x: 0;
                 y: 0;
@@ -385,6 +637,24 @@ slint::slint! {
                 source: root.terminal-image;
                 image-fit: fill;
             }
+            // Actual Windows figures projected by the sys service.
+            // No demo percentages, fake CPU load or permanent sidebar.
+            GreenSystemOverview {
+                visible: root.system-overview-visible;
+                x: root.system-overview-left * 1px;
+                y: root.system-overview-top * 1px;
+                width: root.system-overview-width * 1px;
+                height: root.system-overview-height * 1px;
+                host-name: root.system-host;
+                os-name: root.system-os;
+                cpu-count: root.system-cpu-count;
+                memory-used: root.system-memory-used;
+                memory-total: root.system-memory-total;
+                memory-ratio: root.system-memory-ratio;
+                disk-count: root.system-disk-count;
+            }
+
+
 
             // Ordinary SST help and reports receive the same genuine native
             // section accents. No box characters enter the command stream.
@@ -434,40 +704,6 @@ slint::slint! {
                 y: (root.report-grid-top + root.report-f-row * root.report-line-height) * 1px;
                 width: root.report-f-width * 1px;
                 height: root.report-line-height * 1px;
-            }
-
-            // Draw only for a TUI that explicitly supplies semantic sections.
-            // The normal terminal (and its logo) has no vector overlays.
-            TerminalSectionFrame {
-                visible: root.monitor-panel-count > 0;
-                x: root.monitor-grid-left * 1px;
-                y: (root.monitor-grid-top + root.monitor-a-row * root.monitor-line-height) * 1px;
-                width: root.monitor-grid-width * 1px;
-                height: (root.monitor-a-rows * root.monitor-line-height) * 1px;
-            }
-
-            TerminalSectionFrame {
-                visible: root.monitor-panel-count > 1;
-                x: root.monitor-grid-left * 1px;
-                y: (root.monitor-grid-top + root.monitor-b-row * root.monitor-line-height) * 1px;
-                width: root.monitor-grid-width * 1px;
-                height: (root.monitor-b-rows * root.monitor-line-height) * 1px;
-            }
-
-            TerminalSectionFrame {
-                visible: root.monitor-panel-count > 2;
-                x: root.monitor-grid-left * 1px;
-                y: (root.monitor-grid-top + root.monitor-c-row * root.monitor-line-height) * 1px;
-                width: root.monitor-grid-width * 1px;
-                height: (root.monitor-c-rows * root.monitor-line-height) * 1px;
-            }
-
-            TerminalSectionFrame {
-                visible: root.monitor-panel-count > 3;
-                x: root.monitor-grid-left * 1px;
-                y: (root.monitor-grid-top + root.monitor-d-row * root.monitor-line-height) * 1px;
-                width: root.monitor-grid-width * 1px;
-                height: (root.monitor-d-rows * root.monitor-line-height) * 1px;
             }
 
         terminal-focus := FocusScope {
@@ -1304,7 +1540,14 @@ impl TerminalModel {
         let mut buffer = SharedPixelBuffer::<Rgba8Pixel>::new(width, height);
         {
             let pixels = buffer.make_mut_slice();
-            let background_opacity = self.current_background_opacity();
+            // Native dashboard panels sit behind the terminal glyph surface.
+            // Fullscreen tools require a transparent glyph layer, unlike SST's
+            // ordinary user-configured terminal wallpaper.
+            let background_opacity = if self.session.raw_mode() {
+                0
+            } else {
+                self.current_background_opacity()
+            };
             if background_opacity > 0 {
                 let bg = parse_rgb(&self.appearance.background_color).unwrap_or(BG);
                 let alpha = ((u16::from(background_opacity) * 255) / 100) as u8;
@@ -2387,7 +2630,39 @@ pub fn run() -> Result<()> {
                     ui.set_report_f_row(row);
                     ui.set_report_f_width((cols * cell_width / factor).max(0.0));
                 }
-                ui.set_tool_view_active(model.session.raw_mode());
+                let tool_active = model.session.raw_mode();
+                ui.set_tool_view_active(tool_active);
+                if tool_active {
+                    let (left, top, cell_width, cell_height) = model.geometry();
+                    let factor = model.scale.max(0.5);
+                    let (_, cols) = model.parser.screen().size();
+                    ui.set_tool_hero_left(left / factor);
+                    ui.set_tool_hero_top((top - 0.30 * cell_height) / factor);
+                    ui.set_tool_hero_width((f32::from(cols) * cell_width) / factor);
+                    ui.set_tool_hero_height((2.7 * cell_height) / factor);
+                }
+                let overview = if tool_active {
+                    crate::presentation::tool_screen::system_overview_snapshot()
+                } else {
+                    None
+                };
+                ui.set_system_overview_visible(overview.is_some());
+                if let Some(overview) = overview {
+                    let (left, top, cell_width, cell_height) = model.geometry();
+                    let factor = model.scale.max(0.5);
+                    let (_, cols) = model.parser.screen().size();
+                    ui.set_system_overview_left((left + 0.30 * cell_width) / factor);
+                    ui.set_system_overview_top((top + 4.25 * cell_height) / factor);
+                    ui.set_system_overview_width(((f32::from(cols) - 0.6) * cell_width) / factor);
+                    ui.set_system_overview_height((6.5 * cell_height) / factor);
+                    ui.set_system_host(overview.host.into());
+                    ui.set_system_os(overview.os.into());
+                    ui.set_system_cpu_count(overview.cpu_count.into());
+                    ui.set_system_memory_used(overview.used_mib.into());
+                    ui.set_system_memory_total(overview.total_mib.into());
+                    ui.set_system_memory_ratio(overview.memory_ratio);
+                    ui.set_system_disk_count(overview.disk_count.into());
+                }
                 ui.set_monitor_panel_count(panels.len().min(4) as i32);
                 if !panels.is_empty() {
                     let (left, top, cell_width, cell_height) = model.geometry();
