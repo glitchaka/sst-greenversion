@@ -556,7 +556,7 @@ slint::slint! {
         }
     }
 
-    export component SstBlueWindow inherits Window {
+    export component SstGreenWindow inherits Window {
         title: "Shell Shock Tool";
         preferred-width: 980px;
         preferred-height: 640px;
@@ -2333,7 +2333,7 @@ unsafe fn apply_configured_backdrop(
     }
 }
 
-fn slint_hwnd(ui: &SstBlueWindow) -> Option<HWND> {
+fn slint_hwnd(ui: &SstGreenWindow) -> Option<HWND> {
     let handle = ui.window().window_handle();
     let window_handle = handle.window_handle().ok()?;
     let RawWindowHandle::Win32(win32) = window_handle.as_raw() else {
@@ -2398,7 +2398,7 @@ unsafe fn apply_native_corner_preference(
     }
 }
 
-fn apply_slint_window_effects(ui: &SstBlueWindow, appearance: &TerminalAppearance) {
+fn apply_slint_window_effects(ui: &SstGreenWindow, appearance: &TerminalAppearance) {
     if let Some(hwnd) = slint_hwnd(ui) {
         unsafe { apply_window_effects(hwnd, appearance) };
     }
@@ -2437,7 +2437,7 @@ pub fn run() -> Result<()> {
     let appearance_state = Rc::new(RefCell::new(appearance.clone()));
     let model = Rc::new(RefCell::new(TerminalModel::new(appearance.clone())?));
     let metrics = Rc::new(RefCell::new(System::new()));
-    let ui = SstBlueWindow::new()?;
+    let ui = SstGreenWindow::new()?;
 
     // The sudo command starts a NEW Windows process for each privilege
     // escalation. Its token is immutable during this GUI session. Query that
