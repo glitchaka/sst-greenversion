@@ -77,6 +77,22 @@ pub fn active_tool_title() -> Option<String> {
     tool_title_state().lock().unwrap_or_else(|e| e.into_inner()).clone()
 }
 
+/// Native tool identity is scoped to the running alternate screen.
+/// The normal console has no foreign overlay once this guard is dropped.
+pub struct NativeToolGuard;
+
+pub fn enter_native_tool(title: &str) -> NativeToolGuard {
+    *tool_title_state().lock().unwrap_or_else(|e| e.into_inner()) = Some(title.to_owned());
+    NativeToolGuard
+}
+
+impl Drop for NativeToolGuard {
+    fn drop(&mut self) {
+        *tool_title_state().lock().unwrap_or_else(|e| e.into_inner()) = None;
+    }
+}
+
+
 struct ClearToolTitle;
 
 impl Drop for ClearToolTitle {
