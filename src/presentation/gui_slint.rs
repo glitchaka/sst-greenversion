@@ -914,7 +914,7 @@ slint::slint! {
                     visible: island.width >= 700px;
                     x: 233px; y: 5px;
                     width: 113px; height: 67px;
-                    text: "SHELL\\nSHOCK\\nTOOL";
+                    text: "SHELL\nSHOCK\nTOOL";
                     color: #e2dac2;
                     font-family: "Oxanium";
                     font-size: 16px;
