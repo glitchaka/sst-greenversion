@@ -263,6 +263,9 @@ slint::slint! {
     // The existing 90px floating island is preserved above this surface.
     component GreenConsoleChrome inherits Rectangle {
         in property <string> channel-version;
+        in property <image> wallpaper-image;
+        in property <float> wallpaper-opacity;
+        in property <string> wallpaper-fit-mode;
         background: #171c1a;
         border-width: 2px;
         border-color: #e2dac2;
@@ -283,19 +286,19 @@ slint::slint! {
             x: 7px; y: 60px;
             width: parent.width - 14px;
             height: max(0px, parent.height - 82px);
-            source: root.background-image;
-            image-fit: root.background-image-fit-mode == "contain"
-                ? contain : root.background-image-fit-mode == "fill"
-                ? fill : root.background-image-fit-mode == "preserve"
+            source: root.wallpaper-image;
+            image-fit: root.wallpaper-fit-mode == "contain"
+                ? contain : root.wallpaper-fit-mode == "fill"
+                ? fill : root.wallpaper-fit-mode == "preserve"
                 ? preserve : cover;
-            opacity: root.background-image-opacity;
+            opacity: root.wallpaper-opacity;
         }
         Rectangle {
             x: 7px; y: 60px;
             width: parent.width - 14px;
             height: max(0px, parent.height - 82px);
             background: rgba(20, 24, 22, 0.35);
-            visible: root.background-image-opacity > 0.0;
+            visible: root.wallpaper-opacity > 0.0;
         }
 
         // Architectural top fascia; not a permanent widget or sidebar.
@@ -709,6 +712,9 @@ slint::slint! {
                 width: root.width - 26px;
                 height: root.height - 122px;
                 channel-version: root.header-version;
+                wallpaper-image: root.background-image;
+                wallpaper-opacity: root.background-image-opacity;
+                wallpaper-fit-mode: root.background-image-fit-mode;
             }
 
             // A tool owns the entire content surface. Its high-contrast
