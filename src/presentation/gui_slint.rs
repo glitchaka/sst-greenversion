@@ -983,7 +983,7 @@ slint::slint! {
                 // Smaller windows retain the existing island rather than
                 // forcing a second row or moving the terminal to a sidebar.
                 Text {
-                    visible: (island.width >= 1120px && island.width < 1300px) || (island.width >= 1450px && island.width < 1580px);
+                    visible: (island.width >= 1280px && island.width < 1300px) || (island.width >= 1450px && island.width < 1580px);
                     x: 400px; y: 13px;
                     width: 185px;
                     height: 27px;
@@ -993,7 +993,7 @@ slint::slint! {
                     overflow: elide;
                 }
                 Text {
-                    visible: (island.width >= 1120px && island.width < 1300px) || (island.width >= 1450px && island.width < 1580px);
+                    visible: (island.width >= 1280px && island.width < 1300px) || (island.width >= 1450px && island.width < 1580px);
                     x: 400px; y: 48px;
                     width: 185px;
                     height: 20px;
@@ -1038,27 +1038,40 @@ slint::slint! {
                     Rectangle { x: 465px; width: 1px; height: parent.height; background: #958778; }
                 }
 
+                // At the normal 1340px window size preserve all five
+                // measurements. Previously HOST and ARCH disappeared until
+                // the operator manually enlarged the application.
                 Rectangle {
                     visible: island.width >= 1120px && island.width < 1450px;
-                    x: island.width - 519px; y: 12px;
-                    width: 354px; height: 65px;
+                    x: island.width - 688px; y: 12px;
+                    width: 564px; height: 65px;
                     background: transparent;
                     border-width: 2px; border-color: #e2dac2;
                     border-radius: 13px;
                     GreenHeaderMetric {
-                        x: 2px; y: 0px; width: 115px; height: parent.height;
+                        x: 2px; y: 0px; width: 173px; height: parent.height;
+                        label-text: "HOST"; value-text: root.header-host;
+                    }
+                    GreenHeaderMetric {
+                        x: 177px; y: 0px; width: 116px; height: parent.height;
                         label-text: "UPTIME"; value-text: root.header-uptime;
                     }
                     GreenHeaderMetric {
-                        x: 119px; y: 0px; width: 115px; height: parent.height;
+                        x: 295px; y: 0px; width: 88px; height: parent.height;
+                        label-text: "ARCH"; value-text: root.header-arch;
+                    }
+                    GreenHeaderMetric {
+                        x: 385px; y: 0px; width: 79px; height: parent.height;
                         label-text: "MEM"; value-text: root.header-memory;
                     }
                     GreenHeaderMetric {
-                        x: 236px; y: 0px; width: 116px; height: parent.height;
+                        x: 466px; y: 0px; width: 96px; height: parent.height;
                         label-text: "CPU"; value-text: root.header-cpu;
                     }
-                    Rectangle { x: 118px; width: 1px; height: parent.height; background: #958778; }
-                    Rectangle { x: 235px; width: 1px; height: parent.height; background: #958778; }
+                    Rectangle { x: 176px; width: 1px; height: parent.height; background: #958778; }
+                    Rectangle { x: 294px; width: 1px; height: parent.height; background: #958778; }
+                    Rectangle { x: 384px; width: 1px; height: parent.height; background: #958778; }
+                    Rectangle { x: 465px; width: 1px; height: parent.height; background: #958778; }
                 }
 
                 // Laptop-width rendition of the score marks: the
