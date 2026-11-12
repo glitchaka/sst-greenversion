@@ -22,6 +22,25 @@ pub struct SystemOverview {
 
 static SYSTEM_OVERVIEW: OnceLock<Mutex<Option<SystemOverview>>> = OnceLock::new();
 
+static ACTIVE_TOOL_TITLE: OnceLock<Mutex<Option<String>>> = OnceLock::new();
+
+fn tool_title_state() -> &'static Mutex<Option<String>> {
+    ACTIVE_TOOL_TITLE.get_or_init(|| Mutex::new(None))
+}
+
+pub fn active_tool_title() -> Option<String> {
+    tool_title_state().lock().unwrap_or_else(|e| e.into_inner()).clone()
+}
+
+struct ClearToolTitle;
+
+impl Drop for ClearToolTitle {
+    fn drop(&mut self) {
+        *tool_title_state().lock().unwrap_or_else(|e| e.into_inner()) = None;
+    }
+}
+
+
 fn overview_state() -> &'static Mutex<Option<SystemOverview>> {
     SYSTEM_OVERVIEW.get_or_init(|| Mutex::new(None))
 }
@@ -257,24 +276,37 @@ fn render_page(
     width: usize,
     height: usize,
     native_overview: bool,
+    native_view: bool,
 ) -> (String, Vec<TerminalPanel>) {
     let reserved = if native_overview { 8 } else { 0 };
     let body_top = 4 + reserved;
     let body_rows = height.saturating_sub(7 + reserved).max(1);
     let visible = lines.iter().skip(scroll).take(body_rows).cloned().collect::<Vec<_>>();
     let mut view = String::new();
-    let brand = format!("SST  /  {}", title);
-    view.push_str(&format!(
-        "  {}{}{}\r\n",
-        theme::TITLE, truncate_chrome(&brand, width.saturating_sub(4)), theme::RESET
-    ));
-    view.push_str(&format!(
-        "  {}COMANDO{}  {}{}{}     {}ESC / Q  ·  CONSOLA{}",
-        theme::LABEL, theme::RESET, theme::ACCENT,
-        truncate_chrome(command, width.saturating_sub(31)), theme::RESET,
-        theme::MUTED, theme::RESET,
-    ));
-    view.push_str("\r\n");
+    if native_view {
+        // The Slint display face owns the first three terminal rows.
+        // Reserve them instead of painting ANSI text over the native heading.
+        view.push_str("\r\n\r\n\r\n");
+        view.push_str(&format!(
+            "  {}COMANDO{}  {}{}{}     {}ESC / Q  ·  CONSOLA{}",
+            theme::LABEL, theme::RESET, theme::ACCENT,
+            truncate_chrome(command, width.saturating_sub(31)), theme::RESET,
+            theme::MUTED, theme::RESET,
+        ));
+    } else {
+        let brand = format!("SST  /  {}", title);
+        view.push_str(&format!(
+            "  {}{}{}\r\n",
+            theme::TITLE, truncate_chrome(&brand, width.saturating_sub(4)), theme::RESET,
+        ));
+        view.push_str(&format!(
+            "  {}COMANDO{}  {}{}{}     {}ESC / Q  ·  CONSOLA{}",
+            theme::LABEL, theme::RESET, theme::ACCENT,
+            truncate_chrome(command, width.saturating_sub(31)), theme::RESET,
+            theme::MUTED, theme::RESET,
+        ));
+        view.push_str("\r\n\r\n");
+    }
     if !native_overview {
         if let Some(meter) = memory_meter(content, width) {
             view.push_str(&meter);
@@ -314,7 +346,10 @@ pub fn show_report(
     content: &str,
 ) -> Result<()> {
     let mut terminal = factory.alternate_screen()?;
-    let overview = if command == "sys" && crate::adapters::terminal::io::output_sender().is_some() {
+    let native_view = crate::adapters::terminal::io::output_sender().is_some();
+    *tool_title_state().lock().unwrap_or_else(|e| e.into_inner()) = Some(title.to_owned());
+    let _title_guard = ClearToolTitle;
+    let overview = if command == "sys" && native_view {
         parse_system_overview(content)
     } else {
         None
@@ -335,7 +370,7 @@ pub fn show_report(
 
         // A static tool only repaints after a key-navigation or viewport resize.
         if last_drawn != Some((cols, rows, scroll)) {
-            let (view, panels) = render_page(title, command, content, &lines, scroll, width, height, native_overview);
+            let (view, panels) = render_page(title, command, content, &lines, scroll, width, height, native_overview, native_view);
             terminal.clear()?;
             terminal.set_panels(panels)?;
             terminal.write(&view)?;
@@ -403,7 +438,7 @@ mod tests {
     #[test]
     fn sections_get_individual_native_frames() {
         let lines = wrapped_lines("SISTEMA\nhostname: TEST\n\nMEMORIA\nmemory_total: 1000 MiB\n", 110);
-        let (_, frames) = render_page("ESTADO DEL SISTEMA", "sys", "", &lines, 0, 110, 30, false);
+        let (_, frames) = render_page("ESTADO DEL SISTEMA", "sys", "", &lines, 0, 110, 30, false, false);
         assert_eq!(frames.len(), 2);
         assert!(frames[0].start_row < frames[1].start_row);
         assert!(frames.iter().all(|frame| frame.rows >= 2));
