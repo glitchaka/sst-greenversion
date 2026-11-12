@@ -35,10 +35,10 @@ SST_CORNER_RADIUS=16
 SST_CONTENT_TOP_GAP=12
 
 # Densidad y texto de la terminal.
-SST_FONT_SIZE=13
+SST_FONT_SIZE=16
 SST_FONT_COLOR='#F3E6CA'
-SST_CELL_WIDTH=8
-SST_CELL_HEIGHT=17
+SST_CELL_WIDTH=10
+SST_CELL_HEIGHT=21
 SST_TERMINAL_PADDING_X=8
 SST_TERMINAL_PADDING_Y=6
 "#;
@@ -161,10 +161,10 @@ impl Default for AppearanceConfig {
             background_image_fit: "cover".to_owned(),
             corner_radius: 16,
             content_top_gap: 12,
-            font_size: 13,
+            font_size: 16,
             font_color: "#F3E6CA".to_owned(),
-            cell_width: 8,
-            cell_height: 17,
+            cell_width: 10,
+            cell_height: 21,
             terminal_padding_x: 8,
             terminal_padding_y: 6,
         }
@@ -271,10 +271,10 @@ impl AppPaths {
             }
 
             for (key, value, comment) in [
-                ("SST_FONT_SIZE", "13", "# Tamaño de fuente de la terminal."),
+                ("SST_FONT_SIZE", "16", "# Tamaño de fuente de la terminal."),
                 ("SST_FONT_COLOR", "'#F3E6CA'", "# Color base del texto de la terminal (#RRGGBB)."),
-                ("SST_CELL_WIDTH", "8", "# Ancho de celda de la terminal."),
-                ("SST_CELL_HEIGHT", "17", "# Alto de celda de la terminal."),
+                ("SST_CELL_WIDTH", "10", "# Ancho de celda de la terminal."),
+                ("SST_CELL_HEIGHT", "21", "# Alto de celda de la terminal."),
                 ("SST_TERMINAL_PADDING_X", "8", "# Padding horizontal de la terminal."),
                 ("SST_TERMINAL_PADDING_Y", "6", "# Padding vertical de la terminal."),
             ] {
@@ -303,6 +303,23 @@ impl AppPaths {
         }
         if assignment_value(&text, "SST_FONT_COLOR").as_deref() == Some("#EBDBB2") {
             set_assignment(&mut text, "SST_FONT_COLOR", "#F3E6CA");
+        }
+        // Upgrade the stock Green font density once. User-edited values
+        // remain untouched: the migration only recognizes the complete
+        // legacy 13/8/17 preset.
+        const GREEN_TYPOGRAPHY_MARKER: &str = "# SST_GREEN_TYPOGRAPHY_V2";
+        if !text.contains(GREEN_TYPOGRAPHY_MARKER) {
+            let stock_density = assignment_value(&text, "SST_FONT_SIZE").as_deref() == Some("13")
+                && assignment_value(&text, "SST_CELL_WIDTH").as_deref() == Some("8")
+                && assignment_value(&text, "SST_CELL_HEIGHT").as_deref() == Some("17");
+            if stock_density {
+                set_assignment(&mut text, "SST_FONT_SIZE", "16");
+                set_assignment(&mut text, "SST_CELL_WIDTH", "10");
+                set_assignment(&mut text, "SST_CELL_HEIGHT", "21");
+            }
+            text.push_str("\n");
+            text.push_str(GREEN_TYPOGRAPHY_MARKER);
+            text.push_str("\n");
         }
         fs::write(path, text)?;
         Ok(())
