@@ -320,6 +320,9 @@ impl NetworkDiscoveryService {
         let (network, mut publish_message) = self.monitor_options(args)?;
         let only_unknown = args.iter().any(|arg| arg == "--unknown");
         let mut terminal = self.terminal.alternate_screen()?;
+        // The monitor is a full-window tool, not a framed inline report.
+        // Explicit state avoids transiently showing the ordinary console bezel.
+        let _tool_view = crate::presentation::tool_screen::enter_native_tool("NET MONITOR");
 
         let mut lan_notes: HashMap<Ipv4Addr, LanNote> = HashMap::new();
         let (lan_bus, mut lan_error) = match LanNoteBus::bind(network) {
