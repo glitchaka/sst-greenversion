@@ -517,17 +517,17 @@ slint::slint! {
         background: transparent;
         border-width: 0px;
         Text {
-            x: 10px; y: 6px;
-            width: parent.width - 20px; height: 18px;
+            x: 10px; y: 4px;
+            width: parent.width - 20px; height: 16px;
             text: root.label-text;
             font-family: "Oxanium"; font-size: 12px; font-weight: 800;
             color: #e2dac2; overflow: elide;
         }
         Text {
-            x: 10px; y: 27px;
-            width: parent.width - 20px; height: 30px;
+            x: 10px; y: 22px;
+            width: parent.width - 20px; height: 28px;
             text: root.value-text;
-            font-family: "Oxanium"; font-size: 18px; font-weight: 800;
+            font-family: "Oxanium"; font-size: 17px; font-weight: 800;
             color: #f5ead6; vertical-alignment: center; overflow: elide;
         }
     }
