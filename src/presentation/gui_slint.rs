@@ -1168,6 +1168,15 @@ slint::slint! {
                     Rectangle { x: 235px; width: 1px; height: parent.height; background: #958778; }
                 }
 
+                // Laptop-width rendition of the score marks: the
+                // reference still reads like the reference at 980 pixels.
+                Path {
+                    visible: island.width >= 850px && island.width < 1120px;
+                    x: 409px; y: 11px;
+                    width: 98px; height: 27px;
+                    commands: "M 10 0 L 25 0 L 15 26 L 0 26 Z M 33 0 L 48 0 L 38 26 L 23 26 Z M 56 0 L 71 0 L 61 26 L 46 26 Z M 79 0 L 94 0 L 84 26 L 69 26 Z";
+                    fill: #b3aba0;
+                }
                 Text {
                     visible: island.width >= 940px && island.width < 1120px;
                     x: 537px; y: 18px;
@@ -1206,8 +1215,9 @@ slint::slint! {
                 Rectangle {
                     visible: island.width < 1120px;
                     x: island.width < 700px ? island.width - 243px : 404px;
-                    y: 25px;
-                    width: 112px; height: 38px;
+                    y: island.width >= 850px ? 48px : 25px;
+                    width: 112px;
+                    height: island.width >= 850px ? 30px : 38px;
                     border-radius: 7px;
                     border-width: 1px; border-color: #f39120;
                     background: #39352e;
