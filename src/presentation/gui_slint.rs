@@ -2987,25 +2987,30 @@ pub fn run() -> Result<()> {
                 system.refresh_cpu_usage();
                 system.refresh_memory();
 
-                let cpu = if system.cpus().is_empty() {
-                    0.0
-                } else {
+                // Absence of a provider reading is not a 0% measurement.
+                // Both the island and the terminal status share this policy.
+                let cpu = (!system.cpus().is_empty()).then(|| {
                     system.cpus().iter().map(|cpu| cpu.cpu_usage()).sum::<f32>()
                         / system.cpus().len() as f32
-                };
-                let ram_gib = system.used_memory() as f64 / 1024.0 / 1024.0 / 1024.0;
+                });
+                let total_memory = system.total_memory();
+                let ram_gib = (total_memory > 0).then(|| {
+                    system.used_memory() as f64 / 1024.0 / 1024.0 / 1024.0
+                });
                 let now = Local::now();
 
-                ui.set_cpu_text(format!("CPU {:.0}%", cpu).into());
-                ui.set_ram_text(format!("RAM {:.1} GiB", ram_gib).into());
-                let total_memory = system.total_memory();
+                ui.set_cpu_text(cpu.map(|value| format!("CPU {value:.0}%"))
+                    .unwrap_or_else(|| "CPU —".to_owned()).into());
+                ui.set_ram_text(ram_gib.map(|value| format!("RAM {value:.1} GiB"))
+                    .unwrap_or_else(|| "RAM —".to_owned()).into());
                 let memory_percent = if total_memory == 0 {
                     "—".to_owned()
                 } else {
                     format!("{:.0}%", system.used_memory() as f64 * 100.0 / total_memory as f64)
                 };
                 let uptime = System::uptime();
-                ui.set_header_cpu(format!("{cpu:.0}%").into());
+                ui.set_header_cpu(cpu.map(|value| format!("{value:.0}%"))
+                    .unwrap_or_else(|| "—".to_owned()).into());
                 ui.set_header_memory(memory_percent.into());
                 ui.set_header_uptime(format!("{}d {:02}h", uptime / 86_400, (uptime / 3_600) % 24).into());
                 ui.set_clock_text(now.format("%H:%M").to_string().into());
