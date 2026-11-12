@@ -1,13 +1,68 @@
 //! Full-client-area reports for SST Green.
 //! Every value comes from the command itself. The UI never invents telemetry.
 //! Alternate-screen exit restores the complete console and its scrollback.
-use std::time::Duration;
+use std::{sync::{Mutex, OnceLock}, time::Duration};
 
 use anyhow::Result;
 
 use crate::core::ports::{TerminalFactory, TerminalKey, TerminalPanel};
 
 use super::theme;
+
+#[derive(Clone, Debug)]
+pub struct SystemOverview {
+    pub host: String,
+    pub os: String,
+    pub cpu_count: String,
+    pub used_mib: String,
+    pub total_mib: String,
+    pub memory_ratio: f32,
+    pub disk_count: String,
+}
+
+static SYSTEM_OVERVIEW: OnceLock<Mutex<Option<SystemOverview>>> = OnceLock::new();
+
+fn overview_state() -> &'static Mutex<Option<SystemOverview>> {
+    SYSTEM_OVERVIEW.get_or_init(|| Mutex::new(None))
+}
+
+/// Read-only GUI projection from a real `sys` report. Never carries sample data.
+pub fn system_overview_snapshot() -> Option<SystemOverview> {
+    overview_state().lock().unwrap_or_else(|e| e.into_inner()).clone()
+}
+
+fn parse_system_overview(report: &str) -> Option<SystemOverview> {
+    fn field<'a>(report: &'a str, key: &str) -> Option<&'a str> {
+        report.lines()
+            .find_map(|line| line.trim().strip_prefix(key).map(str::trim))
+            .filter(|value| !value.is_empty())
+    }
+    let total = field(report, "memory_total:")?.split_whitespace().next()?.parse::<u64>().ok()?;
+    let used = field(report, "memory_used:")?.split_whitespace().next()?.parse::<u64>().ok()?;
+    if total == 0 { return None; }
+    let disk_count = report.lines().filter(|line| {
+        let line = line.trim_start();
+        let bytes = line.as_bytes();
+        bytes.len() >= 3 && bytes[1] == b':' && bytes[2] == b'\\'
+    }).count();
+    Some(SystemOverview {
+        host: field(report, "hostname:").unwrap_or("Sin datos").to_owned(),
+        os: field(report, "os:").unwrap_or("Sin datos").to_owned(),
+        cpu_count: field(report, "cpus:").unwrap_or("—").to_owned(),
+        used_mib: used.to_string(),
+        total_mib: total.to_string(),
+        memory_ratio: (used.min(total) as f32 / total as f32).clamp(0.0, 1.0),
+        disk_count: disk_count.to_string(),
+    })
+}
+
+struct ClearSystemOverview;
+
+impl Drop for ClearSystemOverview {
+    fn drop(&mut self) {
+        *overview_state().lock().unwrap_or_else(|e| e.into_inner()) = None;
+    }
+}
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct ReportLine {
@@ -201,9 +256,11 @@ fn render_page(
     scroll: usize,
     width: usize,
     height: usize,
+    native_overview: bool,
 ) -> (String, Vec<TerminalPanel>) {
-    let body_top = 4;
-    let body_rows = height.saturating_sub(7).max(1);
+    let reserved = if native_overview { 8 } else { 0 };
+    let body_top = 4 + reserved;
+    let body_rows = height.saturating_sub(7 + reserved).max(1);
     let visible = lines.iter().skip(scroll).take(body_rows).cloned().collect::<Vec<_>>();
     let mut view = String::new();
     let brand = format!("SST  /  {}", title);
@@ -218,11 +275,17 @@ fn render_page(
         theme::MUTED, theme::RESET,
     ));
     view.push_str("\r\n");
-    if let Some(meter) = memory_meter(content, width) {
-        view.push_str(&meter);
+    if !native_overview {
+        if let Some(meter) = memory_meter(content, width) {
+            view.push_str(&meter);
+        }
     }
-    // Keep one empty terminal row for the native vector frame's top stroke.
     view.push_str("\r\n\r\n");
+    // In Green's native Slint GUI, these rows belong to measured metric cards.
+    // In a regular console, the textual report starts immediately instead.
+    for _ in 0..reserved {
+        view.push_str("\r\n");
+    }
 
     for line in &visible {
         view.push_str("    ");
@@ -251,20 +314,28 @@ pub fn show_report(
     content: &str,
 ) -> Result<()> {
     let mut terminal = factory.alternate_screen()?;
+    let overview = if command == "sys" && crate::adapters::terminal::io::output_sender().is_some() {
+        parse_system_overview(content)
+    } else {
+        None
+    };
+    *overview_state().lock().unwrap_or_else(|e| e.into_inner()) = overview.clone();
+    let _overview_guard = ClearSystemOverview;
+    let native_overview = overview.is_some();
     let mut scroll = 0usize;
     let mut last_drawn: Option<(u16, u16, usize)> = None;
     loop {
         let (cols, rows) = terminal.size()?;
         let width = usize::from(cols).max(28);
         let height = usize::from(rows).max(10);
-        let body_rows = height.saturating_sub(7).max(1);
+        let body_rows = height.saturating_sub(7 + if native_overview { 8 } else { 0 }).max(1);
         let lines = wrapped_lines(content, width.saturating_sub(7));
         let max_scroll = lines.len().saturating_sub(body_rows);
         scroll = scroll.min(max_scroll);
 
         // A static tool only repaints after a key-navigation or viewport resize.
         if last_drawn != Some((cols, rows, scroll)) {
-            let (view, panels) = render_page(title, command, content, &lines, scroll, width, height);
+            let (view, panels) = render_page(title, command, content, &lines, scroll, width, height, native_overview);
             terminal.clear()?;
             terminal.set_panels(panels)?;
             terminal.write(&view)?;
@@ -332,9 +403,20 @@ mod tests {
     #[test]
     fn sections_get_individual_native_frames() {
         let lines = wrapped_lines("SISTEMA\nhostname: TEST\n\nMEMORIA\nmemory_total: 1000 MiB\n", 110);
-        let (_, frames) = render_page("ESTADO DEL SISTEMA", "sys", "", &lines, 0, 110, 30);
+        let (_, frames) = render_page("ESTADO DEL SISTEMA", "sys", "", &lines, 0, 110, 30, false);
         assert_eq!(frames.len(), 2);
         assert!(frames[0].start_row < frames[1].start_row);
         assert!(frames.iter().all(|frame| frame.rows >= 2));
     }
+    #[test]
+    fn dashboard_only_uses_actual_system_report_fields() {
+        assert!(parse_system_overview("SISTEMA\\nhostname: demo").is_none());
+        let report = "SISTEMA\\nhostname: PC-TEST\\nos: Windows\\ncpus: 8\\nmemory_total: 16384 MiB\\nmemory_used: 4096 MiB\\n\\nDISCOS\\nMOUNT  TOTAL\\nC:\\\\  120.0";
+        let value = parse_system_overview(report).unwrap();
+        assert_eq!(value.host, "PC-TEST");
+        assert_eq!(value.cpu_count, "8");
+        assert!((value.memory_ratio - 0.25).abs() < f32::EPSILON);
+        assert_eq!(value.disk_count, "1");
+    }
+
 }
