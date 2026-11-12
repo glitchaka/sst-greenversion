@@ -413,6 +413,50 @@ slint::slint! {
         }
     }
 
+    component GreenTriageOverview inherits Rectangle {
+        in property <string> process-count;
+        in property <string> new-routes;
+        in property <string> finding-count;
+        in property <string> learning-count;
+        background: transparent;
+        border-width: 0px;
+        GreenMetricCard {
+            x: 0px; y: 0px;
+            width: (parent.width - 30px) / 4;
+            height: parent.height;
+            metric-label: "PROCESOS";
+            metric-value: root.process-count;
+            metric-detail: "Inspeccionados";
+        }
+        GreenMetricCard {
+            x: (parent.width - 30px) / 4 + 10px;
+            y: 0px;
+            width: (parent.width - 30px) / 4;
+            height: parent.height;
+            metric-label: "RUTAS NUEVAS";
+            metric-value: root.new-routes;
+            metric-detail: "Detectadas";
+        }
+        GreenMetricCard {
+            x: ((parent.width - 30px) / 4 + 10px) * 2;
+            y: 0px;
+            width: (parent.width - 30px) / 4;
+            height: parent.height;
+            metric-label: "HALLAZGOS";
+            metric-value: root.finding-count;
+            metric-detail: "Requieren revisión";
+        }
+        GreenMetricCard {
+            x: ((parent.width - 30px) / 4 + 10px) * 3;
+            y: 0px;
+            width: (parent.width - 30px) / 4;
+            height: parent.height;
+            metric-label: "RELACIONES";
+            metric-value: root.learning-count;
+            metric-detail: "Aprendidas";
+        }
+    }
+
     // The download panel is independent of the VT100 pixel surface.
     // It appears only during a transfer and never paints over fetch or
     // modifies the user's background/transparency/terminal rows.
@@ -541,6 +585,12 @@ slint::slint! {
         in property <string> system-memory-total: "";
         in property <float> system-memory-ratio: 0.0;
         in property <string> system-disk-count: "";
+        in property <bool> triage-overview-visible: false;
+        in property <string> triage-processes: "";
+        in property <string> triage-routes: "";
+        in property <string> triage-findings: "";
+        in property <string> triage-learned: "";
+
 
         in property <int> report-heading-count: 0;
         in property <float> report-grid-left: 0.0;
@@ -705,6 +755,19 @@ slint::slint! {
                 memory-ratio: root.system-memory-ratio;
                 disk-count: root.system-disk-count;
             }
+            // Real, refreshed host-scan evidence. Nothing here is demo data.
+            GreenTriageOverview {
+                visible: root.triage-overview-visible;
+                x: root.system-overview-left * 1px;
+                y: root.system-overview-top * 1px;
+                width: root.system-overview-width * 1px;
+                height: root.system-overview-height * 1px;
+                process-count: root.triage-processes;
+                new-routes: root.triage-routes;
+                finding-count: root.triage-findings;
+                learning-count: root.triage-learned;
+            }
+
 
 
 
@@ -2768,6 +2831,25 @@ pub fn run() -> Result<()> {
                     ui.set_system_memory_total(overview.total_mib.into());
                     ui.set_system_memory_ratio(overview.memory_ratio);
                     ui.set_system_disk_count(overview.disk_count.into());
+                }
+                let triage_overview = if tool_active {
+                    crate::presentation::tool_screen::triage_overview_snapshot()
+                } else {
+                    None
+                };
+                ui.set_triage_overview_visible(triage_overview.is_some());
+                if let Some(triage) = triage_overview {
+                    let (left, top, cell_width, cell_height) = model.geometry();
+                    let factor = model.scale.max(0.5);
+                    let (_, cols) = model.parser.screen().size();
+                    ui.set_system_overview_left((left + 0.30 * cell_width) / factor);
+                    ui.set_system_overview_top((top + 4.25 * cell_height) / factor);
+                    ui.set_system_overview_width(((f32::from(cols) - 0.6) * cell_width) / factor);
+                    ui.set_system_overview_height((6.5 * cell_height) / factor);
+                    ui.set_triage_processes(triage.processes.into());
+                    ui.set_triage_routes(triage.new_routes.into());
+                    ui.set_triage_findings(triage.findings.into());
+                    ui.set_triage_learned(triage.learned.into());
                 }
                 ui.set_monitor_panel_count(panels.len().min(4) as i32);
                 if !panels.is_empty() {
