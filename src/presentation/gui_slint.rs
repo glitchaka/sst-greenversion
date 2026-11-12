@@ -2702,29 +2702,38 @@ pub fn run() -> Result<()> {
                 }
                 let tool_active = model.session.raw_mode();
                 ui.set_tool_view_active(tool_active);
-                // Never invent a command name: derive it from the current
-                // active alternate-screen report or use a neutral label.
+                // Fullscreen views reserve the graphical title rows; look
+                // at the actual visible headings rather than the blank first
+                // line. A static report additionally provides its real name.
                 if tool_active {
+                    let explicit = crate::presentation::tool_screen::active_tool_title();
+                    let mut text = String::new();
                     let screen = model.parser.screen();
-                    let (_, columns) = screen.size();
-                    let mut top_line = String::new();
-                    for column in 0..columns {
-                        if let Some(cell) = screen.cell(0, column) {
-                            if !cell.is_wide_continuation() {
-                                top_line.push_str(cell.contents());
+                    let (rows, columns) = screen.size();
+                    for row in 0..rows.min(11) {
+                        for column in 0..columns.min(82) {
+                            if let Some(cell) = screen.cell(row, column)
+                                && !cell.is_wide_continuation()
+                            {
+                                text.push_str(cell.contents());
                             }
                         }
+                        text.push(' ');
                     }
-                    let upper = top_line.to_uppercase();
+                    let upper = text.to_uppercase();
                     let name = if crate::presentation::tool_screen::system_overview_snapshot().is_some()
                         || upper.contains("ESTADO DEL SISTEMA") {
-                        "SYSTEM STATUS"
+                        "SYSTEM STATUS".to_owned()
+                    } else if upper.contains("MONITOR DE PROCESOS") {
+                        "MONITOR DE PROCESOS".to_owned()
                     } else if upper.contains("TRIAGE") {
-                        "TRIAGE"
-                    } else if upper.contains("NET") || upper.contains("RED EN VIVO") {
-                        "NET MONITOR"
+                        "TRIAGE".to_owned()
+                    } else if upper.contains("RED EN VIVO")
+                        || upper.contains("EQUIPOS DETECTADOS")
+                        || upper.contains("NET MONITOR") {
+                        "NET MONITOR".to_owned()
                     } else {
-                        "SST / HERRAMIENTA"
+                        explicit.unwrap_or_else(|| "SST / HERRAMIENTA".to_owned())
                     };
                     ui.set_tool_header(name.into());
                 }
