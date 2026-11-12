@@ -1415,14 +1415,11 @@ impl BackgroundCarousel {
     }
 }
 
-fn background_image_opacity(appearance: &TerminalAppearance, focused: bool) -> f32 {
-    let window_opacity = if focused {
-        appearance.focused_opacity
-    } else {
-        appearance.unfocused_opacity
-    };
-    (f32::from(appearance.background_image_opacity) / 100.0)
-        * (f32::from(window_opacity) / 100.0)
+fn background_image_opacity(appearance: &TerminalAppearance, _focused: bool) -> f32 {
+    // Window acrylic translucency is independent of the wallpaper layer.
+    // Otherwise the default unfocused-opacity=0 makes the user-selected
+    // image vanish whenever the console loses focus.
+    f32::from(appearance.background_image_opacity) / 100.0
 }
 
 struct Glyph {
