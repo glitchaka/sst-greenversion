@@ -277,6 +277,27 @@ slint::slint! {
             border-radius: 14px;
         }
 
+        // Folder wallpaper is painted INSIDE the PTY chassis, behind glyphs.
+        // Previously the opaque chassis covered the image completely.
+        Image {
+            x: 7px; y: 60px;
+            width: parent.width - 14px;
+            height: max(0px, parent.height - 82px);
+            source: root.background-image;
+            image-fit: root.background-image-fit-mode == "contain"
+                ? contain : root.background-image-fit-mode == "fill"
+                ? fill : root.background-image-fit-mode == "preserve"
+                ? preserve : cover;
+            opacity: root.background-image-opacity;
+        }
+        Rectangle {
+            x: 7px; y: 60px;
+            width: parent.width - 14px;
+            height: max(0px, parent.height - 82px);
+            background: rgba(20, 24, 22, 0.35);
+            visible: root.background-image-opacity > 0.0;
+        }
+
         // Architectural top fascia; not a permanent widget or sidebar.
         Rectangle {
             x: 2px; y: 2px;
@@ -577,7 +598,9 @@ slint::slint! {
         min-height: 300px;
         no-frame: true;
         resize-border-width: 7px;
-        background: transparent;
+        // The physical gap between the title island and console bezel is
+        // opaque; the user's wallpaper belongs inside the terminal surface.
+        background: #1b2020;
 
         in property <image> terminal-image;
         in property <bool> tool-view-active: false;
@@ -665,7 +688,7 @@ slint::slint! {
             y: 0;
             width: 100%;
             height: 100%;
-            background: transparent;
+            background: #1b2020;
 
             Image {
                 x: 0;
@@ -701,7 +724,8 @@ slint::slint! {
                 y: 0;
                 width: 100%;
                 height: 100%;
-                background: rgba(22, 23, 22, 0.98);
+                background: root.background-image-opacity > 0.0
+                    ? rgba(22, 23, 22, 0.58) : #161716;
             }
 
             // Draw only for a TUI that explicitly supplies semantic sections.
