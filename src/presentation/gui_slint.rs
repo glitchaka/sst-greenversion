@@ -1857,7 +1857,7 @@ impl TerminalModel {
             let cursor = screen.cursor_position();
             let selection = self.selection;
             let cursor_on =
-                self.cursor_on && screen.scrollback() == 0 && !screen.hide_cursor();
+                self.cursor_on && self.focused && screen.scrollback() == 0 && !screen.hide_cursor();
             let (left_pad, top_pad, cell_width, cell_height) = self.geometry();
             let font_px = (self.appearance.font_size as f32 * self.scale).round().max(8.0);
             let font_key = font_px.round() as u16;
