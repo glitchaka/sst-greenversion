@@ -116,6 +116,7 @@ impl SystemService {
 
     fn top(&self) -> anyhow::Result<CommandOutput> {
         let mut terminal = self.terminal.alternate_screen()?;
+        let native_green = crate::adapters::terminal::io::output_sender().is_some();
         let mut sort_cpu = true;
         // Keep the same process sampler across frames. Reconstructing System on
         // every refresh produces misleading CPU% values near zero.
@@ -128,15 +129,20 @@ impl SystemService {
             let (columns, height) = terminal.size()?;
             // Leave a column free to prevent the terminal's automatic wrap.
             let width = usize::from(columns.saturating_sub(1)).max(1);
-            let max_rows = usize::from(height.saturating_sub(7));
+            let heading_reserve = if native_green { 3 } else { 0 };
+            let max_rows = usize::from(height.saturating_sub(7 + heading_reserve));
             let mut screen = String::new();
+            if native_green {
+                // Slint owns this space for its angular cream-on-black title.
+                screen.push_str("\r\n\r\n\r\n");
+            }
 
             top_screen_line(
                 &mut screen,
                 "  SST  /  MONITOR DE PROCESOS",
                 width,
-                "\x1b[1;38;2;142;205;255m",
-                "\x1b[48;2;17;34;57m",
+                "\x1b[1;38;2;242;218;179m",
+                "\x1b[48;2;34;42;42m",
             );
             let used = system.used_memory() / 1024 / 1024;
             let total = system.total_memory() / 1024 / 1024;
@@ -151,8 +157,8 @@ impl SystemService {
                     System::uptime() / 60
                 ),
                 width,
-                "\x1b[38;2;219;232;247m",
-                "\x1b[48;2;13;24;40m",
+                "\x1b[38;2;226;218;194m",
+                "\x1b[48;2;34;42;42m",
             );
             top_screen_line(
                 &mut screen,
@@ -161,22 +167,22 @@ impl SystemService {
                     if sort_cpu { "CPU (activo)" } else { "MEMORIA (activo)" }
                 ),
                 width,
-                "\x1b[38;2;173;191;214m",
+                "\x1b[38;2;207;181;128m",
                 "\x1b[48;2;13;24;40m",
             );
             top_screen_line(
                 &mut screen,
                 "",
                 width,
-                "\x1b[38;2;213;226;242m",
-                "\x1b[48;2;10;17;29m",
+                "\x1b[38;2;226;218;194m",
+                "\x1b[48;2;27;32;32m",
             );
             top_screen_line(
                 &mut screen,
                 "  PID      PPID     CPU %     RAM MiB   PROCESO / JERARQUÍA",
                 width,
-                "\x1b[1;38;2;143;203;255m",
-                "\x1b[48;2;24;44;68m",
+                "\x1b[1;38;2;249;145;32m",
+                "\x1b[48;2;47;53;49m",
             );
 
             let mut shown = 0usize;
@@ -196,17 +202,19 @@ impl SystemService {
                     "  {:<8} {:<8} {:>6.1} {:>11.1}   {}",
                     pid, ppid, cpu, memory, name
                 );
-                let foreground = if cpu >= 50.0 {
-                    "\x1b[1;38;2;255;183;119m"
+                let foreground = if cpu >= 90.0 {
+                    "\x1b[1;38;2;236;70;36m"
+                } else if cpu >= 60.0 {
+                    "\x1b[1;38;2;243;145;32m"
                 } else if memory >= 1024.0 {
-                    "\x1b[38;2;149;222;186m"
+                    "\x1b[38;2;173;215;148m"
                 } else {
-                    "\x1b[38;2;222;232;245m"
+                    "\x1b[38;2;226;218;194m"
                 };
                 let background = if shown % 2 == 0 {
                     "\x1b[48;2;10;17;29m"
                 } else {
-                    "\x1b[48;2;16;25;41m"
+                    "\x1b[48;2;38;45;43m"
                 };
                 top_screen_line(&mut screen, &content, width, foreground, background);
                 shown += 1;
@@ -229,7 +237,7 @@ impl SystemService {
                 &mut screen,
                 "  SST top   ·   Actualización automática de métricas   ·   q para cerrar",
                 width,
-                "\x1b[38;2;162;186;210m",
+                "\x1b[38;2;226;218;194m",
                 "\x1b[48;2;17;34;57m",
             );
 
