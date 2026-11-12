@@ -137,12 +137,12 @@ fn parse_invocation(args: &[String]) -> Result<BashInvocation> {
                      --norc           no carga ~/.bashrc\n\
                      --noprofile      no carga archivos de perfil\n\
                      ARCHIVO [ARGS]   ejecuta script",
-                    env!("CARGO_PKG_VERSION"),
+                    crate::application::update::display_version(),
                 );
                 std::process::exit(0);
             }
             "--version" => {
-                println!("Shell Shock Tool {} — GNU Bash 5.3 compatibility layer", env!("CARGO_PKG_VERSION"));
+                println!("Shell Shock Tool {} — GNU Bash 5.3 compatibility layer", crate::application::update::display_version());
                 std::process::exit(0);
             }
             "--login" => invocation.login = true,
