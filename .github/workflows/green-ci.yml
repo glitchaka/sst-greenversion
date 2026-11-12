@@ -1,6 +1,14 @@
 name: SST Green · Windows compilation
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "assets/branding/**"
+      - "assets/fonts/**"
+      - ".github/workflows/green-ci.yml"
+      - ".github/workflows/green-preview.yml"
   workflow_dispatch:
 permissions:
   contents: read
