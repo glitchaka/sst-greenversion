@@ -54,6 +54,7 @@ const INITIAL_COLS: u16 = 112;
 const INITIAL_ROWS: u16 = 31;
 const ISLAND_TOP: f32 = 6.0;
 const ISLAND_HEIGHT: f32 = 64.0;
+const CONSOLE_CHROME_HEIGHT: f32 = 45.0;
 
 // The frameless Slint window can briefly report an icon-sized client area
 // *before* IsIconic becomes true, or *after* it becomes false. Never send
@@ -233,6 +234,81 @@ slint::slint! {
 
     // Every invoked tool owns the complete viewport. The heavy black
     // lettering on cream is the main heading treatment from the mockup.
+    // The mockup's console surface, not a dashboard or a detached widget.
+    // The PTY always uses the entire body below this one ornamental heading.
+    component GreenConsoleChrome inherits Rectangle {
+        in property <string> channel-version;
+        background: rgba(24, 26, 25, 0.97);
+        border-width: 2px;
+        border-color: #e2dac2;
+        border-radius: 14px;
+        clip: true;
+
+        Rectangle {
+            x: 2px;
+            y: 2px;
+            width: parent.width - 4px;
+            height: 42px;
+            background: #323333;
+            border-radius: 12px;
+        }
+
+        Rectangle {
+            x: 2px;
+            y: 2px;
+            width: min(296px, parent.width - 4px);
+            height: 42px;
+            background: #fe8254;
+            border-radius: 12px;
+
+            Text {
+                x: 23px; y: 0px;
+                width: parent.width - 34px; height: parent.height;
+                text: "CONSOLE  /  SST";
+                font-family: "Oxanium";
+                font-size: 24px;
+                font-weight: 800;
+                color: #191d1b;
+                vertical-alignment: center;
+                overflow: elide;
+            }
+        }
+
+        Rectangle {
+            x: 2px; y: 43px;
+            width: parent.width - 4px; height: 2px;
+            background: #f39120;
+        }
+
+        Text {
+            visible: parent.width > 700px;
+            x: parent.width - 362px; y: 8px;
+            width: 340px; height: 26px;
+            text: "SHELL SHOCK TOOL  /  " + root.channel-version;
+            font-family: "Oxanium"; font-weight: 800;
+            font-size: 12px;
+            color: #e2dac2;
+            horizontal-alignment: right;
+            vertical-alignment: center;
+            overflow: elide;
+        }
+
+        Rectangle {
+            x: 15px;
+            y: parent.height - 17px;
+            width: min(98px, parent.width - 30px);
+            height: 3px;
+            background: #fe8254;
+        }
+        Rectangle {
+            x: 120px;
+            y: parent.height - 17px;
+            width: min(32px, parent.width - 135px);
+            height: 3px;
+            background: #f39120;
+        }
+    }
+
     component GreenToolHero inherits Rectangle {
         in property <string> tool-title;
         background: #e9dec8;
@@ -572,8 +648,8 @@ slint::slint! {
 
     export component SstGreenWindow inherits Window {
         title: "Shell Shock Tool";
-        preferred-width: 980px;
-        preferred-height: 640px;
+        preferred-width: 1340px;
+        preferred-height: 760px;
         min-width: 480px;
         min-height: 300px;
         no-frame: true;
@@ -690,6 +766,15 @@ slint::slint! {
                             ? preserve
                             : cover;
                 opacity: root.background-image-opacity;
+            }
+
+            GreenConsoleChrome {
+                visible: !root.tool-view-active;
+                x: 12px;
+                y: 78px;
+                width: root.width - 24px;
+                height: root.height - 90px;
+                channel-version: root.header-version;
             }
 
             // A tool owns the entire content surface. Its high-contrast
@@ -1481,6 +1566,7 @@ impl TerminalModel {
         let pad_y = (self.appearance.terminal_padding_y as f32 * scale).round();
         let top_pad = ((ISLAND_TOP
             + ISLAND_HEIGHT
+            + CONSOLE_CHROME_HEIGHT
             + self.appearance.content_top_gap as f32)
             * scale)
             .round()
@@ -1770,11 +1856,10 @@ impl TerminalModel {
             // Native dashboard panels sit behind the terminal glyph surface.
             // Fullscreen tools require a transparent glyph layer, unlike SST's
             // ordinary user-configured terminal wallpaper.
-            let background_opacity = if self.native_tool_view() {
-                0
-            } else {
-                self.current_background_opacity()
-            };
+            // The ornamental frame is painted by Slint. A solid terminal
+            // bitmap would obscure it, so keep only glyphs and explicit
+            // colored cells in the raster layer.
+            let background_opacity = 0;
             if background_opacity > 0 {
                 let bg = parse_rgb(&self.appearance.background_color).unwrap_or(BG);
                 let alpha = ((u16::from(background_opacity) * 255) / 100) as u8;
