@@ -307,12 +307,12 @@ fn render_page(
         ));
         view.push_str("\r\n\r\n");
     }
-    if !native_overview {
+    if !native_overview && !native_view {
         if let Some(meter) = memory_meter(content, width) {
             view.push_str(&meter);
         }
     }
-    view.push_str("\r\n\r\n");
+    view.push_str(if native_view { "\r\n" } else { "\r\n\r\n" });
     // In Green's native Slint GUI, these rows belong to measured metric cards.
     // In a regular console, the textual report starts immediately instead.
     for _ in 0..reserved {
