@@ -1211,7 +1211,7 @@ slint::slint! {
                     height: island.width >= 850px ? 30px : 38px;
                     border-radius: 7px;
                     border-width: 1px; border-color: #f39120;
-                    background: #39352e;
+                    background: rgb(57, 53, 46);
                     Text {
                         width: parent.width; height: parent.height;
                         text: root.privilege-label;
