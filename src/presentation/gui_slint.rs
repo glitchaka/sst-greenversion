@@ -1038,7 +1038,7 @@ slint::slint! {
                 }
 
                 Text {
-                    visible: island.width >= 680px;
+                    visible: island.width >= 700px;
                     x: 268px; y: 12px;
                     width: 120px; height: 67px;
                     text: "SHELL\nSHOCK\nTOOL";
@@ -1050,7 +1050,7 @@ slint::slint! {
                 }
 
                 Rectangle {
-                    visible: island.width >= 1210px;
+                    visible: island.width >= 1580px;
                     x: 397px; y: 16px;
                     width: 2px; height: 58px;
                     background: #e2dac2;
@@ -1059,14 +1059,14 @@ slint::slint! {
                 // Diagonal score marks and twin baseline lines are part of
                 // the visual language of the reference, not terminal text.
                 Path {
-                    visible: island.width >= 1210px;
+                    visible: island.width >= 1580px;
                     x: 420px; y: 17px;
                     width: 76px; height: 30px;
                     commands: "M 10 0 L 23 0 L 12 28 L 0 28 Z M 29 0 L 42 0 L 31 28 L 19 28 Z M 48 0 L 61 0 L 50 28 L 38 28 Z M 67 0 L 76 0 L 65 28 L 57 28 Z";
                     fill: #aca399;
                 }
                 Text {
-                    visible: island.width >= 1210px;
+                    visible: island.width >= 1580px;
                     x: 514px; y: 15px;
                     width: 240px; height: 26px;
                     text: "› CONSOLA AVANZADA";
@@ -1077,13 +1077,13 @@ slint::slint! {
                     overflow: elide;
                 }
                 Rectangle {
-                    visible: island.width >= 1210px;
+                    visible: island.width >= 1580px;
                     x: 420px; y: 49px;
                     width: 323px; height: 2px;
                     background: #a69a88;
                 }
                 Text {
-                    visible: island.width >= 1210px;
+                    visible: island.width >= 1580px;
                     x: 420px; y: 56px;
                     width: 335px; height: 22px;
                     text: "V " + root.header-version + "  |  " + root.header-arch + "  |  " + root.privilege-label;
@@ -1095,9 +1095,9 @@ slint::slint! {
                 // Smaller windows retain the existing island rather than
                 // forcing a second row or moving the terminal to a sidebar.
                 Text {
-                    visible: island.width >= 680px && island.width < 1210px;
+                    visible: island.width >= 1120px && island.width < 1580px;
                     x: 400px; y: 13px;
-                    width: island.width - 515px;
+                    width: 185px;
                     height: 27px;
                     text: "SST / GREEN";
                     color: #fe8254;
@@ -1105,11 +1105,11 @@ slint::slint! {
                     overflow: elide;
                 }
                 Text {
-                    visible: island.width >= 680px && island.width < 1210px;
+                    visible: island.width >= 1120px && island.width < 1580px;
                     x: 400px; y: 48px;
-                    width: island.width - 515px;
+                    width: 185px;
                     height: 20px;
-                    text: "V " + root.header-version;
+                    text: "V " + root.header-version + " / " + root.privilege-label;
                     color: #e2dac2;
                     font-family: "Oxanium"; font-size: 11px; font-weight: 800;
                     overflow: elide;
@@ -1168,22 +1168,16 @@ slint::slint! {
                     Rectangle { x: 235px; width: 1px; height: parent.height; background: #958778; }
                 }
 
-                Rectangle {
-                    visible: island.width >= 850px && island.width < 1120px;
-                    x: island.width - 380px; y: 12px;
-                    width: 215px; height: 65px;
-                    background: transparent;
-                    border-width: 2px; border-color: #e2dac2;
-                    border-radius: 13px;
-                    GreenHeaderMetric {
-                        x: 2px; y: 0px; width: 104px; height: parent.height;
-                        label-text: "MEM"; value-text: root.header-memory;
-                    }
-                    GreenHeaderMetric {
-                        x: 108px; y: 0px; width: 106px; height: parent.height;
-                        label-text: "CPU"; value-text: root.header-cpu;
-                    }
-                    Rectangle { x: 107px; width: 1px; height: parent.height; background: #958778; }
+                Text {
+                    visible: island.width >= 940px && island.width < 1120px;
+                    x: 537px; y: 18px;
+                    width: island.width - 674px; height: 54px;
+                    text: "MEM " + root.header-memory + "\nCPU " + root.header-cpu;
+                    font-family: "Oxanium";
+                    font-size: 16px; font-weight: 800;
+                    color: #e2dac2;
+                    vertical-alignment: center;
+                    overflow: elide;
                 }
 
                 Rectangle {
@@ -1210,8 +1204,9 @@ slint::slint! {
                 }
 
                 Rectangle {
-                    visible: island.width < 850px;
-                    x: island.width - 243px; y: 25px;
+                    visible: island.width < 1120px;
+                    x: island.width < 700px ? island.width - 243px : 404px;
+                    y: 25px;
                     width: 112px; height: 38px;
                     border-radius: 7px;
                     border-width: 1px; border-color: #f39120;
