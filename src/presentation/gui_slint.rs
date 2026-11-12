@@ -171,7 +171,7 @@ slint::slint! {
         // Restrained semantic outline: no cyan wash, no opaque overlay.
         background: transparent;
         border-width: 1px;
-        border-color: #665c54;
+        border-color: #a89c88;
         border-radius: 6px;
 
         Rectangle {
@@ -180,7 +180,7 @@ slint::slint! {
             width: 3px;
             height: max(4px, parent.height - 6px);
             border-radius: 2px;
-            background: #bdae93;
+            background: #fe8254;
         }
     }
 
@@ -232,9 +232,6 @@ slint::slint! {
         }
     }
 
-    // Every invoked tool owns the complete viewport. The heavy black
-    // lettering on cream is the main heading treatment from the mockup.
-    // The mockup's console surface, not a dashboard or a detached widget.
     // The PTY always uses the entire body below this one ornamental heading.
     // Industrial full-window console shell from the approved SST reference.
     // No status widgets share the terminal: only this bezel surrounds the PTY.
@@ -571,7 +568,7 @@ slint::slint! {
             y: 6px;
             width: parent.width - 144px;
             height: 10px;
-            background: #3c3836;
+            background: #38403d;
             border-radius: 5px;
             clip: true;
 
@@ -580,7 +577,7 @@ slint::slint! {
                 y: 0px;
                 width: root.transfer-known-total ? parent.width * root.transfer-ratio : 0px;
                 height: parent.height;
-                background: #d79921;
+                background: #f39120;
                 border-radius: 5px;
 
                 Rectangle {
@@ -588,7 +585,7 @@ slint::slint! {
                     y: 1px;
                     width: parent.width - 2px;
                     height: 3px;
-                    background: #fabd2f;
+                    background: #fe8254;
                     border-radius: 2px;
                 }
             }
@@ -600,7 +597,7 @@ slint::slint! {
             width: 126px;
             height: 22px;
             text: root.transfer-percent;
-            color: #fabd2f;
+            color: #fe8254;
             font-family: "Segoe UI Variable";
             font-size: 16px;
             font-weight: 700;
