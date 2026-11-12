@@ -419,7 +419,11 @@ fn decorate_with_native_commands(
             } else if is_table_header(&fragment) {
                 format!("{HEADING}{fragment}{RESET}")
             } else {
-                style_table_row(&style_line(&fragment), status_column)
+                // Column offsets refer to the original visible text. Applying
+                // ANSI styling first shifts byte indices and can corrupt table
+                // rows or apply status colors to the wrong column.
+                let row = style_table_row(&fragment, status_column);
+                if row.contains('\x1b') { row } else { style_line(&row) }
             };
             result.push_str(&styled);
             result.push('\n');
@@ -481,6 +485,16 @@ mod tests {
         assert!(style_table_row(row, Some(1)).contains(GOOD));
         let description = "Red A     desconocido    conectado";
         assert!(!style_table_row(description, Some(1)).contains(GOOD));
+    }
+
+    #[test]
+    fn table_status_styling_uses_visible_column_offsets() {
+        let names = vec!["notsh".to_owned()];
+        let source = "NOMBRE    ESTADO    DETALLE\nEthernet  ACTIVO    enlace conectado\n";
+        let actual = decorate_registered_at_width("notsh lan show interfaces", source, 100, &names);
+        assert!(actual.contains("Ethernet  "));
+        assert!(actual.contains(&format!("{GOOD}ACTIVO{RESET}")));
+        assert!(actual.contains("enlace conectado"));
     }
 
     #[test]
