@@ -186,6 +186,7 @@ slint::slint! {
     // Display face for the angular, extended industrial typography of the mockup.
     // Embedded in the executable; no host font installation is required.
     import "../../assets/fonts/Oxanium-ExtraBold.ttf";
+    import "../../assets/fonts/SSTIndustrial-Regular.ttf";
     // Rendered vector outlines, never made of VT100/ASCII characters.
     // Transparent interiors preserve the user's terminal artwork and logo.
     // Text-report section headings are individual native vector outlines,
@@ -919,22 +920,35 @@ slint::slint! {
                 x: 0; y: 0;
                 width: parent.width; height: parent.height;
 
-                // The actual SST lettering is a vector image traced from
-                // the supplied reference rather than typeset in Oxanium.
-                Image {
+                // Actual typeset glyphs. SST's custom display font is a
+                // bundled TrueType face, not an SVG screenshot or vector logo.
+                Rectangle {
                     x: 8px; y: 8px;
                     width: island.width >= 690px ? 255px : 204px;
                     height: 73px;
-                    source: @image-url("../../assets/branding/sst-logo-green.svg");
-                    image-fit: contain;
+                    background: #e2dac2;
+                    Text {
+                        x: 6px; y: 0px;
+                        width: parent.width - 12px; height: parent.height;
+                        text: "SST";
+                        color: #191919;
+                        font-family: "SST Industrial";
+                        font-size: island.width >= 690px ? 73px : 58px;
+                        vertical-alignment: center;
+                        horizontal-alignment: center;
+                    }
                 }
 
-                Image {
+                Text {
                     visible: island.width >= 700px;
-                    x: 270px; y: 6px;
-                    width: 135px; height: 77px;
-                    source: @image-url("../../assets/branding/sst-stacked-title.svg");
-                    image-fit: contain;
+                    x: 279px; y: 9px;
+                    width: 113px; height: 71px;
+                    text: "SHELL\nSHOCK\nTOOL";
+                    color: #e2dac2;
+                    font-family: "Oxanium";
+                    font-size: 18px;
+                    font-weight: 800;
+                    vertical-alignment: center;
                 }
 
                 Rectangle {
