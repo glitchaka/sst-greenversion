@@ -20,16 +20,33 @@ public static class SSTWin32Preview {
 }
 '@
 
-function Save-SSTWindow([IntPtr]$Handle, [string]$Destination) {
-    $rect = New-Object SSTWin32Preview+RECT
-    if (-not [SSTWin32Preview]::GetWindowRect($Handle, [ref]$rect)) {
-        throw "GetWindowRect failed"
+function Save-SSTWindow([System.Diagnostics.Process]$SSTProcess, [string]$Destination) {
+    # Alternate-screen transitions may recreate the native HWND. The old
+    # handle is not guaranteed to survive sys/network monitor entry or exit.
+    $valid = $false
+    for ($retry = 0; $retry -lt 35; $retry++) {
+        $SSTProcess.Refresh()
+        if ($SSTProcess.HasExited) {
+            throw "SST closed while capturing $Destination (exit code $($SSTProcess.ExitCode))"
+        }
+        $handle = $SSTProcess.MainWindowHandle
+        $rect = New-Object SSTWin32Preview+RECT
+        if ($handle -ne [IntPtr]::Zero -and
+            [SSTWin32Preview]::GetWindowRect($handle, [ref]$rect)) {
+            $width = $rect.Right - $rect.Left
+            $height = $rect.Bottom - $rect.Top
+            if ($width -ge 450 -and $height -ge 250) {
+                $valid = $true
+                break
+            }
+        }
+        Start-Sleep -Milliseconds 250
     }
-    $width = $rect.Right - $rect.Left
-    $height = $rect.Bottom - $rect.Top
-    if ($width -lt 450 -or $height -lt 250) {
-        throw "Invalid SST window bounds: $width x $height"
+    if (-not $valid) {
+        throw "SST has no drawable native window for $Destination (PID $($SSTProcess.Id))"
     }
+
+    [void][SSTWin32Preview]::SetForegroundWindow($handle)
     $bitmap = New-Object System.Drawing.Bitmap($width, $height)
     try {
         $graphics = [System.Drawing.Graphics]::FromImage($bitmap)
@@ -77,13 +94,13 @@ try {
     if (-not $validBounds) {
         throw "SST did not expose a drawable application window (last handle $handle)."
     }
-    Save-SSTWindow $handle (Join-Path $OutputDirectory "01-consola-real.png")
+    Save-SSTWindow $process (Join-Path $OutputDirectory "01-consola-real.png")
     [System.Windows.Forms.SendKeys]::SendWait('sys{ENTER}')
     Start-Sleep -Seconds 6
-    Save-SSTWindow $handle (Join-Path $OutputDirectory "02-sys-pantalla-completa.png")
+    Save-SSTWindow $process (Join-Path $OutputDirectory "02-sys-pantalla-completa.png")
     [System.Windows.Forms.SendKeys]::SendWait('{ESC}')
     Start-Sleep -Seconds 2
-    Save-SSTWindow $handle (Join-Path $OutputDirectory "03-regreso-consola.png")
+    Save-SSTWindow $process (Join-Path $OutputDirectory "03-regreso-consola.png")
     "Capturas reales obtenidas del proceso SST (PID $($process.Id))." |
         Out-File -FilePath (Join-Path $OutputDirectory "resultado.txt") -Encoding utf8
 } catch {
