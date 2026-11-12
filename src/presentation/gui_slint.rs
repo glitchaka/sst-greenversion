@@ -450,6 +450,7 @@ slint::slint! {
         in property <string> memory-used;
         in property <string> memory-total;
         in property <float> memory-ratio: 0.0;
+        in property <string> memory-percent: "—";
         in property <string> disk-count;
 
         background: #222a2a;
@@ -489,7 +490,7 @@ slint::slint! {
             Text {
                 x: 14px; y: 26px;
                 width: parent.width - 28px; height: 48px;
-                text: round(root.memory-ratio * 100) + "%";
+                text: root.memory-percent;
                 font-family: "Oxanium"; font-size: 40px;
                 font-weight: 800;
                 color: root.memory-ratio >= 0.90 ? #ec4624
@@ -737,6 +738,7 @@ slint::slint! {
         in property <string> system-memory-used: "";
         in property <string> system-memory-total: "";
         in property <float> system-memory-ratio: 0.0;
+        in property <string> system-memory-percent: "—";
         in property <string> system-disk-count: "";
         in property <bool> triage-overview-visible: false;
         in property <string> triage-processes: "";
@@ -921,6 +923,7 @@ slint::slint! {
                 memory-used: root.system-memory-used;
                 memory-total: root.system-memory-total;
                 memory-ratio: root.system-memory-ratio;
+                memory-percent: root.system-memory-percent;
                 disk-count: root.system-disk-count;
             }
             // Real, refreshed host-scan evidence. Nothing here is demo data.
@@ -3105,6 +3108,7 @@ pub fn run() -> Result<()> {
                     ui.set_system_memory_used(overview.used_mib.into());
                     ui.set_system_memory_total(overview.total_mib.into());
                     ui.set_system_memory_ratio(overview.memory_ratio);
+                    ui.set_system_memory_percent(format!("{:.0}%", overview.memory_ratio * 100.0).into());
                     ui.set_system_disk_count(overview.disk_count.into());
                 }
                 let triage_overview = if tool_active {
