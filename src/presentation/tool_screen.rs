@@ -22,51 +22,6 @@ pub struct SystemOverview {
 
 static SYSTEM_OVERVIEW: OnceLock<Mutex<Option<SystemOverview>>> = OnceLock::new();
 
-#[derive(Clone, Debug)]
-pub struct TriageOverview {
-    pub processes: String,
-    pub new_routes: String,
-    pub findings: String,
-    pub learned: String,
-}
-
-static TRIAGE_OVERVIEW: OnceLock<Mutex<Option<TriageOverview>>> = OnceLock::new();
-
-fn triage_state() -> &'static Mutex<Option<TriageOverview>> {
-    TRIAGE_OVERVIEW.get_or_init(|| Mutex::new(None))
-}
-
-pub fn triage_overview_snapshot() -> Option<TriageOverview> {
-    triage_state().lock().unwrap_or_else(|e| e.into_inner()).clone()
-}
-
-fn parse_triage_overview(report: &str) -> Option<TriageOverview> {
-    if !report.contains("SST TRIAGE") { return None; }
-    fn count(report: &str, prefix: &str) -> Option<String> {
-        let value = report.lines().find_map(|line| {
-            line.trim_start().strip_prefix(prefix)
-                .and_then(|rest| rest.split_whitespace().next())
-                .and_then(|number| number.parse::<u64>().ok())
-        })?;
-        Some(value.to_string())
-    }
-    Some(TriageOverview {
-        processes: count(report, "Procesos actuales")?,
-        new_routes: count(report, "Rutas nuevas")?,
-        findings: count(report, "Hallazgos que requieren revisión")?,
-        learned: count(report, "Relaciones locales aprendidas")?,
-    })
-}
-
-struct ClearTriageOverview;
-
-impl Drop for ClearTriageOverview {
-    fn drop(&mut self) {
-        *triage_state().lock().unwrap_or_else(|e| e.into_inner()) = None;
-    }
-}
-
-
 static ACTIVE_TOOL_TITLE: OnceLock<Mutex<Option<String>>> = OnceLock::new();
 
 fn tool_title_state() -> &'static Mutex<Option<String>> {
@@ -420,14 +375,7 @@ pub fn show_report(
     };
     *overview_state().lock().unwrap_or_else(|e| e.into_inner()) = overview.clone();
     let _overview_guard = ClearSystemOverview;
-    let triage = if command == "triage" && native_view {
-        parse_triage_overview(content)
-    } else {
-        None
-    };
-    *triage_state().lock().unwrap_or_else(|e| e.into_inner()) = triage.clone();
-    let _triage_guard = ClearTriageOverview;
-    let native_overview = overview.is_some() || triage.is_some();
+    let native_overview = overview.is_some();
     let mut scroll = 0usize;
     let mut last_drawn: Option<(u16, u16, usize)> = None;
     loop {
@@ -524,16 +472,6 @@ mod tests {
         assert_eq!(value.cpu_count, "8");
         assert!((value.memory_ratio - 0.25).abs() < f32::EPSILON);
         assert_eq!(value.disk_count, "1");
-    }
-    #[test]
-    fn triage_cards_use_only_current_scan_counts() {
-        assert!(parse_triage_overview("SST TRIAGE\\nSin datos").is_none());
-        let report = "SST TRIAGE — ANÁLISIS ACTIVO\nProcesos actuales                 238\nRutas nuevas                       3\nHallazgos que requieren revisión   9\nRelaciones locales aprendidas      21\n";
-        let counts = parse_triage_overview(report).unwrap();
-        assert_eq!(counts.processes, "238");
-        assert_eq!(counts.new_routes, "3");
-        assert_eq!(counts.findings, "9");
-        assert_eq!(counts.learned, "21");
     }
     #[test]
     fn triage_severity_must_preserve_meaning() {
