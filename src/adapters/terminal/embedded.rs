@@ -7,7 +7,6 @@ use crate::core::ports::TerminalPanel;
 
 // Dedicated startup control frames. The relay must not infer worker state
 // from user-visible Spanish text or terminal chunk boundaries.
-pub(super) const STARTUP_FOOTER_REQUEST: &[u8] = b"\x1b]777;SST_FOOTER\x07";
 pub(super) const STARTUP_READY: &[u8] = b"\x1b]777;SST_READY\x07";
 
 enum WorkerRequest {
@@ -147,7 +146,6 @@ impl EmbeddedSession {
                 {
                     io::write(format!("Aviso: análisis inicial no iniciado: {error}\r\n").as_bytes())?;
                 }
-                io::write(STARTUP_FOOTER_REQUEST)?;
 
                 let (prompt_stdout, prompt_stderr, bash_prompt) = engine.prepare_prompt(false)?;
                 io::write(prompt_stdout.as_bytes())?;
