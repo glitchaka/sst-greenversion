@@ -245,7 +245,7 @@ fn memory_meter(report: &str, width: usize) -> Option<String> {
     ))
 }
 
-fn section_panels(visible: &[ReportLine], top: usize, bottom: usize) -> Vec<TerminalPanel> {
+fn section_panels(visible: &[ReportLine], body_top: usize, bottom: usize) -> Vec<TerminalPanel> {
     if visible.is_empty() { return Vec::new(); }
     let mut boundaries = vec![0usize];
     for (index, line) in visible.iter().enumerate().skip(1) {
@@ -256,15 +256,22 @@ fn section_panels(visible: &[ReportLine], top: usize, bottom: usize) -> Vec<Term
     let mut panels = Vec::new();
     for (group, start) in boundaries.iter().enumerate() {
         let end = boundaries.get(group + 1).copied().unwrap_or(visible.len());
-        let row = top.saturating_sub(1) + start;
-        let last = (top + end).min(bottom);
-        if last <= row { continue; }
+        let first = body_top + start;
+        let last = (body_top + end).min(bottom);
+        if last <= first { continue; }
         panels.push(TerminalPanel {
-            start_row: row.min(u16::MAX as usize) as u16,
-            rows: (last - row).min(u16::MAX as usize) as u16,
+            start_row: first.min(u16::MAX as usize) as u16,
+            rows: (last - first).min(u16::MAX as usize) as u16,
         });
     }
     panels
+}
+
+fn report_body_top(native_view: bool, native_overview: bool) -> usize {
+    // Green graphical heading covers rows 0..=2. Native metrics occupy the
+    // eight rows immediately below the command line, never the report text.
+    let heading_rows = 5;
+    heading_rows + if native_overview { 8 } else { 0 }
 }
 
 fn render_page(
@@ -278,47 +285,34 @@ fn render_page(
     native_overview: bool,
     native_view: bool,
 ) -> (String, Vec<TerminalPanel>) {
-    let reserved = if native_overview { 8 } else { 0 };
-    let body_top = 4 + reserved;
-    let body_rows = height.saturating_sub(7 + reserved).max(1);
+    let body_top = report_body_top(native_view, native_overview);
+    let body_rows = height.saturating_sub(body_top + 3).max(1);
     let visible = lines.iter().skip(scroll).take(body_rows).cloned().collect::<Vec<_>>();
     let mut view = String::new();
     if native_view {
-        // The Slint display face owns the first three terminal rows.
-        // Reserve them instead of painting ANSI text over the native heading.
+        // Slint owns rows 0, 1 and 2: no ANSI glyphs may paint over the
+        // display face in these rows.
         view.push_str("\r\n\r\n\r\n");
-        view.push_str(&format!(
-            "  {}COMANDO{}  {}{}{}     {}ESC / Q  ·  CONSOLA{}",
-            theme::LABEL, theme::RESET, theme::ACCENT,
-            truncate_chrome(command, width.saturating_sub(31)), theme::RESET,
-            theme::MUTED, theme::RESET,
-        ));
     } else {
         let brand = format!("SST  /  {}", title);
         view.push_str(&format!(
             "  {}{}{}\r\n",
-            theme::TITLE, truncate_chrome(&brand, width.saturating_sub(4)), theme::RESET,
-        ));
-        view.push_str(&format!(
-            "  {}COMANDO{}  {}{}{}     {}ESC / Q  ·  CONSOLA{}",
-            theme::LABEL, theme::RESET, theme::ACCENT,
-            truncate_chrome(command, width.saturating_sub(31)), theme::RESET,
-            theme::MUTED, theme::RESET,
+            theme::TITLE, truncate_chrome(&brand, width.saturating_sub(4)), theme::RESET
         ));
         view.push_str("\r\n\r\n");
     }
-    if !native_overview && !native_view {
-        if let Some(meter) = memory_meter(content, width) {
-            view.push_str(&meter);
-        }
+    view.push_str(&format!(
+        "  {}COMANDO{}  {}{}{}     {}ESC / Q  ·  CONSOLA{}\r\n",
+        theme::LABEL, theme::RESET, theme::ACCENT,
+        truncate_chrome(command, width.saturating_sub(31)), theme::RESET,
+        theme::MUTED, theme::RESET,
+    ));
+    view.push_str("\r\n");
+    if native_overview {
+        // A real native meter is layered in these precise rows. Never draw
+        // textual output behind it.
+        for _ in 0..8 { view.push_str("\r\n"); }
     }
-    view.push_str(if native_view { "\r\n" } else { "\r\n\r\n" });
-    // In Green's native Slint GUI, these rows belong to measured metric cards.
-    // In a regular console, the textual report starts immediately instead.
-    for _ in 0..reserved {
-        view.push_str("\r\n");
-    }
-
     for line in &visible {
         view.push_str("    ");
         view.push_str(&color_line(line));
@@ -363,7 +357,7 @@ pub fn show_report(
         let (cols, rows) = terminal.size()?;
         let width = usize::from(cols).max(28);
         let height = usize::from(rows).max(10);
-        let body_rows = height.saturating_sub(7 + if native_overview { 8 } else { 0 }).max(1);
+        let body_rows = height.saturating_sub(report_body_top(native_view, native_overview) + 3).max(1);
         let lines = wrapped_lines(content, width.saturating_sub(7));
         let max_scroll = lines.len().saturating_sub(body_rows);
         scroll = scroll.min(max_scroll);
