@@ -289,11 +289,15 @@ slint::slint! {
             commands: "M 0 0 L 336 0 L 318 13 L 302 31 L 285 53 L 0 53 Z";
             fill: #fe8254;
         }
-        Image {
+        Text {
             x: 21px; y: 7px;
             width: 269px; height: 39px;
-            source: @image-url("../../assets/branding/sst-console-label.svg");
-            image-fit: contain;
+            text: "CONSOLE     SST";
+            font-family: "Oxanium";
+            font-size: 23px;
+            font-weight: 800;
+            color: #171c1b;
+            vertical-alignment: center;
         }
 
         Rectangle {
@@ -360,57 +364,6 @@ slint::slint! {
             x: parent.width - 50px; y: parent.height - 14px;
             width: 28px; height: 3px;
             background: #8eaf93;
-        }
-    }
-
-    component GreenToolHero inherits Rectangle {
-        in property <string> tool-title;
-        background: #e9dec8;
-        border-color: #d3c2a6;
-        border-width: 1px;
-        border-radius: 12px;
-
-        Rectangle {
-            x: 0px;
-            y: 0px;
-            width: 7px;
-            height: parent.height;
-            background: #fa784f;
-            border-radius: 3px;
-        }
-        Text {
-            x: 18px;
-            y: 0px;
-            width: parent.width - 174px;
-            height: parent.height;
-            text: root.tool-title;
-            color: #1a1b1a;
-            font-family: "Oxanium";
-            font-weight: 800;
-            font-size: 28px;
-            vertical-alignment: center;
-            overflow: elide;
-        }
-        Rectangle {
-            x: parent.width - 136px;
-            y: 9px;
-            width: 117px;
-            height: parent.height - 18px;
-            border-radius: 6px;
-            background: #f5b84a;
-            Text {
-                text: "SST  /  GREEN";
-                x: 7px;
-                width: parent.width - 14px;
-                height: parent.height;
-                font-family: "Oxanium";
-                font-weight: 800;
-                font-size: 12px;
-                color: #191a18;
-                vertical-alignment: center;
-                horizontal-alignment: center;
-                overflow: elide;
-            }
         }
     }
 
@@ -627,11 +580,6 @@ slint::slint! {
 
         in property <image> terminal-image;
         in property <bool> tool-view-active: false;
-        in property <string> tool-header: "HERRAMIENTA";
-        in property <float> tool-hero-left: 16.0;
-        in property <float> tool-hero-top: 48.0;
-        in property <float> tool-hero-width: 800.0;
-        in property <float> tool-hero-height: 40.0;
         in property <bool> system-overview-visible: false;
         in property <float> system-overview-left: 16.0;
         in property <float> system-overview-top: 128.0;
@@ -753,17 +701,6 @@ slint::slint! {
                 width: 100%;
                 height: 100%;
                 background: rgba(22, 23, 22, 0.98);
-            }
-
-            // Distinct screen for active tools; the console remains
-            // completely unobstructed when no tool is running.
-            GreenToolHero {
-                visible: root.tool-view-active;
-                tool-title: root.tool-header;
-                x: root.tool-hero-left * 1px;
-                y: root.tool-hero-top * 1px;
-                width: root.tool-hero-width * 1px;
-                height: root.tool-hero-height * 1px;
             }
 
             // Draw only for a TUI that explicitly supplies semantic sections.
@@ -2930,23 +2867,6 @@ pub fn run() -> Result<()> {
                 }
                 let tool_active = model.native_tool_view();
                 ui.set_tool_view_active(tool_active);
-                // Display only the identity declared by the tool itself.
-                // Do not scrape the terminal framebuffer or guess from data.
-                if tool_active {
-                    let title = crate::presentation::tool_screen::active_tool_title()
-                        .unwrap_or_else(|| "SST / HERRAMIENTA".to_owned());
-                    ui.set_tool_header(title.into());
-                }
-
-                if tool_active {
-                    let (left, top, cell_width, cell_height) = model.geometry();
-                    let factor = model.scale.max(0.5);
-                    let (_, cols) = model.parser.screen().size();
-                    ui.set_tool_hero_left(left / factor);
-                    ui.set_tool_hero_top((top - 0.30 * cell_height) / factor);
-                    ui.set_tool_hero_width((f32::from(cols) * cell_width) / factor);
-                    ui.set_tool_hero_height((2.7 * cell_height) / factor);
-                }
                 let overview = if tool_active {
                     crate::presentation::tool_screen::system_overview_snapshot()
                 } else {
