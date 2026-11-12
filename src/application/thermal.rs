@@ -32,6 +32,10 @@ pub fn report() -> CommandOutput {
     {
         let mut readings = Vec::new();
         let mut notes = Vec::new();
+        match native_storage_sensors() {
+            Ok(rows) => readings.extend(rows),
+            Err(error) => notes.push(format!("Windows NVMe (API nativa): {error}")),
+        }
         match windows_sensors() {
             Ok(rows) => readings.extend(rows),
             Err(error) => notes.push(format!("WMI/Storage: {error}")),
@@ -193,6 +197,77 @@ fn classify(identifier: &str, name: &str) -> &'static str {
     else if id.contains("lpc") || id.contains("motherboard") || id.contains("superio") { "Placa base / VRM" }
     else if id.contains("battery") || id.contains("batt") { "Bateria" }
     else { "Otros componentes" }
+}
+
+// Query temperatures directly through the Windows storage driver stack.
+// Windows 10+ supports IOCTL_STORAGE_QUERY_PROPERTY for NVMe devices. No
+// PowerShell, SMART CLI, installed sensor application or custom kernel driver.
+#[cfg(windows)]
+fn native_storage_sensors() -> anyhow::Result<Vec<Reading>> {
+    use windows_sys::Win32::{
+        Foundation::{CloseHandle, INVALID_HANDLE_VALUE},
+        Storage::FileSystem::{CreateFileW, FILE_SHARE_READ, FILE_SHARE_WRITE, OPEN_EXISTING},
+        System::IO::DeviceIoControl,
+    };
+    // CTL_CODE(FILE_DEVICE_MASS_STORAGE, 0x500, METHOD_BUFFERED, FILE_ANY_ACCESS)
+    const IOCTL_STORAGE_QUERY_PROPERTY: u32 = 0x002d_1400;
+    // STORAGE_PROPERTY_ID::StorageDeviceTemperatureProperty
+    const STORAGE_DEVICE_TEMPERATURE_PROPERTY: u32 = 52;
+
+    let mut result = Vec::new();
+    let mut opened = 0usize;
+    for disk in 0..32 {
+        let path = format!(r"\\.\PhysicalDrive{disk}");
+        let wide: Vec<u16> = path.encode_utf16().chain(std::iter::once(0)).collect();
+        // Access 0 is sufficient for read-only property queries where allowed.
+        let handle = unsafe {
+            CreateFileW(
+                wide.as_ptr(), 0, FILE_SHARE_READ | FILE_SHARE_WRITE,
+                std::ptr::null(), OPEN_EXISTING, 0, std::ptr::null_mut(),
+            )
+        };
+        if handle == INVALID_HANDLE_VALUE { continue; }
+        opened += 1;
+        struct Handle(windows_sys::Win32::Foundation::HANDLE);
+        impl Drop for Handle {
+            fn drop(&mut self) { unsafe { CloseHandle(self.0); } }
+        }
+        let _handle = Handle(handle);
+        // STORAGE_PROPERTY_QUERY { PropertyId, QueryType, AdditionalParameters[1] }
+        let query = [STORAGE_DEVICE_TEMPERATURE_PROPERTY, 0, 0];
+        let mut output = [0u8; 512];
+        let mut returned = 0u32;
+        let success = unsafe {
+            DeviceIoControl(
+                handle, IOCTL_STORAGE_QUERY_PROPERTY,
+                query.as_ptr().cast(), (query.len() * std::mem::size_of::<u32>()) as u32,
+                output.as_mut_ptr().cast(), output.len() as u32,
+                &mut returned, std::ptr::null_mut(),
+            )
+        };
+        if success == 0 || returned < 28 { continue; }
+        // STORAGE_TEMPERATURE_DATA_DESCRIPTOR: 24-byte header followed by
+        // STORAGE_TEMPERATURE_INFO entries (each 16 bytes on Windows).
+        let valid = (returned as usize).min(output.len());
+        let info_count = u16::from_le_bytes([output[12], output[13]]) as usize;
+        for sensor in 0..info_count.min((valid - 24) / 16).min(16) {
+            let offset = 24 + sensor * 16;
+            let index = u16::from_le_bytes([output[offset], output[offset + 1]]);
+            let degrees = i16::from_le_bytes([output[offset + 2], output[offset + 3]]);
+            if (-30..=150).contains(&degrees) {
+                result.push(Reading {
+                    group: "Disco / SSD".to_owned(),
+                    name: format!("Disco fisico {disk} · sensor {index}"),
+                    celsius: f64::from(degrees),
+                    source: "Windows Storage IOCTL (nativo)".to_owned(),
+                });
+            }
+        }
+    }
+    if opened == 0 {
+        anyhow::bail!("no fue posible abrir dispositivos de almacenamiento");
+    }
+    Ok(result)
 }
 
 // NVML is part of the installed NVIDIA display driver. Calling it directly
