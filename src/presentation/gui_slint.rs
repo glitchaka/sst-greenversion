@@ -1328,7 +1328,9 @@ fn configured_background_path(
     }
     let raw = appearance.background_image.trim();
     if raw.is_empty() {
-        return None;
+        // A fixed wallpaper without an explicit name uses the first image
+        // found in SST's own bg/ directory, never an invented external path.
+        return paths.background_images().ok()?.into_iter().next();
     }
     let configured = std::path::PathBuf::from(raw);
     Some(if configured.is_absolute() {
