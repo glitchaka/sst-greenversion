@@ -68,14 +68,9 @@ impl EmbeddedSession {
         });
 
         thread::spawn(move || {
-            let mut suppress_preload = false;
+            // Explicit lifecycle frames, never suppress arbitrary output.
             for data in source {
-                if data == embedded_inner::STARTUP_PRELOAD_BEGIN {
-                    suppress_preload = true;
-                    continue;
-                }
-                if data == embedded_inner::STARTUP_PRELOAD_END {
-                    suppress_preload = false;
+                if data == embedded_inner::STARTUP_FOOTER_REQUEST {
                     if relay_tx.send(STARTUP_FOOTER.as_bytes().to_vec()).is_err() {
                         break;
                     }
@@ -93,10 +88,8 @@ impl EmbeddedSession {
                     }
                     continue;
                 }
-                // Every normal command result must reach the parser verbatim.
-                // Suppression is bounded by worker-emitted control frames, not
-                // by detecting language-dependent greeting or status strings.
-                if !suppress_preload && relay_tx.send(data).is_err() {
+                // Foreground terminal chunks are forwarded verbatim.
+                if relay_tx.send(data).is_err() {
                     break;
                 }
             }
