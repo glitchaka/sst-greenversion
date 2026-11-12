@@ -766,10 +766,10 @@ slint::slint! {
 
             GreenConsoleChrome {
                 visible: !root.tool-view-active;
-                x: 12px;
-                y: 78px;
-                width: root.width - 24px;
-                height: root.height - 90px;
+                x: 13px;
+                y: 109px;
+                width: root.width - 26px;
+                height: root.height - 122px;
                 channel-version: root.header-version;
             }
 
@@ -1140,10 +1140,9 @@ slint::slint! {
                         x: 442px; y: 0px; width: 120px; height: parent.height;
                         label-text: "CPU"; value-text: root.header-cpu;
                     }
-                    for separator in [180, 320, 441] : Rectangle {
-                        x: separator * 1px; y: 0px; width: 1px;
-                        height: parent.height; background: #958778;
-                    }
+                    Rectangle { x: 180px; width: 1px; height: parent.height; background: #958778; }
+                    Rectangle { x: 320px; width: 1px; height: parent.height; background: #958778; }
+                    Rectangle { x: 441px; width: 1px; height: parent.height; background: #958778; }
                 }
 
                 Rectangle {
@@ -1228,7 +1227,7 @@ slint::slint! {
 
                 Rectangle {
                     x: island.width - 114px;
-                    y: 13px;
+                    y: 26px;
                     width: 38px;
                     height: 38px;
                     border-radius: 10px;
@@ -1261,7 +1260,7 @@ slint::slint! {
 
                 Rectangle {
                     x: island.width - 76px;
-                    y: 13px;
+                    y: 26px;
                     width: 38px;
                     height: 38px;
                     border-radius: 10px;
@@ -1294,7 +1293,7 @@ slint::slint! {
 
                 Rectangle {
                     x: island.width - 38px;
-                    y: 13px;
+                    y: 26px;
                     width: 38px;
                     height: 38px;
                     border-radius: 10px;
