@@ -119,7 +119,6 @@ impl SystemService {
         // returns only after the terminal has restored its previous contents.
         let _tool_view = crate::presentation::tool_screen::enter_native_tool("MONITOR DE PROCESOS");
         let mut terminal = self.terminal.alternate_screen()?;
-        let native_green = crate::adapters::terminal::io::output_sender().is_some();
         let mut sort_cpu = true;
         // Keep the same process sampler across frames. Reconstructing System on
         // every refresh produces misleading CPU% values near zero.
@@ -132,13 +131,10 @@ impl SystemService {
             let (columns, height) = terminal.size()?;
             // Leave a column free to prevent the terminal's automatic wrap.
             let width = usize::from(columns.saturating_sub(1)).max(1);
-            let heading_reserve = if native_green { 3 } else { 0 };
-            let max_rows = usize::from(height.saturating_sub(7 + heading_reserve));
+            // The monitor already prints its heading in the terminal itself.
+            // No blank rows are reserved for a duplicated painted title.
+            let max_rows = usize::from(height.saturating_sub(7));
             let mut screen = String::new();
-            if native_green {
-                // Slint owns this space for its angular cream-on-black title.
-                screen.push_str("\r\n\r\n\r\n");
-            }
 
             top_screen_line(
                 &mut screen,
