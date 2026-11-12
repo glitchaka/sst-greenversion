@@ -38,6 +38,19 @@ jobs:
           path: .ci-ieee
           persist-credentials: false
       - uses: dtolnay/rust-toolchain@stable
+      - name: Verify custom SST TrueType with Windows font engine
+        shell: pwsh
+        run: |
+          Add-Type -AssemblyName System.Drawing
+          $face = New-Object System.Drawing.Text.PrivateFontCollection
+          try {
+            $file = (Resolve-Path "assets/fonts/SSTIndustrial-Regular.ttf").Path
+            $face.AddFontFile($file)
+            if (-not ($face.Families | Where-Object Name -eq "SST Industrial")) {
+              throw "Windows did not load the SST Industrial TrueType family."
+            }
+            Write-Host "Windows accepted the SST Industrial TTF."
+          } finally { $face.Dispose() }
       - name: Check Windows Rust project
         run: cargo check --locked
       - name: Compile regression tests (without executing privileged operations)
