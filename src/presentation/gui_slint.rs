@@ -120,18 +120,17 @@ mod viewport_regression_tests {
     use super::{RestoreViewportGuard, valid_terminal_viewport};
 
     #[test]
-    fn tool_palette_keeps_semantic_statuses_but_removes_old_cyan() {
-        assert_eq!(super::gruvbox_terminal_color(super::Rgb(69, 209, 241)),
-            super::Rgb(0xFE, 0x80, 0x19));
-        assert_eq!(super::gruvbox_terminal_color(super::Rgb(142, 205, 255)),
-            super::Rgb(0xFE, 0x80, 0x19));
-        assert_eq!(super::gruvbox_terminal_color(super::Rgb(183, 228, 247)),
-            super::Rgb(0xEB, 0xDB, 0xB2));
-        assert_eq!(super::gruvbox_terminal_color(super::Rgb(184, 187, 38)),
-            super::Rgb(184, 187, 38));
-        assert_eq!(super::gruvbox_terminal_color(super::Rgb(251, 73, 52)),
-            super::Rgb(251, 73, 52));
-
+    fn industrial_palette_preserves_the_distinct_operational_states() {
+        assert_eq!(super::industrial_terminal_color(super::Rgb(251, 73, 52)),
+            super::Rgb(0xEC, 0x46, 0x24)); // critical
+        assert_eq!(super::industrial_terminal_color(super::Rgb(249, 145, 32)),
+            super::Rgb(0xF3, 0x91, 0x20)); // warning
+        assert_eq!(super::industrial_terminal_color(super::Rgb(100, 190, 52)),
+            super::Rgb(0xAD, 0xD7, 0x94)); // healthy
+        assert_eq!(super::industrial_terminal_color(super::Rgb(70, 90, 235)),
+            super::Rgb(0x79, 0xB8, 0xEA)); // optimal
+        assert_eq!(super::industrial_terminal_color(super::Rgb(69, 209, 241)),
+            super::Rgb(0x4F, 0xBB, 0xBC)); // information
     }
 
     #[test]
