@@ -2399,20 +2399,32 @@ fn apply_slint_window_effects(ui: &SstGreenWindow, appearance: &TerminalAppearan
 }
 
 pub fn run() -> Result<()> {
-    // The terminal surface needs a genuinely transparent native window.
-    // Setting only `background: transparent` in Slint is not enough on every
-    // Windows/FemtoVG combination because the native Winit window may otherwise
-    // be created as opaque before the renderer starts.
-    BackendSelector::new()
-        .backend_name("winit".into())
-        .renderer_name("femtovg".into())
-        .with_winit_window_attributes_hook(|attributes| {
-            attributes
-                .with_transparent(true)
-                .with_decorations(false)
-        })
-        .select()
-        .map_err(|error| anyhow::anyhow!("No se pudo inicializar Winit/FemtoVG transparente: {error}"))?;
+    // Prefer GPU acceleration, but a console must still open on Windows
+    // machines (including remote/virtual desktops) without OpenGL 2.0.
+    // Both backends are native Winit windows; neither uses a web view.
+    let choose_renderer = |renderer: &str| {
+        let transparent = renderer != "software";
+        BackendSelector::new()
+            .backend_name("winit".into())
+            .renderer_name(renderer.into())
+            .with_winit_window_attributes_hook(move |attributes| {
+                attributes
+                    .with_transparent(transparent)
+                    .with_decorations(false)
+            })
+            .select()
+    };
+    if std::env::var_os("SST_SOFTWARE_RENDERER").is_some() {
+        choose_renderer("software")
+            .map_err(|error| anyhow::anyhow!("No se pudo inicializar el renderizador nativo de software: {error}"))?;
+    } else if let Err(gpu_error) = choose_renderer("femtovg") {
+        eprintln!("SST: OpenGL no disponible ({gpu_error}); usando el renderizador nativo de software.");
+        choose_renderer("software").map_err(|fallback_error| {
+            anyhow::anyhow!(
+                "No se pudo iniciar SST: GPU: {gpu_error}; software: {fallback_error}"
+            )
+        })?;
+    }
 
     let paths = AppPaths::detect();
     paths.ensure_layout()?;
