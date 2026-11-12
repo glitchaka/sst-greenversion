@@ -14,8 +14,6 @@ use anyhow::Result;
 use super::embedded_inner;
 
 const TERMINAL_ERROR_MARKER: &[u8] = b"Error de terminal:";
-const STARTUP_FOOTER: &str =
-    "\r\n\x1b[38;5;250mConsejo: usa \x1b[1;38;5;117mguide\x1b[0;38;5;250m para conocer todo lo que puedes hacer con SST.\x1b[0m\r\n\r\n\x1b[1;38;5;117m«Hola. ¿Te gustaría destruir algún mal hoy?»\x1b[0m\r\n";
 const EXIT_SETTLE_TIME: Duration = Duration::from_millis(100);
 
 /// Supervises the in-process terminal worker so an internal startup/runtime
@@ -70,12 +68,6 @@ impl EmbeddedSession {
         thread::spawn(move || {
             // Explicit lifecycle frames, never suppress arbitrary output.
             for data in source {
-                if data == embedded_inner::STARTUP_FOOTER_REQUEST {
-                    if relay_tx.send(STARTUP_FOOTER.as_bytes().to_vec()).is_err() {
-                        break;
-                    }
-                    continue;
-                }
                 if data == embedded_inner::STARTUP_READY {
                     relay_ready.store(true, Ordering::SeqCst);
                     continue;
