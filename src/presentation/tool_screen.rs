@@ -48,14 +48,6 @@ impl Drop for NativeToolGuard {
 }
 
 
-struct ClearToolTitle;
-
-impl Drop for ClearToolTitle {
-    fn drop(&mut self) {
-        *tool_title_state().lock().unwrap_or_else(|e| e.into_inner()) = None;
-    }
-}
-
 
 fn overview_state() -> &'static Mutex<Option<SystemOverview>> {
     SYSTEM_OVERVIEW.get_or_init(|| Mutex::new(None))
@@ -364,10 +356,9 @@ pub fn show_report(
     command: &str,
     content: &str,
 ) -> Result<()> {
+    let _title_guard = enter_native_tool(title);
     let mut terminal = factory.alternate_screen()?;
     let native_view = crate::adapters::terminal::io::output_sender().is_some();
-    *tool_title_state().lock().unwrap_or_else(|e| e.into_inner()) = Some(title.to_owned());
-    let _title_guard = ClearToolTitle;
     let overview = if command == "sys" && native_view {
         parse_system_overview(content)
     } else {
