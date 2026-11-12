@@ -689,11 +689,14 @@ slint::slint! {
             height: 100%;
             background: #1b2020;
 
+            // Only the tool's content body may show a wallpaper here.
+            // The structural gap around the floating island stays solid.
             Image {
-                x: 0;
-                y: 0;
-                width: 100%;
-                height: 100%;
+                visible: root.tool-view-active;
+                x: 13px;
+                y: 109px;
+                width: root.width - 26px;
+                height: root.height - 122px;
                 source: root.background-image;
                 image-fit: root.background-image-fit-mode == "contain"
                     ? contain
@@ -722,10 +725,10 @@ slint::slint! {
             // Ordinary SST keeps its original background and full-width PTY.
             Rectangle {
                 visible: root.tool-view-active;
-                x: 0;
-                y: 0;
-                width: 100%;
-                height: 100%;
+                x: 13px;
+                y: 109px;
+                width: root.width - 26px;
+                height: root.height - 122px;
                 background: root.background-image-opacity > 0.0
                     ? rgba(22, 23, 22, 0.58) : #161716;
             }
