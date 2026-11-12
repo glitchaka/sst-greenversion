@@ -581,12 +581,6 @@ slint::slint! {
         in property <string> ram-text: "RAM 0.0 GiB";
         in property <string> clock-text: "00:00";
         in property <string> date-text: "00 ---";
-        in property <string> header-host: "—";
-        in property <string> header-uptime: "—";
-        in property <string> header-memory: "—";
-        in property <string> header-cpu: "—";
-        in property <string> header-version: "—";
-        in property <string> header-arch: "—";
         // Logical coordinates align the live transfer indicator to the command output.
         in property <float> transfer-x: 22.0;
         in property <float> transfer-y: 65.0;
@@ -2394,10 +2388,6 @@ pub fn run() -> Result<()> {
         }
     };
     ui.set_privilege_label(privilege_label.clone().into());
-    // All header figures come from the actual Windows process/host.
-    ui.set_header_version(crate::application::update::display_version().into());
-    ui.set_header_arch(std::env::consts::ARCH.into());
-    ui.set_header_host(sysinfo::System::host_name().unwrap_or_else(|| "—".to_owned()).into());
 
     if let Some(image) = background_image {
         ui.set_background_image(image);
@@ -2855,21 +2845,6 @@ pub fn run() -> Result<()> {
 
                 ui.set_cpu_text(format!("CPU {:.0}%", cpu).into());
                 ui.set_ram_text(format!("RAM {:.1} GiB", ram_gib).into());
-                let total_ram = system.total_memory();
-                let used_ram = system.used_memory();
-                let used_percent = if total_ram > 0 {
-                    (used_ram as f64 * 100.0 / total_ram as f64).round() as u64
-                } else {
-                    0
-                };
-                let uptime = System::uptime();
-                ui.set_header_cpu(format!("{cpu:.0}%").into());
-                ui.set_header_memory(if total_ram > 0 {
-                    format!("{used_percent}%")
-                } else {
-                    "—".to_owned()
-                }.into());
-                ui.set_header_uptime(format!("{}d {:02}h", uptime / 86_400, (uptime / 3_600) % 24).into());
                 ui.set_clock_text(now.format("%H:%M").to_string().into());
                 ui.set_date_text(now.format("%d %b").to_string().into());
                 *last_status.borrow_mut() = Instant::now();
