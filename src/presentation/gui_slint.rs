@@ -371,22 +371,9 @@ slint::slint! {
         clip: true;
 
         Rectangle {
-            x: 0px; y: 0px;
-            width: parent.width; height: 35px;
-            background: #e2dac2;
-            Text {
-                x: 20px; width: parent.width - 40px; height: 35px;
-                text: "SYSTEM STATUS";
-                font-family: "Oxanium"; font-size: 24px;
-                font-weight: 800; color: #1c1e1d;
-                vertical-alignment: center;
-            }
-        }
-
-        Rectangle {
-            x: 14px; y: 46px;
+            x: 14px; y: 14px;
             width: min(216px, (parent.width - 44px) * 0.29);
-            height: parent.height - 60px;
+            height: parent.height - 28px;
             border-width: 1px;
             border-color: #827a6c;
             border-radius: 10px;
@@ -426,9 +413,9 @@ slint::slint! {
 
         Rectangle {
             x: min(216px, (parent.width - 44px) * 0.29) + 31px;
-            y: 46px;
+            y: 14px;
             width: parent.width - self.x - 14px;
-            height: parent.height - 60px;
+            height: parent.height - 28px;
             background: transparent;
 
             Text {
