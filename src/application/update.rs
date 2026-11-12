@@ -71,6 +71,13 @@ pub fn current_version() -> &'static str {
     env!("CARGO_PKG_VERSION")
 }
 
+// Cargo uses a valid SemVer while SST presents the operator-facing name.
+pub fn display_version() -> String {
+    current_version().strip_prefix("0.0.0-greenversion.")
+        .map(|fix| format!("0.0.greenversion.{fix}"))
+        .unwrap_or_else(|| current_version().to_owned())
+}
+
 // Authorization is deliberately process-local. A pending.json left behind
 // from another run must never trigger an automatic update on the next launch.
 // Only an explicit "instp upgrade sst" in this GUI session authorizes handoff
@@ -84,7 +91,7 @@ pub fn take_explicit_install_authorization() -> bool {
 pub fn status(paths: &AppPaths) -> Result<String> {
     let pending = load_pending(paths)?;
     let channel = configured_manifest_url(paths);
-    let mut output = format!("SST {}\n", current_version());
+    let mut output = format!("SST {}\n", display_version());
     if let Some(applied) = take_applied_receipt(paths)? {
         output.push_str(&format!(
             "Última actualización aplicada: {} -> {}\n",
@@ -434,7 +441,7 @@ fn parse_version(value: &str) -> Option<(u64, u64, u64, String, u64)> {
         ("stable".to_owned(), u64::MAX)
     } else {
         let (channel, build) = suffix.rsplit_once('.')?;
-        if !matches!(channel, "blue" | "green") { return None; }
+        if !matches!(channel, "blue" | "green" | "greenversion") { return None; }
         (channel.to_owned(), build.parse().ok()?)
     };
     Some((major, minor, patch, channel, build))
@@ -546,8 +553,8 @@ mod green_channel_tests {
     use super::{is_newer, parse_version};
     #[test]
     fn green_updates_cannot_be_replaced_by_blue_channel() {
-        assert!(parse_version("0.1.9-green.1").is_some());
-        assert!(!is_newer("0.1.9-blue.999", "0.1.9-green.1").unwrap());
-        assert!(is_newer("0.1.9-green.2", "0.1.9-green.1").unwrap());
+        assert!(parse_version("0.0.0-greenversion.2").is_some());
+        assert!(!is_newer("0.1.9-blue.999", "0.0.0-greenversion.2").unwrap());
+        assert!(is_newer("0.0.0-greenversion.3", "0.0.0-greenversion.2").unwrap());
     }
 }
