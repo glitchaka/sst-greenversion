@@ -1665,6 +1665,32 @@ impl TerminalModel {
         self.dirty = true;
     }
 
+    /// Only SST-owned monitors receive native dashboard chrome. Generic
+    /// terminal programs (Helix, editors, installers) keep their own UI.
+    fn native_tool_view(&self) -> bool {
+        if !self.session.raw_mode() {
+            return false;
+        }
+        if crate::presentation::tool_screen::active_tool_title().is_some()
+            || !self.session.panels_snapshot().is_empty()
+        {
+            return true;
+        }
+        let screen = self.parser.screen();
+        let (rows, cols) = screen.size();
+        let mut top = String::new();
+        for row in 0..rows.min(9) {
+            for col in 0..cols.min(85) {
+                if let Some(cell) = screen.cell(row, col)
+                    && !cell.is_wide_continuation()
+                {
+                    top.push_str(cell.contents());
+                }
+            }
+        }
+        top.contains("MONITOR DE PROCESOS")
+    }
+
     fn render(&mut self) -> Image {
         let width = self.width.max(1);
         let height = self.height.max(1);
@@ -1674,7 +1700,7 @@ impl TerminalModel {
             // Native dashboard panels sit behind the terminal glyph surface.
             // Fullscreen tools require a transparent glyph layer, unlike SST's
             // ordinary user-configured terminal wallpaper.
-            let background_opacity = if self.session.raw_mode() {
+            let background_opacity = if self.native_tool_view() {
                 0
             } else {
                 self.current_background_opacity()
@@ -1707,7 +1733,7 @@ impl TerminalModel {
             let font_px = (self.appearance.font_size as f32 * self.scale).round().max(8.0);
             let font_key = font_px.round() as u16;
             let default_fg = parse_rgb(&self.appearance.font_color).unwrap_or(FG);
-            let tool_mode = self.session.raw_mode();
+            let tool_mode = self.native_tool_view();
 
             for row in 0..rows {
                 for col in 0..cols {
@@ -2763,7 +2789,7 @@ pub fn run() -> Result<()> {
                     ui.set_report_f_row(row);
                     ui.set_report_f_width((cols * cell_width / factor).max(0.0));
                 }
-                let tool_active = model.session.raw_mode();
+                let tool_active = model.native_tool_view();
                 ui.set_tool_view_active(tool_active);
                 // Fullscreen views reserve the graphical title rows; look
                 // at the actual visible headings rather than the blank first
