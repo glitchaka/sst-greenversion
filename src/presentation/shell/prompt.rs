@@ -15,7 +15,7 @@ pub fn render(cwd: &Path) -> String {
 }
 
 pub fn banner() -> &'static str {
-    // The permanent Slint chrome contains the logo, version and real host
-    // metrics; don't repeat a text logo or add fictitious startup data.
-    "\r\n\x1b[1;38;2;254;130;84m  SHELL SHOCK TOOL  /  GREEN\x1b[0m\r\n\x1b[38;2;226;218;194m  Administración y diagnóstico nativo de Windows.\x1b[0m\r\n\x1b[38;2;189;174;147m  help  ·  sys  ·  net monitor  ·  triage  ·  instp  ·  sigsour\x1b[0m\r\n\r\n"
+    // Green already has its permanent native identity in the title island
+    // and console fascia. Do not repeat it inside the editable PTY.
+    ""
 }
