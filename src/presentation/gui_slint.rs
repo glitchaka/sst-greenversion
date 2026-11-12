@@ -53,8 +53,8 @@ use crate::adapters::{
 const INITIAL_COLS: u16 = 112;
 const INITIAL_ROWS: u16 = 31;
 const ISLAND_TOP: f32 = 6.0;
-const ISLAND_HEIGHT: f32 = 64.0;
-const CONSOLE_CHROME_HEIGHT: f32 = 45.0;
+const ISLAND_HEIGHT: f32 = 90.0;
+const CONSOLE_CHROME_HEIGHT: f32 = 57.0;
 
 // The frameless Slint window can briefly report an icon-sized client area
 // *before* IsIconic becomes true, or *after* it becomes false. Never send
@@ -618,30 +618,26 @@ slint::slint! {
     }
 
     // Industrial instrumentation uses real host metrics; no static demo values.
+    // One contiguous telemetry rail, rather than disconnected mini-widgets.
+    // Its cells deliberately have no own background or rounded borders.
     component GreenHeaderMetric inherits Rectangle {
         in property <string> label-text;
         in property <string> value-text;
-        background: #252522;
-        border-width: 1px;
-        border-color: #bbae98;
-        border-radius: 5px;
-
+        background: transparent;
+        border-width: 0px;
         Text {
-            x: 9px; y: 5px;
-            width: parent.width - 18px; height: 17px;
+            x: 10px; y: 6px;
+            width: parent.width - 20px; height: 18px;
             text: root.label-text;
-            font-family: "Oxanium"; font-size: 11px; font-weight: 800;
-            color: #e2dac2;
-            overflow: elide;
+            font-family: "Oxanium"; font-size: 12px; font-weight: 800;
+            color: #e2dac2; overflow: elide;
         }
         Text {
-            x: 9px; y: 23px;
-            width: parent.width - 18px; height: 25px;
+            x: 10px; y: 27px;
+            width: parent.width - 20px; height: 30px;
             text: root.value-text;
-            font-family: "Oxanium"; font-size: 17px; font-weight: 800;
-            color: #f5ead6;
-            overflow: elide;
-            vertical-alignment: center;
+            font-family: "Oxanium"; font-size: 18px; font-weight: 800;
+            color: #f5ead6; vertical-alignment: center; overflow: elide;
         }
     }
 
@@ -725,6 +721,7 @@ slint::slint! {
         in property <string> header-memory: "—";
         in property <string> header-cpu: "—";
         in property <string> header-version: "—";
+        in property <string> header-arch: "—";
         // Logical coordinates align the live transfer indicator to the command output.
         in property <float> transfer-x: 22.0;
         in property <float> transfer-y: 65.0;
@@ -1013,166 +1010,220 @@ slint::slint! {
 
         // Green's permanent full-width industrial command bar. All values
         // are bound to the current Windows host; this is not a side dashboard.
+        // The floating island is the native SST window header. Its branding,
+        // single segmented telemetry rail and inline controls follow the
+        // approved reference, while the terminal retains its own full surface.
         island := Rectangle {
-            width: min(1280px, root.width - 20px);
-            height: 64px;
+            width: min(1600px, root.width - 20px);
+            height: 90px;
             x: (root.width - self.width) / 2;
             y: 7px;
-            border-radius: 14px;
-            background: rgba(34, 42, 42, 0.97);
+            border-radius: 15px;
+            background: rgba(25, 25, 24, 0.99);
             border-width: 1px;
-            border-color: #b9a78c;
+            border-color: #817568;
 
             WindowMoveArea {
-                x: 0;
-                y: 0;
-                width: parent.width;
-                height: parent.height;
+                x: 0; y: 0;
+                width: parent.width; height: parent.height;
 
-                // The existing centered island keeps its geometry, drag area
-                // and native window controls, but adopts the mockup's branding.
-                // Actual vector paths traced from the user-approved SST wordmark.
+                // The actual SST lettering is a vector image traced from
+                // the supplied reference rather than typeset in Oxanium.
                 Image {
-                    x: 5px; y: 5px;
-                    width: 188px; height: island.height - 10px;
+                    x: 8px; y: 8px;
+                    width: island.width >= 690px ? 255px : 204px;
+                    height: 73px;
                     source: @image-url("../../assets/branding/sst-logo-green.svg");
                     image-fit: contain;
                 }
 
                 Text {
-                    visible: island.width >= 600px;
-                    x: 201px; y: 9px;
-                    width: 110px; height: 46px;
+                    visible: island.width >= 680px;
+                    x: 268px; y: 12px;
+                    width: 120px; height: 67px;
                     text: "SHELL\nSHOCK\nTOOL";
-                    font-family: "Oxanium"; font-size: 16px; font-weight: 800;
                     color: #e2dac2;
+                    font-family: "Oxanium";
+                    font-size: 20px; font-weight: 800;
                     vertical-alignment: center;
-                }
-                Text {
-                    visible: island.width >= 600px;
-                    x: 322px; y: 48px;
-                    width: 165px; height: 12px;
-                    text: "V " + root.header-version;
-                    font-family: "Oxanium"; font-size: 10px;
-                    font-weight: 800;
-                    color: #f39120;
                     overflow: elide;
                 }
 
-                // The mockup's telemetry rail lives *inside* the original
-                // floating island. It uses measured Windows values only.
-                GreenHeaderMetric {
-                    visible: island.width >= 1160px;
-                    x: island.width - 700px; y: 6px;
-                    width: 175px; height: 52px;
-                    label-text: "HOST";
-                    value-text: root.header-host;
-                }
-                GreenHeaderMetric {
-                    visible: island.width >= 1160px;
-                    x: island.width - 523px; y: 6px;
-                    width: 125px; height: 52px;
-                    label-text: "UPTIME";
-                    value-text: root.header-uptime;
-                }
-                GreenHeaderMetric {
-                    visible: island.width >= 1160px;
-                    x: island.width - 396px; y: 6px;
-                    width: 120px; height: 52px;
-                    label-text: "MEM";
-                    value-text: root.header-memory;
-                }
-                GreenHeaderMetric {
-                    visible: island.width >= 1160px;
-                    x: island.width - 274px; y: 6px;
-                    width: 123px; height: 52px;
-                    label-text: "CPU";
-                    value-text: root.header-cpu;
-                }
-
-                // Always display the real process-token level, including a
-                // normal/filtered session. Only elevated tokens use amber.
                 Rectangle {
-                    visible: true;
-                    x: island.width < 600px ? island.width - 240px : 316px;
-                    y: 17px;
-                    width: 106px;
-                    height: 30px;
-                    border-radius: 7px;
-                    background: (root.privilege-label == "USUARIO" || root.privilege-label == "LIMITADO")
-                        ? #323b37 : #684627;
-                    border-width: 1px;
-                    border-color: (root.privilege-label == "USUARIO" || root.privilege-label == "LIMITADO")
-                        ? #6c8377 : #f39120;
+                    visible: island.width >= 1210px;
+                    x: 397px; y: 16px;
+                    width: 2px; height: 58px;
+                    background: #e2dac2;
+                }
 
-                    Text {
-                        x: 2px;
-                        y: 0;
-                        width: parent.width - 4px;
-                        height: parent.height;
-                        text: root.privilege-label;
-                        color: (root.privilege-label == "USUARIO" || root.privilege-label == "LIMITADO")
-                            ? #e2dac2 : #f39120;
-                        font-family: "Oxanium";
-                        font-size: 11px;
-                        font-weight: 700;
-                        horizontal-alignment: center;
-                        vertical-alignment: center;
+                // Diagonal score marks and twin baseline lines are part of
+                // the visual language of the reference, not terminal text.
+                Path {
+                    visible: island.width >= 1210px;
+                    x: 420px; y: 17px;
+                    width: 76px; height: 30px;
+                    commands: "M 10 0 L 23 0 L 12 28 L 0 28 Z M 29 0 L 42 0 L 31 28 L 19 28 Z M 48 0 L 61 0 L 50 28 L 38 28 Z M 67 0 L 76 0 L 65 28 L 57 28 Z";
+                    fill: #aca399;
+                }
+                Text {
+                    visible: island.width >= 1210px;
+                    x: 514px; y: 15px;
+                    width: 240px; height: 26px;
+                    text: "› CONSOLA AVANZADA";
+                    color: #e2dac2;
+                    font-family: "Oxanium";
+                    font-size: 15px; font-weight: 800;
+                    vertical-alignment: center;
+                    overflow: elide;
+                }
+                Rectangle {
+                    visible: island.width >= 1210px;
+                    x: 420px; y: 49px;
+                    width: 323px; height: 2px;
+                    background: #a69a88;
+                }
+                Text {
+                    visible: island.width >= 1210px;
+                    x: 420px; y: 56px;
+                    width: 335px; height: 22px;
+                    text: "V " + root.header-version + "  |  " + root.header-arch + "  |  " + root.privilege-label;
+                    font-family: "Oxanium";
+                    font-size: 12px; font-weight: 800;
+                    color: #e2dac2; overflow: elide;
+                }
+
+                // Smaller windows retain the existing island rather than
+                // forcing a second row or moving the terminal to a sidebar.
+                Text {
+                    visible: island.width >= 680px && island.width < 1210px;
+                    x: 400px; y: 13px;
+                    width: island.width - 515px;
+                    height: 27px;
+                    text: "SST / GREEN";
+                    color: #fe8254;
+                    font-family: "Oxanium"; font-size: 15px; font-weight: 800;
+                    overflow: elide;
+                }
+                Text {
+                    visible: island.width >= 680px && island.width < 1210px;
+                    x: 400px; y: 48px;
+                    width: island.width - 515px;
+                    height: 20px;
+                    text: "V " + root.header-version;
+                    color: #e2dac2;
+                    font-family: "Oxanium"; font-size: 11px; font-weight: 800;
+                    overflow: elide;
+                }
+
+                // One connected border and shared separators like the mockup.
+                // Every value is read from Windows; no simulated load metric.
+                Rectangle {
+                    visible: island.width >= 1450px;
+                    x: island.width - 826px; y: 12px;
+                    width: 564px; height: 65px;
+                    background: transparent;
+                    border-width: 2px; border-color: #e2dac2;
+                    border-radius: 13px;
+                    GreenHeaderMetric {
+                        x: 2px; y: 0px; width: 178px; height: parent.height;
+                        label-text: "HOST"; value-text: root.header-host;
+                    }
+                    GreenHeaderMetric {
+                        x: 181px; y: 0px; width: 139px; height: parent.height;
+                        label-text: "UPTIME"; value-text: root.header-uptime;
+                    }
+                    GreenHeaderMetric {
+                        x: 321px; y: 0px; width: 120px; height: parent.height;
+                        label-text: "MEM"; value-text: root.header-memory;
+                    }
+                    GreenHeaderMetric {
+                        x: 442px; y: 0px; width: 120px; height: parent.height;
+                        label-text: "CPU"; value-text: root.header-cpu;
+                    }
+                    for separator in [180, 320, 441] : Rectangle {
+                        x: separator * 1px; y: 0px; width: 1px;
+                        height: parent.height; background: #958778;
                     }
                 }
 
-                Text {
-                    visible: island.width >= 780px && island.width < 1100px;
-                    x: 439px;
-                    y: 0;
-                    width: 92px;
-                    height: parent.height;
-                    text: root.cpu-text;
-                    color: #e2dac2;
-                    font-family: "Oxanium";
-                    font-size: 13px;
-                    vertical-alignment: center;
+                Rectangle {
+                    visible: island.width >= 1120px && island.width < 1450px;
+                    x: island.width - 519px; y: 12px;
+                    width: 354px; height: 65px;
+                    background: transparent;
+                    border-width: 2px; border-color: #e2dac2;
+                    border-radius: 13px;
+                    GreenHeaderMetric {
+                        x: 2px; y: 0px; width: 115px; height: parent.height;
+                        label-text: "UPTIME"; value-text: root.header-uptime;
+                    }
+                    GreenHeaderMetric {
+                        x: 119px; y: 0px; width: 115px; height: parent.height;
+                        label-text: "MEM"; value-text: root.header-memory;
+                    }
+                    GreenHeaderMetric {
+                        x: 236px; y: 0px; width: 116px; height: parent.height;
+                        label-text: "CPU"; value-text: root.header-cpu;
+                    }
+                    Rectangle { x: 118px; width: 1px; height: parent.height; background: #958778; }
+                    Rectangle { x: 235px; width: 1px; height: parent.height; background: #958778; }
                 }
 
-                Text {
-                    visible: island.width >= 780px && island.width < 1100px;
-                    x: 547px;
-                    y: 0;
-                    width: 128px;
-                    height: parent.height;
-                    text: root.ram-text;
-                    color: #e2dac2;
-                    font-family: "Oxanium";
-                    font-size: 13px;
-                    vertical-alignment: center;
+                Rectangle {
+                    visible: island.width >= 850px && island.width < 1120px;
+                    x: island.width - 380px; y: 12px;
+                    width: 215px; height: 65px;
+                    background: transparent;
+                    border-width: 2px; border-color: #e2dac2;
+                    border-radius: 13px;
+                    GreenHeaderMetric {
+                        x: 2px; y: 0px; width: 104px; height: parent.height;
+                        label-text: "MEM"; value-text: root.header-memory;
+                    }
+                    GreenHeaderMetric {
+                        x: 108px; y: 0px; width: 106px; height: parent.height;
+                        label-text: "CPU"; value-text: root.header-cpu;
+                    }
+                    Rectangle { x: 107px; width: 1px; height: parent.height; background: #958778; }
                 }
 
-                Text {
-                    visible: island.width >= 945px && island.width < 1100px;
-                    x: island.width - 300px;
-                    y: 0;
-                    width: 62px;
-                    height: parent.height;
-                    text: root.clock-text;
-                    color: #e2dac2;
-                    font-family: "Oxanium";
-                    font-size: 13px;
-                    vertical-alignment: center;
-                    horizontal-alignment: center;
+                Rectangle {
+                    visible: island.width >= 1450px;
+                    x: island.width - 250px; y: 24px;
+                    width: 123px; height: 42px;
+                    background: #fe8254;
+                    border-radius: 11px;
+                    Rectangle {
+                        x: 11px; y: 15px;
+                        width: 12px; height: 12px; border-radius: 6px;
+                        background: #add794;
+                        border-width: 2px; border-color: #1b2623;
+                    }
+                    Text {
+                        x: 28px; y: 0px;
+                        width: parent.width - 35px; height: parent.height;
+                        text: "SST ACTIVO";
+                        color: #171717;
+                        font-family: "Oxanium"; font-weight: 800; font-size: 14px;
+                        vertical-alignment: center; horizontal-alignment: center;
+                        overflow: elide;
+                    }
                 }
 
-                Text {
-                    visible: island.width >= 945px && island.width < 1100px;
-                    x: island.width - 235px;
-                    y: 0;
-                    width: 86px;
-                    height: parent.height;
-                    text: root.date-text;
-                    color: #c2b5a2;
-                    font-family: "Oxanium";
-                    font-size: 12px;
-                    vertical-alignment: center;
-                    horizontal-alignment: center;
+                Rectangle {
+                    visible: island.width < 850px;
+                    x: island.width - 243px; y: 25px;
+                    width: 112px; height: 38px;
+                    border-radius: 7px;
+                    border-width: 1px; border-color: #f39120;
+                    background: #39352e;
+                    Text {
+                        width: parent.width; height: parent.height;
+                        text: root.privilege-label;
+                        color: #e2dac2; font-family: "Oxanium";
+                        font-size: 12px; font-weight: 800;
+                        vertical-alignment: center; horizontal-alignment: center;
+                    }
                 }
 
                 Rectangle {
@@ -2605,6 +2656,7 @@ pub fn run() -> Result<()> {
     ui.set_privilege_label(privilege_label.clone().into());
     ui.set_header_host(System::host_name().unwrap_or_else(|| "—".to_owned()).into());
     ui.set_header_version(crate::application::update::display_version().into());
+    ui.set_header_arch(std::env::consts::ARCH.to_uppercase().into());
 
     if let Some(image) = background_image {
         ui.set_background_image(image);
