@@ -888,6 +888,7 @@ slint::slint! {
                 }
 
                 Text {
+                    visible: island.width >= 550px;
                     x: 190px; y: 11px;
                     width: 105px; height: 58px;
                     text: "SHELL\nSHOCK\nTOOL";
@@ -898,14 +899,14 @@ slint::slint! {
                 }
 
                 Rectangle {
-                    visible: island.width > 885px;
+                    visible: island.width >= 600px;
                     x: 303px; y: 12px;
                     width: 2px; height: 53px;
                     background: #c6b39c;
                 }
 
                 Text {
-                    visible: island.width > 885px;
+                    visible: island.width >= 600px;
                     x: 315px; y: 16px;
                     width: 115px; height: 22px;
                     text: "SST  /  GREEN";
@@ -915,25 +916,25 @@ slint::slint! {
                 }
 
                 Text {
-                    visible: island.width > 885px;
+                    visible: island.width >= 600px;
                     x: 315px; y: 42px;
-                    width: 115px; height: 18px;
+                    width: 162px; height: 18px;
                     text: "V " + root.header-version + "  ·  " + root.header-arch;
-                    font-family: "Share Tech Mono"; font-size: 9px;
+                    font-family: "Oxanium"; font-size: 10px;
                     color: #e2dac2; overflow: elide;
                 }
 
                 // The metric rail is anchored before native window controls;
                 // narrow windows hide it instead of compressing the console.
                 GreenHeaderMetric {
-                    visible: island.width >= 920px;
+                    visible: island.width >= 1100px;
                     x: island.width - 585px; y: 13px;
                     width: 141px; height: 51px;
                     label-text: "HOST";
                     value-text: root.header-host;
                 }
                 GreenHeaderMetric {
-                    visible: island.width >= 920px;
+                    visible: island.width >= 1100px;
                     x: island.width - 442px; y: 13px;
                     width: 107px; height: 51px;
                     label-text: "UPTIME";
@@ -957,7 +958,8 @@ slint::slint! {
                 // Privilege level remains visible even on compact windows.
                 Rectangle {
                     visible: island.width < 920px;
-                    x: 308px; y: 26px; width: 113px; height: 27px;
+                    x: island.width < 550px ? 194px : 308px;
+                    y: 26px; width: 113px; height: 27px;
                     border-radius: 6px;
                     border-width: 1px;
                     border-color: #f39120;
@@ -2390,6 +2392,10 @@ pub fn run() -> Result<()> {
         }
     };
     ui.set_privilege_label(privilege_label.clone().into());
+    // All header figures come from the actual Windows process/host.
+    ui.set_header_version(crate::application::update::display_version().into());
+    ui.set_header_arch(std::env::consts::ARCH.into());
+    ui.set_header_host(sysinfo::System::host_name().unwrap_or_else(|| "—".to_owned()).into());
 
     if let Some(image) = background_image {
         ui.set_background_image(image);
@@ -2847,6 +2853,21 @@ pub fn run() -> Result<()> {
 
                 ui.set_cpu_text(format!("CPU {:.0}%", cpu).into());
                 ui.set_ram_text(format!("RAM {:.1} GiB", ram_gib).into());
+                let total_ram = system.total_memory();
+                let used_ram = system.used_memory();
+                let used_percent = if total_ram > 0 {
+                    (used_ram as f64 * 100.0 / total_ram as f64).round() as u64
+                } else {
+                    0
+                };
+                let uptime = System::uptime();
+                ui.set_header_cpu(format!("{cpu:.0}%").into());
+                ui.set_header_memory(if total_ram > 0 {
+                    format!("{used_percent}%")
+                } else {
+                    "—".to_owned()
+                }.into());
+                ui.set_header_uptime(format!("{}d {:02}h", uptime / 86_400, (uptime / 3_600) % 24).into());
                 ui.set_clock_text(now.format("%H:%M").to_string().into());
                 ui.set_date_text(now.format("%d %b").to_string().into());
                 *last_status.borrow_mut() = Instant::now();
