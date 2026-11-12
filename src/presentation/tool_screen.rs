@@ -49,7 +49,7 @@ fn wrap_original(original: &str, max_width: usize, heading: bool) -> Vec<ReportL
             .map(|(offset, _)| offset).unwrap_or(remaining.len());
         let split = remaining[..hard].rfind(char::is_whitespace)
             .filter(|at| *at >= hard / 2)
-            .map(|at| at + remaining[*at..].chars().next().map(char::len_utf8).unwrap_or(0))
+            .map(|at| at + remaining[at..].chars().next().map(char::len_utf8).unwrap_or(0))
             .unwrap_or(hard);
         let (head, tail) = remaining.split_at(split);
         result.push(ReportLine {
