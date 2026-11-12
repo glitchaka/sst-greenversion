@@ -16,6 +16,7 @@ public static class SSTWin32Preview {
   [DllImport("user32.dll")] public static extern bool GetWindowRect(IntPtr hWnd, out RECT rect);
   [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr hWnd);
   [DllImport("user32.dll")] public static extern bool ShowWindow(IntPtr hWnd, int cmd);
+  [DllImport("user32.dll")] public static extern bool MoveWindow(IntPtr hWnd, int x, int y, int width, int height, bool repaint);
 }
 '@
 
@@ -52,9 +53,30 @@ try {
         if ($handle -ne [IntPtr]::Zero) { break }
     }
     if ($handle -eq [IntPtr]::Zero) { throw "SST did not create a native window" }
-    [void][SSTWin32Preview]::ShowWindow($handle, 9)
-    [void][SSTWin32Preview]::SetForegroundWindow($handle)
-    Start-Sleep -Seconds 3
+    # Winit/Slint may initially create a 16x16 placeholder HWND. Do not
+    # treat that transient rectangle as the actual rendered console.
+    $validBounds = $false
+    for ($attempt = 0; $attempt -lt 35; $attempt++) {
+        $process.Refresh()
+        if ($process.HasExited) { throw "SST exited before becoming drawable" }
+        [void][SSTWin32Preview]::ShowWindow($handle, 9)
+        if ($attempt -ge 5) {
+            [void][SSTWin32Preview]::MoveWindow($handle, 25, 25, 1260, 780, $true)
+        }
+        [void][SSTWin32Preview]::SetForegroundWindow($handle)
+        Start-Sleep -Milliseconds 400
+        $rect = New-Object SSTWin32Preview+RECT
+        if ([SSTWin32Preview]::GetWindowRect($handle, [ref]$rect)) {
+            if (($rect.Right - $rect.Left) -ge 640 -and ($rect.Bottom - $rect.Top) -ge 400) {
+                $validBounds = $true
+                break
+            }
+        }
+        $handle = $process.MainWindowHandle
+    }
+    if (-not $validBounds) {
+        throw "SST did not expose a drawable application window (last handle $handle)."
+    }
     Save-SSTWindow $handle (Join-Path $OutputDirectory "01-consola-real.png")
     [System.Windows.Forms.SendKeys]::SendWait('sys{ENTER}')
     Start-Sleep -Seconds 6
