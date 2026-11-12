@@ -14,20 +14,9 @@ use anyhow::Result;
 use super::embedded_inner;
 
 const TERMINAL_ERROR_MARKER: &[u8] = b"Error de terminal:";
-const LEGACY_BANNER_MARKER: &[u8] = b"Escribe help para ver los comandos.";
-const SECURITY_PRELOAD_MARKER: &[u8] = b"procesos              revisando";
-const STARTUP_GREETING_MARKER: &str = "«Hola. ¿Te gustaría destruir algún mal hoy?»";
 const STARTUP_FOOTER: &str =
     "\r\n\x1b[38;5;250mConsejo: usa \x1b[1;38;5;117mguide\x1b[0;38;5;250m para conocer todo lo que puedes hacer con SST.\x1b[0m\r\n\r\n\x1b[1;38;5;117m«Hola. ¿Te gustaría destruir algún mal hoy?»\x1b[0m\r\n";
 const EXIT_SETTLE_TIME: Duration = Duration::from_millis(100);
-
-#[derive(Clone, Copy, PartialEq, Eq)]
-enum StartupRelayState {
-    WaitingForFetch,
-    FetchVisible,
-    SecurityHidden,
-    Complete,
-}
 
 /// Supervises the in-process terminal worker so an internal startup/runtime
 /// failure cannot make the whole SST window disappear before the diagnostic is
@@ -79,9 +68,24 @@ impl EmbeddedSession {
         });
 
         thread::spawn(move || {
-            let mut startup = StartupRelayState::WaitingForFetch;
-
+            let mut suppress_preload = false;
             for data in source {
+                if data == embedded_inner::STARTUP_PRELOAD_BEGIN {
+                    suppress_preload = true;
+                    continue;
+                }
+                if data == embedded_inner::STARTUP_PRELOAD_END {
+                    suppress_preload = false;
+                    if relay_tx.send(STARTUP_FOOTER.as_bytes().to_vec()).is_err() {
+                        break;
+                    }
+                    continue;
+                }
+                if data == embedded_inner::STARTUP_READY {
+                    relay_ready.store(true, Ordering::SeqCst);
+                    continue;
+                }
+                // Diagnostics must be surfaced even when startup fails.
                 if contains_bytes(&data, TERMINAL_ERROR_MARKER) {
                     relay_failed.store(true, Ordering::SeqCst);
                     if relay_tx.send(data).is_err() {
@@ -89,48 +93,11 @@ impl EmbeddedSession {
                     }
                     continue;
                 }
-
-                match startup {
-                    StartupRelayState::WaitingForFetch => {
-                        // Ignore any startup-file chatter and the legacy banner.
-                        // The first visible content in the GUI must be neofetch.
-                        if contains_bytes(&data, LEGACY_BANNER_MARKER) {
-                            startup = StartupRelayState::FetchVisible;
-                        }
-                    }
-                    StartupRelayState::FetchVisible => {
-                        // The first preload progress record marks the end of the
-                        // neofetch block. From here until render_startup(), preload
-                        // diagnostics stay internal instead of scrolling the GUI.
-                        if contains_bytes(&data, SECURITY_PRELOAD_MARKER) {
-                            startup = StartupRelayState::SecurityHidden;
-                            continue;
-                        }
-
-                        if relay_tx.send(data).is_err() {
-                            break;
-                        }
-                    }
-                    StartupRelayState::SecurityHidden => {
-                        if contains_bytes(&data, STARTUP_GREETING_MARKER.as_bytes()) {
-                            if relay_tx.send(STARTUP_FOOTER.as_bytes().to_vec()).is_err() {
-                                break;
-                            }
-
-                            // Only the read-only availability notice runs at startup;
-                            // downloading and applying still require "instp upgrade sst".
-                            startup = StartupRelayState::Complete;
-                            relay_ready.store(true, Ordering::SeqCst);
-                        }
-                        // All preload progress and the verbose startup report are
-                        // intentionally swallowed. `triage` remains fully verbose
-                        // after startup because this filter disables itself here.
-                    }
-                    StartupRelayState::Complete => {
-                        if relay_tx.send(data).is_err() {
-                            break;
-                        }
-                    }
+                // Every normal command result must reach the parser verbatim.
+                // Suppression is bounded by worker-emitted control frames, not
+                // by detecting language-dependent greeting or status strings.
+                if !suppress_preload && relay_tx.send(data).is_err() {
+                    break;
                 }
             }
         });
