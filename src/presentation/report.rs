@@ -263,6 +263,45 @@ fn style_line(line: &str) -> String {
     line.to_owned()
 }
 
+/// Errors from any command share the same semantic presentation path.
+/// Preserve escapes, carriage-return progress updates and machine output.
+pub fn decorate_error(command: &str, stderr: &str) -> String {
+    if stderr.is_empty() || is_machine_or_shell_command(command) {
+        return stderr.to_owned();
+    }
+    stderr.split_inclusive('\n').map(|part| {
+        let line = part.strip_suffix('\n').unwrap_or(part);
+        if line.contains('\x1b') || line.contains('\r') || line.contains('\0') {
+            return part.to_owned();
+        }
+        let trimmed = line.trim_start();
+        let indent = &line[..line.len() - trimmed.len()];
+        let formatted = if trimmed.starts_with("Error:")
+            || trimmed.starts_with("error:")
+            || trimmed.starts_with("sst:")
+            || trimmed.starts_with("ERROR:")
+        {
+            format!("{indent}{BAD}{trimmed}{RESET}")
+        } else if trimmed.starts_with("Warning:")
+            || trimmed.starts_with("warning:")
+            || trimmed.starts_with("Advertencia:")
+            || trimmed.starts_with("ADVERTENCIA:")
+        {
+            format!("{indent}{CAUTION}{trimmed}{RESET}")
+        } else {
+            style_line(line)
+        };
+        if part.ends_with('\n') { format!("{formatted}\n") } else { formatted }
+    }).collect()
+}
+
+/// Report a genuine nonzero process exit when neither output stream has
+/// produced any diagnostic. Successful silent commands remain silent.
+pub fn silent_failure(status: i32, stdout: &str, stderr: &str) -> Option<String> {
+    (status != 0 && stdout.is_empty() && stderr.is_empty())
+        .then(|| format!("{BAD}Error: el comando terminó con código {status} sin emitir un diagnóstico.{RESET}\n"))
+}
+
 /// Shared presentation for incremental external-process output. Each complete
 /// line is formatted in place; no extra titles or blank lines get inserted.
 /// Data streams are untouched because only direct interactive GUI output uses
@@ -537,6 +576,17 @@ mod tests {
         assert!(style_line("Error: acceso rechazado").contains(BAD));
         assert!(style_line("Advertencia: revisar conexión").contains(CAUTION));
         assert!(!style_live_line("Respuesta desde 10.0.0.1: bytes=32 tiempo=1ms TTL=64").contains(PERFECT));
+    }
+
+    #[test]
+    fn shared_error_path_preserves_machine_streams_and_reports_failure() {
+        assert_eq!(decorate_error("net check --csv", "error: raw\n"), "error: raw\n");
+        assert_eq!(decorate_error("net check | cat", "error: raw\n"), "error: raw\n");
+        assert!(decorate_error("net check", "Error: conexión fallida\n").contains(BAD));
+        assert_eq!(decorate_error("net check", "\\x1b[31mError\\x1b[0m\n"), "\\x1b[31mError\\x1b[0m\n");
+        assert!(silent_failure(5, "", "").unwrap().contains("código 5"));
+        assert!(silent_failure(0, "", "").is_none());
+        assert!(silent_failure(5, "datos", "").is_none());
     }
 
     #[test]
