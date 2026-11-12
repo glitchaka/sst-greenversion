@@ -1117,7 +1117,7 @@ slint::slint! {
                 }
 
                 Rectangle {
-                    visible: island.width >= 1580px;
+                    visible: (island.width >= 1300px && island.width < 1450px) || island.width >= 1580px;
                     x: 397px; y: 16px;
                     width: 2px; height: 58px;
                     background: #e2dac2;
@@ -1126,14 +1126,14 @@ slint::slint! {
                 // Diagonal score marks and twin baseline lines are part of
                 // the visual language of the reference, not terminal text.
                 Path {
-                    visible: island.width >= 1580px;
+                    visible: (island.width >= 1300px && island.width < 1450px) || island.width >= 1580px;
                     x: 420px; y: 17px;
                     width: 76px; height: 30px;
                     commands: "M 10 0 L 23 0 L 12 28 L 0 28 Z M 29 0 L 42 0 L 31 28 L 19 28 Z M 48 0 L 61 0 L 50 28 L 38 28 Z M 67 0 L 76 0 L 65 28 L 57 28 Z";
                     fill: #aca399;
                 }
                 Text {
-                    visible: island.width >= 1580px;
+                    visible: (island.width >= 1300px && island.width < 1450px) || island.width >= 1580px;
                     x: 514px; y: 15px;
                     width: 240px; height: 26px;
                     text: "› CONSOLA AVANZADA";
@@ -1144,13 +1144,13 @@ slint::slint! {
                     overflow: elide;
                 }
                 Rectangle {
-                    visible: island.width >= 1580px;
+                    visible: (island.width >= 1300px && island.width < 1450px) || island.width >= 1580px;
                     x: 420px; y: 49px;
                     width: 323px; height: 2px;
                     background: #a69a88;
                 }
                 Text {
-                    visible: island.width >= 1580px;
+                    visible: (island.width >= 1300px && island.width < 1450px) || island.width >= 1580px;
                     x: 420px; y: 56px;
                     width: 335px; height: 22px;
                     text: "V " + root.header-version + "  |  " + root.header-arch + "  |  " + root.privilege-label;
@@ -1162,7 +1162,7 @@ slint::slint! {
                 // Smaller windows retain the existing island rather than
                 // forcing a second row or moving the terminal to a sidebar.
                 Text {
-                    visible: island.width >= 1120px && island.width < 1580px;
+                    visible: (island.width >= 1120px && island.width < 1300px) || (island.width >= 1450px && island.width < 1580px);
                     x: 400px; y: 13px;
                     width: 185px;
                     height: 27px;
@@ -1172,7 +1172,7 @@ slint::slint! {
                     overflow: elide;
                 }
                 Text {
-                    visible: island.width >= 1120px && island.width < 1580px;
+                    visible: (island.width >= 1120px && island.width < 1300px) || (island.width >= 1450px && island.width < 1580px);
                     x: 400px; y: 48px;
                     width: 185px;
                     height: 20px;
