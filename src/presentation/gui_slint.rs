@@ -305,19 +305,29 @@ slint::slint! {
             height: 53px;
             background: #2b2c28;
         }
-        Path {
+        // Clean vertical end instead of the jagged diagonal cut.
+        Rectangle {
             x: 2px; y: 2px;
-            width: 338px; height: 53px;
-            commands: "M 0 0 L 336 0 L 318 13 L 302 31 L 285 53 L 0 53 Z";
-            fill: #fe8254;
+            width: min(304px, parent.width - 4px);
+            height: 53px;
+            background: #fe8254;
         }
         Text {
-            x: 21px; y: 7px;
-            width: 269px; height: 39px;
-            text: "CONSOLE     SST";
+            x: 20px; y: 8px;
+            width: 176px; height: 37px;
+            text: "CONSOLE";
             font-family: "Oxanium";
             font-size: 23px;
             font-weight: 800;
+            color: #171c1b;
+            vertical-alignment: center;
+        }
+        Text {
+            x: 213px; y: 8px;
+            width: 74px; height: 37px;
+            text: "SST";
+            font-family: "SST Industrial";
+            font-size: 27px;
             color: #171c1b;
             vertical-alignment: center;
         }
@@ -348,20 +358,6 @@ slint::slint! {
             x: 4px; y: parent.height - 21px;
             width: parent.width - 8px; height: 1px;
             background: #5e6657;
-        }
-
-        Text {
-            visible: parent.width > 780px;
-            x: parent.width - 455px; y: 9px;
-            width: 432px; height: 30px;
-            text: "SHELL SHOCK TOOL  /  " + root.channel-version;
-            font-family: "Oxanium";
-            font-size: 14px;
-            font-weight: 800;
-            color: #e2dac2;
-            horizontal-alignment: right;
-            vertical-alignment: center;
-            overflow: elide;
         }
 
         // Decorative score marks only; system values come from the island.
