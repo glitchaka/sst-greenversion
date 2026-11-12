@@ -1,4 +1,4 @@
-//! Slint/FemtoVG frontend for SST Blueversion.
+//! Slint/FemtoVG frontend for the native SST Green presentation.
 //!
 //! The terminal owns the whole client area. The top status island is an overlay:
 //! there is deliberately no full-width title bar behind it.
@@ -144,11 +144,15 @@ mod viewport_regression_tests {
     }
 }
 
-const FG: Rgb = Rgb(0xEB, 0xDB, 0xB2);
-const BG: Rgb = Rgb(0x28, 0x28, 0x28);
-const CURSOR: Rgb = Rgb(0xFE, 0x80, 0x19);
-const SELECTION: Rgb = Rgb(0x50, 0x49, 0x45);
+const FG: Rgb = Rgb(0xF3, 0xE6, 0xCA);
+const BG: Rgb = Rgb(0x1B, 0x20, 0x20);
+const CURSOR: Rgb = Rgb(0xFA, 0x78, 0x4F);
+const SELECTION: Rgb = Rgb(0x3F, 0x5A, 0x62);
 
+// Technical monospace face for all terminal cells. The original Nerd Font
+// remains embedded as a fallback for Powerline, Nerd icons and rare glyphs.
+const GREEN_MONO_BYTES: &[u8] =
+    include_bytes!("../../assets/fonts/ShareTechMono-Regular.ttf");
 const NERD_FONT_BYTES: &[u8] = include_bytes!(concat!(
     env!("OUT_DIR"),
     "/JetBrainsMonoNerdFontMono-Regular.ttf"
@@ -1172,6 +1176,7 @@ struct TerminalModel {
     session: EmbeddedSession,
     parser: vt100::Parser,
     font: Font,
+    nerd_font: Font,
     glyphs: HashMap<(char, u16), Glyph>,
     selection: Option<(usize, usize)>,
     selection_anchor: Option<usize>,
@@ -1190,13 +1195,16 @@ struct TerminalModel {
 
 impl TerminalModel {
     fn new(appearance: TerminalAppearance) -> Result<Self> {
-        let font = Font::from_bytes(NERD_FONT_BYTES, FontSettings::default())
-            .map_err(|error| anyhow::anyhow!("No se pudo cargar la Nerd Font embebida: {error}"))?;
+        let font = Font::from_bytes(GREEN_MONO_BYTES, FontSettings::default())
+            .map_err(|error| anyhow::anyhow!("No se pudo cargar la fuente Green embebida: {error}"))?;
+        let nerd_font = Font::from_bytes(NERD_FONT_BYTES, FontSettings::default())
+            .map_err(|error| anyhow::anyhow!("No se pudo cargar la fuente de iconos embebida: {error}"))?;
 
         Ok(Self {
             session: EmbeddedSession::start(INITIAL_COLS, INITIAL_ROWS)?,
             parser: vt100::Parser::new(INITIAL_ROWS, INITIAL_COLS, 10_000),
             font,
+            nerd_font,
             glyphs: HashMap::new(),
             selection: None,
             selection_anchor: None,
@@ -1657,7 +1665,12 @@ impl TerminalModel {
                     for ch in content.chars() {
                         let key = (ch, font_key);
                         if !self.glyphs.contains_key(&key) {
-                            let (metrics, alpha) = self.font.rasterize(ch, font_px);
+                            let font = if self.font.lookup_glyph_index(ch) == 0 {
+                                &self.nerd_font
+                            } else {
+                                &self.font
+                            };
+                            let (metrics, alpha) = font.rasterize(ch, font_px);
                             self.glyphs.insert(key, Glyph { metrics, alpha });
                         }
                         if let Some(glyph) = self.glyphs.get(&key) {
