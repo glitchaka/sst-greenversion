@@ -53,7 +53,7 @@ use crate::adapters::{
 const INITIAL_COLS: u16 = 112;
 const INITIAL_ROWS: u16 = 31;
 const ISLAND_TOP: f32 = 6.0;
-const ISLAND_HEIGHT: f32 = 34.0;
+const ISLAND_HEIGHT: f32 = 78.0;
 
 // The frameless Slint window can briefly report an icon-sized client area
 // *before* IsIconic becomes true, or *after* it becomes false. Never send
@@ -484,6 +484,34 @@ slint::slint! {
         }
     }
 
+    // Industrial instrumentation uses real host metrics; no static demo values.
+    component GreenHeaderMetric inherits Rectangle {
+        in property <string> label-text;
+        in property <string> value-text;
+        background: #252522;
+        border-width: 1px;
+        border-color: #bbae98;
+        border-radius: 5px;
+
+        Text {
+            x: 9px; y: 5px;
+            width: parent.width - 18px; height: 17px;
+            text: root.label-text;
+            font-family: "Oxanium"; font-size: 11px; font-weight: 800;
+            color: #e2dac2;
+            overflow: elide;
+        }
+        Text {
+            x: 9px; y: 23px;
+            width: parent.width - 18px; height: 25px;
+            text: root.value-text;
+            font-family: "Oxanium"; font-size: 17px; font-weight: 800;
+            color: #f5ead6;
+            overflow: elide;
+            vertical-alignment: center;
+        }
+    }
+
     export component SstBlueWindow inherits Window {
         title: "Shell Shock Tool";
         preferred-width: 980px;
@@ -553,6 +581,12 @@ slint::slint! {
         in property <string> ram-text: "RAM 0.0 GiB";
         in property <string> clock-text: "00:00";
         in property <string> date-text: "00 ---";
+        in property <string> header-host: "—";
+        in property <string> header-uptime: "—";
+        in property <string> header-memory: "—";
+        in property <string> header-cpu: "—";
+        in property <string> header-version: "—";
+        in property <string> header-arch: "—";
         // Logical coordinates align the live transfer indicator to the command output.
         in property <float> transfer-x: 22.0;
         in property <float> transfer-y: 65.0;
@@ -817,144 +851,167 @@ slint::slint! {
             transfer-known-total: root.transfer-known-total;
         }
 
+        // Green's permanent full-width industrial command bar. All values
+        // are bound to the current Windows host; this is not a side dashboard.
         island := Rectangle {
-            width: min(720px, root.width - 20px);
-            height: 34px;
-            x: (root.width - self.width) / 2;
-            y: 6px;
-            border-radius: 13px;
-            background: rgba(40, 40, 40, 0.93);
+            width: root.width - 14px;
+            height: 78px;
+            x: 7px;
+            y: 7px;
+            border-radius: 12px;
+            background: rgba(23, 23, 22, 0.98);
             border-width: 1px;
-            border-color: #504945;
+            border-color: #a79a86;
 
             WindowMoveArea {
-                x: 0;
-                y: 0;
                 width: parent.width;
                 height: parent.height;
+                x: 0; y: 0;
 
-                Text {
-                    x: 17px;
-                    y: 0;
-                    width: 70px;
-                    height: parent.height;
-                    text: "SST";
-                    color: #ebdbb2;
-                    font-family: "Segoe UI Variable";
-                    font-size: 15px;
-                    font-weight: 700;
-                    vertical-alignment: center;
-                }
-
-                // Always display the real process-token level, including a
-                // normal/filtered session. Only elevated tokens use amber.
                 Rectangle {
-                    visible: true;
-                    x: 70px;
-                    y: 5px;
-                    width: 96px;
-                    height: 24px;
-                    border-radius: 7px;
-                    background: (root.privilege-label == "USUARIO" || root.privilege-label == "LIMITADO")
-                        ? #3c3836 : #504030;
-                    border-width: 1px;
-                    border-color: (root.privilege-label == "USUARIO" || root.privilege-label == "LIMITADO")
-                        ? #665c54 : #d79921;
-
+                    x: 7px; y: 6px;
+                    width: 172px; height: parent.height - 12px;
+                    background: #e2dac2;
+                    border-radius: 8px;
                     Text {
-                        x: 2px;
-                        y: 0;
-                        width: parent.width - 4px;
-                        height: parent.height;
-                        text: root.privilege-label;
-                        color: (root.privilege-label == "USUARIO" || root.privilege-label == "LIMITADO")
-                            ? #ebdbb2 : #fabd2f;
-                        font-family: "Segoe UI Variable";
-                        font-size: 11px;
-                        font-weight: 700;
-                        horizontal-alignment: center;
+                        x: 7px; y: -5px;
+                        width: parent.width - 14px;
+                        height: parent.height + 8px;
+                        text: "SST";
+                        font-family: "Oxanium";
+                        font-size: 59px;
+                        font-weight: 800;
+                        color: #171717;
                         vertical-alignment: center;
+                        horizontal-alignment: center;
                     }
                 }
 
                 Text {
-                    visible: island.width >= 705px;
-                    x: 184px;
-                    y: 0;
-                    width: 92px;
-                    height: parent.height;
-                    text: root.cpu-text;
-                    color: #ebdbb2;
-                    font-family: "Segoe UI Variable";
-                    font-size: 13px;
+                    x: 190px; y: 11px;
+                    width: 105px; height: 58px;
+                    text: "SHELL\nSHOCK\nTOOL";
+                    font-family: "Oxanium";
+                    font-size: 17px; font-weight: 800;
+                    color: #e2dac2;
                     vertical-alignment: center;
                 }
 
-                Text {
-                    visible: island.width >= 705px;
-                    x: 281px;
-                    y: 0;
-                    width: 128px;
-                    height: parent.height;
-                    text: root.ram-text;
-                    color: #ebdbb2;
-                    font-family: "Segoe UI Variable";
-                    font-size: 13px;
-                    vertical-alignment: center;
+                Rectangle {
+                    visible: island.width > 885px;
+                    x: 303px; y: 12px;
+                    width: 2px; height: 53px;
+                    background: #c6b39c;
                 }
 
                 Text {
-                    visible: island.width >= 525px;
-                    x: island.width - 296px;
-                    y: 0;
-                    width: 62px;
-                    height: parent.height;
-                    text: root.clock-text;
-                    color: #ebdbb2;
-                    font-family: "Segoe UI Variable";
-                    font-size: 13px;
-                    vertical-alignment: center;
-                    horizontal-alignment: center;
+                    visible: island.width > 885px;
+                    x: 315px; y: 16px;
+                    width: 115px; height: 22px;
+                    text: "SST  /  GREEN";
+                    font-family: "Oxanium"; font-size: 12px;
+                    font-weight: 800; color: #f39120;
+                    overflow: elide;
                 }
 
                 Text {
-                    visible: island.width >= 540px;
-                    x: island.width - 235px;
-                    y: 0;
-                    width: 86px;
-                    height: parent.height;
-                    text: root.date-text;
-                    color: #bdae93;
-                    font-family: "Segoe UI Variable";
-                    font-size: 12px;
-                    vertical-alignment: center;
-                    horizontal-alignment: center;
+                    visible: island.width > 885px;
+                    x: 315px; y: 42px;
+                    width: 115px; height: 18px;
+                    text: "V " + root.header-version + "  ·  " + root.header-arch;
+                    font-family: "Share Tech Mono"; font-size: 9px;
+                    color: #e2dac2; overflow: elide;
+                }
+
+                // The metric rail is anchored before native window controls;
+                // narrow windows hide it instead of compressing the console.
+                GreenHeaderMetric {
+                    visible: island.width >= 920px;
+                    x: island.width - 585px; y: 13px;
+                    width: 141px; height: 51px;
+                    label-text: "HOST";
+                    value-text: root.header-host;
+                }
+                GreenHeaderMetric {
+                    visible: island.width >= 920px;
+                    x: island.width - 442px; y: 13px;
+                    width: 107px; height: 51px;
+                    label-text: "UPTIME";
+                    value-text: root.header-uptime;
+                }
+                GreenHeaderMetric {
+                    visible: island.width >= 920px;
+                    x: island.width - 333px; y: 13px;
+                    width: 101px; height: 51px;
+                    label-text: "MEM";
+                    value-text: root.header-memory;
+                }
+                GreenHeaderMetric {
+                    visible: island.width >= 920px;
+                    x: island.width - 230px; y: 13px;
+                    width: 101px; height: 51px;
+                    label-text: "CPU";
+                    value-text: root.header-cpu;
+                }
+
+                // Privilege level remains visible even on compact windows.
+                Rectangle {
+                    visible: island.width < 920px;
+                    x: 308px; y: 26px; width: 113px; height: 27px;
+                    border-radius: 6px;
+                    border-width: 1px;
+                    border-color: #f39120;
+                    background: #41372b;
+                    Text {
+                        x: 5px; width: parent.width - 10px;
+                        height: parent.height;
+                        text: root.privilege-label;
+                        color: #e2dac2; font-family: "Oxanium";
+                        font-size: 12px; font-weight: 800;
+                        vertical-alignment: center;
+                        horizontal-alignment: center;
+                        overflow: elide;
+                    }
+                }
+                Rectangle {
+                    // Hardware status may be green only if the process actually
+                    // reports healthy; this badge reports SST running, not WAN.
+                    visible: island.width >= 1200px;
+                    x: island.width - 726px; y: 25px;
+                    width: 125px; height: 31px;
+                    border-radius: 8px;
+                    background: #fa784f;
+                    Rectangle {
+                        x: 9px; y: 11px; width: 9px; height: 9px;
+                        border-radius: 5px; background: #add794;
+                        border-width: 1px; border-color: #27312b;
+                    }
+                    Text {
+                        x: 22px; y: 0px;
+                        width: parent.width - 27px; height: parent.height;
+                        text: "SST ACTIVO";
+                        color: #1b1c1b; font-family: "Oxanium";
+                        font-size: 12px; font-weight: 800;
+                        vertical-alignment: center; horizontal-alignment: center;
+                    }
                 }
 
                 Rectangle {
                     x: island.width - 114px;
-                    y: 1px;
-                    width: 38px;
-                    height: island.height - 2px;
-                    border-radius: 10px;
+                    y: 21px;
+                    width: 38px; height: 35px;
+                    border-radius: 9px;
                     background: minimize-touch.pressed
-                        ? rgb(80, 73, 69)
-                        : minimize-touch.has-hover ? rgb(60, 56, 54) : transparent;
-
+                        ? #51483f
+                        : minimize-touch.has-hover ? #37312e : transparent;
                     Path {
-                        x: 11px;
-                        y: 10px;
-                        width: 16px;
-                        height: 12px;
+                        x: 11px; y: 11px;
+                        width: 16px; height: 12px;
                         commands: root.maximized
-                            ? "M 1 6 L 15 6"
-                            : "M 1 1 L 8 9 L 15 1";
-                        stroke: #d5c4a1;
-                        stroke-width: 2.4px;
-                        stroke-line-cap: round;
-                        stroke-line-join: round;
+                            ? "M 1 6 L 15 6" : "M 1 1 L 8 9 L 15 1";
+                        stroke: #e2dac2; stroke-width: 2.4px;
+                        stroke-line-cap: round; stroke-line-join: round;
                     }
-
                     minimize-touch := TouchArea {
                         mouse-cursor: pointer;
                         clicked => {
@@ -963,31 +1020,23 @@ slint::slint! {
                         }
                     }
                 }
-
                 Rectangle {
                     x: island.width - 76px;
-                    y: 1px;
-                    width: 38px;
-                    height: island.height - 2px;
-                    border-radius: 10px;
+                    y: 21px;
+                    width: 38px; height: 35px;
+                    border-radius: 9px;
                     background: maximize-touch.pressed
-                        ? rgb(80, 73, 69)
-                        : maximize-touch.has-hover ? rgb(60, 56, 54) : transparent;
-
+                        ? #51483f
+                        : maximize-touch.has-hover ? #37312e : transparent;
                     Path {
-                        x: 11px;
-                        y: 11px;
-                        width: 16px;
-                        height: 12px;
+                        x: 11px; y: 11px;
+                        width: 16px; height: 12px;
                         commands: root.maximized
                             ? "M 1 1 L 8 9 L 15 1"
                             : "M 1 10 L 8 2 L 15 10";
-                        stroke: #d5c4a1;
-                        stroke-width: 2.4px;
-                        stroke-line-cap: round;
-                        stroke-line-join: round;
+                        stroke: #e2dac2; stroke-width: 2.4px;
+                        stroke-line-cap: round; stroke-line-join: round;
                     }
-
                     maximize-touch := TouchArea {
                         mouse-cursor: pointer;
                         clicked => {
@@ -996,28 +1045,21 @@ slint::slint! {
                         }
                     }
                 }
-
                 Rectangle {
                     x: island.width - 38px;
-                    y: 1px;
-                    width: 38px;
-                    height: island.height - 2px;
-                    border-radius: 10px;
+                    y: 21px;
+                    width: 38px; height: 35px;
+                    border-radius: 9px;
                     background: close-touch.pressed
-                        ? rgb(100, 45, 38)
-                        : close-touch.has-hover ? rgb(80, 40, 35) : transparent;
-
+                        ? #642d26
+                        : close-touch.has-hover ? #502823 : transparent;
                     Path {
-                        x: 10px;
-                        y: 8px;
-                        width: 18px;
-                        height: 18px;
+                        x: 10px; y: 8px;
+                        width: 18px; height: 18px;
                         commands: "M 9 1 L 9 8 M 3.3 3.7 A 7 7 0 1 0 14.7 3.7";
-                        stroke: close-touch.has-hover ? #fb4934 : #fe8019;
-                        stroke-width: 2px;
-                        stroke-line-cap: round;
+                        stroke: close-touch.has-hover ? #fb4934 : #f39120;
+                        stroke-width: 2px; stroke-line-cap: round;
                     }
-
                     close-touch := TouchArea {
                         mouse-cursor: pointer;
                         clicked => { root.close-window(); }
