@@ -53,7 +53,7 @@ use crate::adapters::{
 const INITIAL_COLS: u16 = 112;
 const INITIAL_ROWS: u16 = 31;
 const ISLAND_TOP: f32 = 6.0;
-const ISLAND_HEIGHT: f32 = 42.0;
+const ISLAND_HEIGHT: f32 = 64.0;
 
 // The frameless Slint window can briefly report an icon-sized client area
 // *before* IsIconic becomes true, or *after* it becomes false. Never send
@@ -645,6 +645,11 @@ slint::slint! {
         in property <string> ram-text: "RAM 0.0 GiB";
         in property <string> clock-text: "00:00";
         in property <string> date-text: "00 ---";
+        in property <string> header-host: "—";
+        in property <string> header-uptime: "—";
+        in property <string> header-memory: "—";
+        in property <string> header-cpu: "—";
+        in property <string> header-version: "—";
         // Logical coordinates align the live transfer indicator to the command output.
         in property <float> transfer-x: 22.0;
         in property <float> transfer-y: 65.0;
@@ -925,8 +930,8 @@ slint::slint! {
         // Green's permanent full-width industrial command bar. All values
         // are bound to the current Windows host; this is not a side dashboard.
         island := Rectangle {
-            width: min(850px, root.width - 20px);
-            height: 42px;
+            width: min(1280px, root.width - 20px);
+            height: 64px;
             x: (root.width - self.width) / 2;
             y: 7px;
             border-radius: 14px;
@@ -945,7 +950,7 @@ slint::slint! {
                 Rectangle {
                     x: 5px;
                     y: 5px;
-                    width: 98px;
+                    width: 130px;
                     height: island.height - 10px;
                     border-radius: 8px;
                     background: #e2dac2;
@@ -956,21 +961,72 @@ slint::slint! {
                         text: "SST";
                         color: #171717;
                         font-family: "Oxanium";
-                        font-size: 29px;
+                        font-size: 47px;
                         font-weight: 800;
                         vertical-alignment: center;
                         horizontal-alignment: center;
                     }
                 }
 
+                Text {
+                    visible: island.width >= 600px;
+                    x: 144px; y: 9px;
+                    width: 100px; height: 46px;
+                    text: "SHELL\nSHOCK\nTOOL";
+                    font-family: "Oxanium"; font-size: 16px; font-weight: 800;
+                    color: #e2dac2;
+                    vertical-alignment: center;
+                }
+                Text {
+                    visible: island.width >= 600px;
+                    x: 253px; y: 48px;
+                    width: 146px; height: 12px;
+                    text: "V " + root.header-version;
+                    font-family: "Oxanium"; font-size: 10px;
+                    font-weight: 800;
+                    color: #f39120;
+                    overflow: elide;
+                }
+
+                // The mockup's telemetry rail lives *inside* the original
+                // floating island. It uses measured Windows values only.
+                GreenHeaderMetric {
+                    visible: island.width >= 1100px;
+                    x: island.width - 700px; y: 6px;
+                    width: 175px; height: 52px;
+                    label-text: "HOST";
+                    value-text: root.header-host;
+                }
+                GreenHeaderMetric {
+                    visible: island.width >= 1100px;
+                    x: island.width - 523px; y: 6px;
+                    width: 125px; height: 52px;
+                    label-text: "UPTIME";
+                    value-text: root.header-uptime;
+                }
+                GreenHeaderMetric {
+                    visible: island.width >= 1100px;
+                    x: island.width - 396px; y: 6px;
+                    width: 120px; height: 52px;
+                    label-text: "MEM";
+                    value-text: root.header-memory;
+                }
+                GreenHeaderMetric {
+                    visible: island.width >= 1100px;
+                    x: island.width - 274px; y: 6px;
+                    width: 123px; height: 52px;
+                    label-text: "CPU";
+                    value-text: root.header-cpu;
+                }
+
                 // Always display the real process-token level, including a
                 // normal/filtered session. Only elevated tokens use amber.
                 Rectangle {
                     visible: true;
-                    x: 113px;
-                    y: 7px;
-                    width: 104px;
-                    height: 28px;
+                    x: island.width < 600px ? island.width - 240px : 251px;
+                    y: 17px;
+                    width: 106px;
+                    height: 30px;
                     border-radius: 7px;
                     background: (root.privilege-label == "USUARIO" || root.privilege-label == "LIMITADO")
                         ? #323b37 : #684627;
@@ -995,8 +1051,8 @@ slint::slint! {
                 }
 
                 Text {
-                    visible: island.width >= 710px;
-                    x: 237px;
+                    visible: island.width >= 780px && island.width < 1100px;
+                    x: 415px;
                     y: 0;
                     width: 92px;
                     height: parent.height;
@@ -1008,8 +1064,8 @@ slint::slint! {
                 }
 
                 Text {
-                    visible: island.width >= 710px;
-                    x: 334px;
+                    visible: island.width >= 780px && island.width < 1100px;
+                    x: 512px;
                     y: 0;
                     width: 128px;
                     height: parent.height;
@@ -1021,7 +1077,7 @@ slint::slint! {
                 }
 
                 Text {
-                    visible: island.width >= 810px;
+                    visible: island.width >= 945px && island.width < 1100px;
                     x: island.width - 300px;
                     y: 0;
                     width: 62px;
@@ -1035,7 +1091,7 @@ slint::slint! {
                 }
 
                 Text {
-                    visible: island.width >= 830px;
+                    visible: island.width >= 945px && island.width < 1100px;
                     x: island.width - 235px;
                     y: 0;
                     width: 86px;
@@ -1050,9 +1106,9 @@ slint::slint! {
 
                 Rectangle {
                     x: island.width - 114px;
-                    y: 1px;
+                    y: 13px;
                     width: 38px;
-                    height: island.height - 2px;
+                    height: 38px;
                     border-radius: 10px;
                     background: minimize-touch.pressed
                         ? rgb(79, 79, 63)
@@ -1083,9 +1139,9 @@ slint::slint! {
 
                 Rectangle {
                     x: island.width - 76px;
-                    y: 1px;
+                    y: 13px;
                     width: 38px;
-                    height: island.height - 2px;
+                    height: 38px;
                     border-radius: 10px;
                     background: maximize-touch.pressed
                         ? rgb(79, 79, 63)
@@ -1116,9 +1172,9 @@ slint::slint! {
 
                 Rectangle {
                     x: island.width - 38px;
-                    y: 1px;
+                    y: 13px;
                     width: 38px;
-                    height: island.height - 2px;
+                    height: 38px;
                     border-radius: 10px;
                     background: close-touch.pressed
                         ? rgb(100, 45, 38)
@@ -2491,6 +2547,8 @@ pub fn run() -> Result<()> {
         }
     };
     ui.set_privilege_label(privilege_label.clone().into());
+    ui.set_header_host(System::host_name().unwrap_or_else(|| "—".to_owned()).into());
+    ui.set_header_version(crate::application::update::display_version().into());
 
     if let Some(image) = background_image {
         ui.set_background_image(image);
@@ -2976,6 +3034,16 @@ pub fn run() -> Result<()> {
 
                 ui.set_cpu_text(format!("CPU {:.0}%", cpu).into());
                 ui.set_ram_text(format!("RAM {:.1} GiB", ram_gib).into());
+                let total_memory = system.total_memory();
+                let memory_percent = if total_memory == 0 {
+                    "—".to_owned()
+                } else {
+                    format!("{:.0}%", system.used_memory() as f64 * 100.0 / total_memory as f64)
+                };
+                let uptime = System::uptime();
+                ui.set_header_cpu(format!("{cpu:.0}%").into());
+                ui.set_header_memory(memory_percent.into());
+                ui.set_header_uptime(format!("{}d {:02}h", uptime / 86_400, (uptime / 3_600) % 24).into());
                 ui.set_clock_text(now.format("%H:%M").to_string().into());
                 ui.set_date_text(now.format("%d %b").to_string().into());
                 *last_status.borrow_mut() = Instant::now();
