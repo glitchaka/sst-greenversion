@@ -236,57 +236,61 @@ slint::slint! {
     // lettering on cream is the main heading treatment from the mockup.
     // The mockup's console surface, not a dashboard or a detached widget.
     // The PTY always uses the entire body below this one ornamental heading.
+    // Industrial full-window console shell from the approved SST reference.
+    // No status widgets share the terminal: only this bezel surrounds the PTY.
     component GreenConsoleChrome inherits Rectangle {
         in property <string> channel-version;
-        background: rgba(24, 26, 25, 0.97);
+        background: #1a1c1b;
         border-width: 2px;
         border-color: #e2dac2;
-        border-radius: 14px;
+        border-radius: 17px;
         clip: true;
 
         Rectangle {
-            x: 2px;
-            y: 2px;
-            width: parent.width - 4px;
-            height: 42px;
-            background: #323333;
-            border-radius: 12px;
+            x: 2px; y: 2px;
+            width: parent.width - 4px; height: 46px;
+            background: #272725;
+            border-radius: 14px;
+        }
+
+        // Angled coral title tab, rather than a generic rectangular widget.
+        Path {
+            x: 2px; y: 2px;
+            width: 332px; height: 45px;
+            commands: "M 0 0 L 330 0 L 307 8 L 283 34 L 270 44 L 0 44 Z";
+            fill: #fe8254;
+        }
+        Text {
+            x: 25px; y: 4px;
+            width: 260px; height: 40px;
+            text: "CONSOLE  /  SST";
+            font-family: "Oxanium";
+            font-size: 25px;
+            font-weight: 800;
+            color: #171c1c;
+            vertical-alignment: center;
+            overflow: elide;
         }
 
         Rectangle {
-            x: 2px;
-            y: 2px;
-            width: min(296px, parent.width - 4px);
-            height: 42px;
-            background: #fe8254;
-            border-radius: 12px;
-
-            Text {
-                x: 23px; y: 0px;
-                width: parent.width - 34px; height: parent.height;
-                text: "CONSOLE  /  SST";
-                font-family: "Oxanium";
-                font-size: 24px;
-                font-weight: 800;
-                color: #191d1b;
-                vertical-alignment: center;
-                overflow: elide;
-            }
-        }
-
-        Rectangle {
-            x: 2px; y: 43px;
+            x: 2px; y: 48px;
             width: parent.width - 4px; height: 2px;
             background: #f39120;
         }
+        Rectangle {
+            x: 2px; y: 50px;
+            width: parent.width - 4px; height: 1px;
+            background: #776a54;
+        }
 
         Text {
-            visible: parent.width > 700px;
-            x: parent.width - 362px; y: 8px;
-            width: 340px; height: 26px;
-            text: "SHELL SHOCK TOOL  /  " + root.channel-version;
-            font-family: "Oxanium"; font-weight: 800;
-            font-size: 12px;
+            visible: parent.width > 770px;
+            x: parent.width - 456px; y: 9px;
+            width: 436px; height: 28px;
+            text: "SHELL SHOCK TOOL   /   " + root.channel-version;
+            font-family: "Oxanium";
+            font-size: 13px;
+            font-weight: 800;
             color: #e2dac2;
             horizontal-alignment: right;
             vertical-alignment: center;
@@ -294,16 +298,14 @@ slint::slint! {
         }
 
         Rectangle {
-            x: 15px;
-            y: parent.height - 17px;
-            width: min(98px, parent.width - 30px);
+            x: 20px; y: parent.height - 13px;
+            width: min(116px, parent.width - 40px);
             height: 3px;
             background: #fe8254;
         }
         Rectangle {
-            x: 120px;
-            y: parent.height - 17px;
-            width: min(32px, parent.width - 135px);
+            x: 148px; y: parent.height - 13px;
+            width: min(40px, parent.width - 160px);
             height: 3px;
             background: #f39120;
         }
@@ -1032,31 +1034,18 @@ slint::slint! {
 
                 // The existing centered island keeps its geometry, drag area
                 // and native window controls, but adopts the mockup's branding.
-                Rectangle {
-                    x: 5px;
-                    y: 5px;
-                    width: 130px;
-                    height: island.height - 10px;
-                    border-radius: 8px;
-                    background: #e2dac2;
-                    Text {
-                        x: 7px;
-                        width: parent.width - 14px;
-                        height: parent.height;
-                        text: "SST";
-                        color: #171717;
-                        font-family: "Oxanium";
-                        font-size: 47px;
-                        font-weight: 800;
-                        vertical-alignment: center;
-                        horizontal-alignment: center;
-                    }
+                // Actual vector paths traced from the user-approved SST wordmark.
+                Image {
+                    x: 5px; y: 5px;
+                    width: 188px; height: island.height - 10px;
+                    source: @image-url("../../assets/branding/sst-logo-green.svg");
+                    image-fit: contain;
                 }
 
                 Text {
                     visible: island.width >= 600px;
-                    x: 144px; y: 9px;
-                    width: 100px; height: 46px;
+                    x: 201px; y: 9px;
+                    width: 110px; height: 46px;
                     text: "SHELL\nSHOCK\nTOOL";
                     font-family: "Oxanium"; font-size: 16px; font-weight: 800;
                     color: #e2dac2;
@@ -1064,8 +1053,8 @@ slint::slint! {
                 }
                 Text {
                     visible: island.width >= 600px;
-                    x: 253px; y: 48px;
-                    width: 146px; height: 12px;
+                    x: 322px; y: 48px;
+                    width: 165px; height: 12px;
                     text: "V " + root.header-version;
                     font-family: "Oxanium"; font-size: 10px;
                     font-weight: 800;
@@ -1108,7 +1097,7 @@ slint::slint! {
                 // normal/filtered session. Only elevated tokens use amber.
                 Rectangle {
                     visible: true;
-                    x: island.width < 600px ? island.width - 240px : 251px;
+                    x: island.width < 600px ? island.width - 240px : 316px;
                     y: 17px;
                     width: 106px;
                     height: 30px;
@@ -1137,7 +1126,7 @@ slint::slint! {
 
                 Text {
                     visible: island.width >= 780px && island.width < 1100px;
-                    x: 415px;
+                    x: 439px;
                     y: 0;
                     width: 92px;
                     height: parent.height;
@@ -1150,7 +1139,7 @@ slint::slint! {
 
                 Text {
                     visible: island.width >= 780px && island.width < 1100px;
-                    x: 512px;
+                    x: 547px;
                     y: 0;
                     width: 128px;
                     height: parent.height;
@@ -1449,6 +1438,7 @@ struct TerminalModel {
     width: u32,
     height: u32,
     scale: f32,
+    last_native_layout: bool,
 }
 
 impl TerminalModel {
@@ -1477,6 +1467,7 @@ impl TerminalModel {
             width: 0,
             height: 0,
             scale: 1.0,
+            last_native_layout: false,
         })
     }
 
@@ -1562,11 +1553,17 @@ impl TerminalModel {
 
     fn geometry(&self) -> (f32, f32, f32, f32) {
         let scale = self.scale.max(0.5);
-        let pad_x = (self.appearance.terminal_padding_x as f32 * scale).round();
+        let native = self.native_tool_view();
+        // Both inner gutters must match the real vector bezel. The external
+        // SST tool mode uses all available viewport width instead.
+        let pad_x = (self.appearance.terminal_padding_x as f32 * scale)
+            .max(if native { 10.0 } else { 28.0 } * scale)
+            .round();
         let pad_y = (self.appearance.terminal_padding_y as f32 * scale).round();
+        let chrome_height = if native { 0.0 } else { CONSOLE_CHROME_HEIGHT };
         let top_pad = ((ISLAND_TOP
             + ISLAND_HEIGHT
-            + CONSOLE_CHROME_HEIGHT
+            + chrome_height
             + self.appearance.content_top_gap as f32)
             * scale)
             .round()
@@ -1586,20 +1583,25 @@ impl TerminalModel {
             return;
         }
         let scale = scale.max(0.5);
+        let native_layout = self.native_tool_view();
         if self.width == width
             && self.height == height
             && (self.scale - scale).abs() < f32::EPSILON
+            && self.last_native_layout == native_layout
         {
             return;
         }
 
+        self.last_native_layout = native_layout;
         self.width = width.max(1);
         self.height = height.max(1);
         self.scale = scale;
         let (left_pad, top_pad, cell_width, cell_height) = self.geometry();
         let cols = (((self.width as f32 - left_pad * 2.0) / cell_width).floor() as i32)
             .clamp(2, 500) as u16;
-        let bottom_pad = (self.appearance.terminal_padding_y as f32 * scale).round();
+        let bottom_pad = (self.appearance.terminal_padding_y as f32 * scale)
+            .max(if native_layout { 10.0 } else { 26.0 } * scale)
+            .round();
         let rows = (((self.height as f32 - top_pad - bottom_pad) / cell_height).floor() as i32)
             .clamp(2, 200) as u16;
 
@@ -1617,14 +1619,6 @@ impl TerminalModel {
         if self.focused != focused {
             self.focused = focused;
             self.dirty = true;
-        }
-    }
-
-    fn current_background_opacity(&self) -> u8 {
-        if self.focused {
-            self.appearance.focused_opacity
-        } else {
-            self.appearance.unfocused_opacity
         }
     }
 
@@ -1853,30 +1847,10 @@ impl TerminalModel {
         let mut buffer = SharedPixelBuffer::<Rgba8Pixel>::new(width, height);
         {
             let pixels = buffer.make_mut_slice();
-            // Native dashboard panels sit behind the terminal glyph surface.
-            // Fullscreen tools require a transparent glyph layer, unlike SST's
-            // ordinary user-configured terminal wallpaper.
-            // The ornamental frame is painted by Slint. A solid terminal
-            // bitmap would obscure it, so keep only glyphs and explicit
-            // colored cells in the raster layer.
-            let background_opacity = 0;
-            if background_opacity > 0 {
-                let bg = parse_rgb(&self.appearance.background_color).unwrap_or(BG);
-                let alpha = ((u16::from(background_opacity) * 255) / 100) as u8;
-                pixels.fill(Rgba8Pixel {
-                    r: ((u16::from(bg.0) * u16::from(alpha)) / 255) as u8,
-                    g: ((u16::from(bg.1) * u16::from(alpha)) / 255) as u8,
-                    b: ((u16::from(bg.2) * u16::from(alpha)) / 255) as u8,
-                    a: alpha,
-                });
-            } else {
-                pixels.fill(Rgba8Pixel {
-                    r: 0,
-                    g: 0,
-                    b: 0,
-                    a: 0,
-                });
-            }
+            // Native Slint owns the opaque console surface. The VT100 image
+            // contains glyphs and explicitly colored cells only; painting a
+            // fullscreen backing bitmap would hide the approved console bezel.
+            pixels.fill(Rgba8Pixel { r: 0, g: 0, b: 0, a: 0 });
 
             let screen = self.parser.screen();
             let (rows, cols) = screen.size();
