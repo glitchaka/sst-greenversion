@@ -14,8 +14,8 @@ pub fn run_catalog(
     service: &PackageService,
     terminal_factory: &dyn TerminalFactory,
 ) -> Result<CommandOutput> {
-    let mut terminal = terminal_factory.alternate_screen()?;
     let _green_screen = crate::presentation::tool_screen::enter_native_tool("SIGSOUR / PAQUETES");
+    let mut terminal = terminal_factory.alternate_screen()?;
     let mut catalog = service.search(None)?;
     let mut installed = installed_ids(service)?;
     let mut query = String::new();
