@@ -51,7 +51,16 @@ jobs:
             }
             Write-Host "Windows accepted the SST Industrial TTF."
           } finally { $face.Dispose() }
-      - name: Check Windows Rust project
-        run: cargo check --locked
+      # Resolve the newly enabled native software renderer once. The
+      # generated lockfile is captured and will be committed to main.
+      - name: Resolve updated software renderer dependencies
+        run: cargo check
+      - name: Capture resolved Cargo.lock
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: SST-Green-resolved-Cargo-lock
+          path: Cargo.lock
+          retention-days: 2
       - name: Compile regression tests (without executing privileged operations)
-        run: cargo test --locked --no-run
+        run: cargo test --no-run
