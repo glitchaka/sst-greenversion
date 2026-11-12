@@ -1192,24 +1192,29 @@ slint::slint! {
                     border-width: 2px; border-color: #e2dac2;
                     border-radius: 13px;
                     GreenHeaderMetric {
-                        x: 2px; y: 0px; width: 178px; height: parent.height;
+                        x: 2px; y: 0px; width: 173px; height: parent.height;
                         label-text: "HOST"; value-text: root.header-host;
                     }
                     GreenHeaderMetric {
-                        x: 181px; y: 0px; width: 139px; height: parent.height;
+                        x: 177px; y: 0px; width: 116px; height: parent.height;
                         label-text: "UPTIME"; value-text: root.header-uptime;
                     }
                     GreenHeaderMetric {
-                        x: 321px; y: 0px; width: 120px; height: parent.height;
+                        x: 295px; y: 0px; width: 88px; height: parent.height;
+                        label-text: "ARCH"; value-text: root.header-arch;
+                    }
+                    GreenHeaderMetric {
+                        x: 385px; y: 0px; width: 79px; height: parent.height;
                         label-text: "MEM"; value-text: root.header-memory;
                     }
                     GreenHeaderMetric {
-                        x: 442px; y: 0px; width: 120px; height: parent.height;
+                        x: 466px; y: 0px; width: 96px; height: parent.height;
                         label-text: "CPU"; value-text: root.header-cpu;
                     }
-                    Rectangle { x: 180px; width: 1px; height: parent.height; background: #958778; }
-                    Rectangle { x: 320px; width: 1px; height: parent.height; background: #958778; }
-                    Rectangle { x: 441px; width: 1px; height: parent.height; background: #958778; }
+                    Rectangle { x: 176px; width: 1px; height: parent.height; background: #958778; }
+                    Rectangle { x: 294px; width: 1px; height: parent.height; background: #958778; }
+                    Rectangle { x: 384px; width: 1px; height: parent.height; background: #958778; }
+                    Rectangle { x: 465px; width: 1px; height: parent.height; background: #958778; }
                 }
 
                 Rectangle {
