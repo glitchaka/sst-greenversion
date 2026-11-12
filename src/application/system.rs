@@ -249,7 +249,7 @@ impl SystemService {
             terminal.flush()?;
 
             match terminal.poll_key(Duration::from_millis(900))? {
-                Some(TerminalKey::Char('q') | TerminalKey::Escape) => break,
+                Some(TerminalKey::Char('q') | TerminalKey::Char('Q') | TerminalKey::Escape) => break,
                 Some(TerminalKey::Char('c')) => sort_cpu = true,
                 Some(TerminalKey::Char('m')) => sort_cpu = false,
                 _ => {}
