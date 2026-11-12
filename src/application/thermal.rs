@@ -3,7 +3,6 @@
 //! Hardware WMI es opcional: SST no instala controladores ni inventa sensores.
 #[cfg(windows)]
 use std::{
-    path::PathBuf,
     process::{Command, Stdio},
     thread,
     time::{Duration, Instant},
@@ -71,7 +70,7 @@ pub fn report() -> CommandOutput {
             text.push_str("\nCPU: temperatura no disponible con los proveedores activos.\n");
         }
         text.push_str("\nFuentes: LibreHardwareMonitor/OpenHardwareMonitor (WMI, si estan ejecutandose),\n");
-        text.push_str("almacenamiento SMART/CIM de Windows, NVIDIA NVML (nvidia-smi) y zonas ACPI.\n");
+        text.push_str("almacenamiento SMART/CIM de Windows, NVIDIA NVML (API directa del driver) y zonas ACPI.\n");
         text.push_str("Las zonas ACPI NO representan necesariamente la temperatura del CPU.\n");
         text.push_str("Los sensores ausentes se omiten: SST no estima ni fabrica temperaturas.\n");
         if !notes.is_empty() {
@@ -196,38 +195,78 @@ fn classify(identifier: &str, name: &str) -> &'static str {
     else { "Otros componentes" }
 }
 
+// NVML is part of the installed NVIDIA display driver. Calling it directly
+// avoids spawning nvidia-smi.exe and works when that utility is absent.
 #[cfg(windows)]
 fn nvidia_sensors() -> anyhow::Result<Vec<Reading>> {
-    let mut candidates = Vec::<PathBuf>::new();
-    if let Some(dir) = std::env::var_os("ProgramFiles") {
-        candidates.push(PathBuf::from(dir).join(r"NVIDIA Corporation\NVSMI\nvidia-smi.exe"));
+    use windows_sys::Win32::System::LibraryLoader::{
+        FreeLibrary, GetProcAddress, LoadLibraryExW, LOAD_LIBRARY_SEARCH_SYSTEM32,
+    };
+
+    type NvmlInit = unsafe extern "C" fn() -> i32;
+    type NvmlShutdown = unsafe extern "C" fn() -> i32;
+    type NvmlCount = unsafe extern "C" fn(*mut u32) -> i32;
+    type NvmlHandle = unsafe extern "C" fn(u32, *mut *mut std::ffi::c_void) -> i32;
+    type NvmlTemperature = unsafe extern "C" fn(*mut std::ffi::c_void, u32, *mut u32) -> i32;
+
+    // Only search the protected Windows System32 directory. An arbitrary
+    // working-directory nvml.dll must never be loaded into SST.
+    let dll: Vec<u16> = "nvml.dll".encode_utf16().chain(std::iter::once(0)).collect();
+    let library = unsafe { LoadLibraryExW(dll.as_ptr(), std::ptr::null_mut(), LOAD_LIBRARY_SEARCH_SYSTEM32) };
+    if library.is_null() {
+        anyhow::bail!("NVML no esta instalado en Windows System32");
     }
-    candidates.push(PathBuf::from("nvidia-smi.exe"));
-    let mut last_error = None;
-    for executable in candidates {
-        let output = Command::new(&executable)
-            .args(["--query-gpu=index,name,temperature.gpu", "--format=csv,noheader,nounits"])
-            .creation_flags(0x0800_0000)
-            .output();
-        match output {
-            Ok(output) if output.status.success() => {
-                let mut result = Vec::new();
-                for line in String::from_utf8_lossy(&output.stdout).lines() {
-                    let fields = line.splitn(3, ',').map(str::trim).collect::<Vec<_>>();
-                    if fields.len() != 3 { continue; }
-                    let Ok(celsius) = fields[2].parse::<f64>() else { continue; };
-                    result.push(Reading {
-                        group: "GPU".to_owned(),
-                        name: format!("{} · GPU {}", fields[1], fields[0]),
-                        celsius,
-                        source: "NVIDIA NVML".to_owned(),
-                    });
-                }
-                return Ok(result);
-            }
-            Ok(output) => last_error = Some(format!("exit {:?}", output.status.code())),
-            Err(error) => last_error = Some(error.to_string()),
+    struct Library(windows_sys::Win32::Foundation::HMODULE);
+    impl Drop for Library {
+        fn drop(&mut self) { unsafe { FreeLibrary(self.0); } }
+    }
+    let library = Library(library);
+    unsafe fn symbol<T: Copy>(module: windows_sys::Win32::Foundation::HMODULE, name: &'static [u8]) -> anyhow::Result<T> {
+        let address = unsafe { GetProcAddress(module, name.as_ptr()) };
+        let Some(address) = address else {
+            anyhow::bail!("NVML no exporta {}", String::from_utf8_lossy(&name[..name.len() - 1]));
+        };
+        // The symbol type above has the same pointer width as these C functions.
+        Ok(unsafe { std::mem::transmute_copy(&address) })
+    }
+
+    // The NVML driver reports temperatures in degrees Celsius.
+    let init: NvmlInit = unsafe { symbol(library.0, b"nvmlInit_v2\0")? };
+    let shutdown: NvmlShutdown = unsafe { symbol(library.0, b"nvmlShutdown\0")? };
+    let count_fn: NvmlCount = unsafe { symbol(library.0, b"nvmlDeviceGetCount_v2\0")? };
+    let handle_fn: NvmlHandle = unsafe { symbol(library.0, b"nvmlDeviceGetHandleByIndex_v2\0")? };
+    let temperature_fn: NvmlTemperature = unsafe { symbol(library.0, b"nvmlDeviceGetTemperature\0")? };
+
+    let init_status = unsafe { init() };
+    if init_status != 0 {
+        anyhow::bail!("NVML no pudo iniciar (codigo {init_status})");
+    }
+    struct NvmlSession(NvmlShutdown);
+    impl Drop for NvmlSession {
+        fn drop(&mut self) { unsafe { (self.0)(); } }
+    }
+    let _session = NvmlSession(shutdown);
+
+    let mut count = 0;
+    let status = unsafe { count_fn(&mut count) };
+    if status != 0 {
+        anyhow::bail!("NVML no pudo contar las GPU (codigo {status})");
+    }
+    let mut rows = Vec::new();
+    for index in 0..count.min(32) {
+        let mut device = std::ptr::null_mut();
+        if unsafe { handle_fn(index, &mut device) } != 0 || device.is_null() {
+            continue;
+        }
+        let mut degrees = 0;
+        if unsafe { temperature_fn(device, 0, &mut degrees) } == 0 && degrees <= 150 {
+            rows.push(Reading {
+                group: "GPU".to_owned(),
+                name: format!("NVIDIA GPU {index}"),
+                celsius: f64::from(degrees),
+                source: "NVIDIA NVML (API nativa)".to_owned(),
+            });
         }
     }
-    anyhow::bail!("{}", last_error.unwrap_or_else(|| "nvidia-smi no disponible".into()))
+    Ok(rows)
 }
