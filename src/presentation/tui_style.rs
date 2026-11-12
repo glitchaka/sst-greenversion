@@ -39,14 +39,14 @@ impl LiveScreen {
         self.text.push_str("▌ ");
         self.text.push_str(title);
         self.text.push_str(RESET);
-        self.text.push('\n');
+        self.text.push_str("\r\n");
         self.line += 1;
 
         for line in body.trim_end_matches('\n').split('\n') {
             if line.is_empty() && body.trim().is_empty() { break; }
             self.text.push_str("  ");
             self.text.push_str(line);
-            self.text.push('\n');
+            self.text.push_str("\r\n");
             self.line += 1;
         }
 
@@ -56,7 +56,7 @@ impl LiveScreen {
                 rows: (self.line - start).min(u16::MAX as usize) as u16,
             });
         }
-        self.text.push('\n');
+        self.text.push_str("\r\n");
         self.line += 1;
     }
 
@@ -65,7 +65,7 @@ impl LiveScreen {
         self.text.push_str(LABEL);
         self.text.push_str(text);
         self.text.push_str(RESET);
-        self.text.push('\n');
+        self.text.push_str("\r\n");
         self.line += 1;
     }
 
