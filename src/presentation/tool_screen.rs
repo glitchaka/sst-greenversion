@@ -303,18 +303,14 @@ fn render_page(
     let body_rows = height.saturating_sub(body_top + 3).max(1);
     let visible = lines.iter().skip(scroll).take(body_rows).cloned().collect::<Vec<_>>();
     let mut view = String::new();
-    if native_view {
-        // Slint owns rows 0, 1 and 2: no ANSI glyphs may paint over the
-        // display face in these rows.
-        view.push_str("\r\n\r\n\r\n");
-    } else {
-        let brand = format!("SST  /  {}", title);
-        view.push_str(&format!(
-            "  {}{}{}\r\n",
-            theme::TITLE, truncate_chrome(&brand, width.saturating_sub(4)), theme::RESET
-        ));
-        view.push_str("\r\n\r\n");
-    }
+    // The same three-row text header is used by native SST and external
+    // terminals. Neither mode requires a painted title or invisible
+    // reserved pixels; the heading is ordinary selectable terminal output.
+    let brand = format!("SST  /  {}", title);
+    view.push_str(&format!(
+        "  {}{}{}\r\n\r\n\r\n",
+        theme::TITLE, truncate_chrome(&brand, width.saturating_sub(4)), theme::RESET
+    ));
     view.push_str(&format!(
         "  {}COMANDO{}  {}{}{}     {}ESC / Q  ·  CONSOLA{}\r\n",
         theme::LABEL, theme::RESET, theme::ACCENT,
