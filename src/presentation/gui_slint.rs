@@ -53,7 +53,7 @@ use crate::adapters::{
 const INITIAL_COLS: u16 = 112;
 const INITIAL_ROWS: u16 = 31;
 const ISLAND_TOP: f32 = 6.0;
-const ISLAND_HEIGHT: f32 = 78.0;
+const ISLAND_HEIGHT: f32 = 42.0;
 
 // The frameless Slint window can briefly report an icon-sized client area
 // *before* IsIconic becomes true, or *after* it becomes false. Never send
@@ -854,166 +854,153 @@ slint::slint! {
         // Green's permanent full-width industrial command bar. All values
         // are bound to the current Windows host; this is not a side dashboard.
         island := Rectangle {
-            width: root.width - 14px;
-            height: 78px;
-            x: 7px;
+            width: min(850px, root.width - 20px);
+            height: 42px;
+            x: (root.width - self.width) / 2;
             y: 7px;
-            border-radius: 12px;
-            background: rgba(23, 23, 22, 0.98);
+            border-radius: 14px;
+            background: rgba(34, 42, 42, 0.97);
             border-width: 1px;
-            border-color: #a79a86;
+            border-color: #b9a78c;
 
             WindowMoveArea {
+                x: 0;
+                y: 0;
                 width: parent.width;
                 height: parent.height;
-                x: 0; y: 0;
 
+                // The existing centered island keeps its geometry, drag area
+                // and native window controls, but adopts the mockup's branding.
                 Rectangle {
-                    x: 7px; y: 6px;
-                    width: 172px; height: parent.height - 12px;
-                    background: #e2dac2;
+                    x: 5px;
+                    y: 5px;
+                    width: 98px;
+                    height: island.height - 10px;
                     border-radius: 8px;
+                    background: #e2dac2;
                     Text {
-                        x: 7px; y: -5px;
+                        x: 7px;
                         width: parent.width - 14px;
-                        height: parent.height + 8px;
+                        height: parent.height;
                         text: "SST";
-                        font-family: "Oxanium";
-                        font-size: 59px;
-                        font-weight: 800;
                         color: #171717;
+                        font-family: "Oxanium";
+                        font-size: 29px;
+                        font-weight: 800;
                         vertical-alignment: center;
                         horizontal-alignment: center;
                     }
                 }
 
+                // Always display the real process-token level, including a
+                // normal/filtered session. Only elevated tokens use amber.
+                Rectangle {
+                    visible: true;
+                    x: 113px;
+                    y: 7px;
+                    width: 104px;
+                    height: 28px;
+                    border-radius: 7px;
+                    background: (root.privilege-label == "USUARIO" || root.privilege-label == "LIMITADO")
+                        ? #323b37 : #684627;
+                    border-width: 1px;
+                    border-color: (root.privilege-label == "USUARIO" || root.privilege-label == "LIMITADO")
+                        ? #6c8377 : #f39120;
+
+                    Text {
+                        x: 2px;
+                        y: 0;
+                        width: parent.width - 4px;
+                        height: parent.height;
+                        text: root.privilege-label;
+                        color: (root.privilege-label == "USUARIO" || root.privilege-label == "LIMITADO")
+                            ? #e2dac2 : #f39120;
+                        font-family: "Oxanium";
+                        font-size: 11px;
+                        font-weight: 700;
+                        horizontal-alignment: center;
+                        vertical-alignment: center;
+                    }
+                }
+
                 Text {
-                    visible: island.width >= 550px;
-                    x: 190px; y: 11px;
-                    width: 105px; height: 58px;
-                    text: "SHELL\nSHOCK\nTOOL";
-                    font-family: "Oxanium";
-                    font-size: 17px; font-weight: 800;
+                    visible: island.width >= 710px;
+                    x: 237px;
+                    y: 0;
+                    width: 92px;
+                    height: parent.height;
+                    text: root.cpu-text;
                     color: #e2dac2;
+                    font-family: "Oxanium";
+                    font-size: 13px;
                     vertical-alignment: center;
                 }
 
-                Rectangle {
-                    visible: island.width >= 600px;
-                    x: 303px; y: 12px;
-                    width: 2px; height: 53px;
-                    background: #c6b39c;
+                Text {
+                    visible: island.width >= 710px;
+                    x: 334px;
+                    y: 0;
+                    width: 128px;
+                    height: parent.height;
+                    text: root.ram-text;
+                    color: #e2dac2;
+                    font-family: "Oxanium";
+                    font-size: 13px;
+                    vertical-alignment: center;
                 }
 
                 Text {
-                    visible: island.width >= 600px;
-                    x: 315px; y: 16px;
-                    width: 115px; height: 22px;
-                    text: "SST  /  GREEN";
-                    font-family: "Oxanium"; font-size: 12px;
-                    font-weight: 800; color: #f39120;
-                    overflow: elide;
+                    visible: island.width >= 810px;
+                    x: island.width - 300px;
+                    y: 0;
+                    width: 62px;
+                    height: parent.height;
+                    text: root.clock-text;
+                    color: #e2dac2;
+                    font-family: "Oxanium";
+                    font-size: 13px;
+                    vertical-alignment: center;
+                    horizontal-alignment: center;
                 }
 
                 Text {
-                    visible: island.width >= 600px;
-                    x: 315px; y: 42px;
-                    width: 162px; height: 18px;
-                    text: "V " + root.header-version + "  ·  " + root.header-arch;
-                    font-family: "Oxanium"; font-size: 10px;
-                    color: #e2dac2; overflow: elide;
-                }
-
-                // The metric rail is anchored before native window controls;
-                // narrow windows hide it instead of compressing the console.
-                GreenHeaderMetric {
-                    visible: island.width >= 1100px;
-                    x: island.width - 585px; y: 13px;
-                    width: 141px; height: 51px;
-                    label-text: "HOST";
-                    value-text: root.header-host;
-                }
-                GreenHeaderMetric {
-                    visible: island.width >= 1100px;
-                    x: island.width - 442px; y: 13px;
-                    width: 107px; height: 51px;
-                    label-text: "UPTIME";
-                    value-text: root.header-uptime;
-                }
-                GreenHeaderMetric {
-                    visible: island.width >= 920px;
-                    x: island.width - 333px; y: 13px;
-                    width: 101px; height: 51px;
-                    label-text: "MEM";
-                    value-text: root.header-memory;
-                }
-                GreenHeaderMetric {
-                    visible: island.width >= 920px;
-                    x: island.width - 230px; y: 13px;
-                    width: 101px; height: 51px;
-                    label-text: "CPU";
-                    value-text: root.header-cpu;
-                }
-
-                // Privilege level remains visible even on compact windows.
-                Rectangle {
-                    visible: island.width < 920px;
-                    x: island.width < 550px ? 194px : 308px;
-                    y: 26px; width: 113px; height: 27px;
-                    border-radius: 6px;
-                    border-width: 1px;
-                    border-color: #f39120;
-                    background: #41372b;
-                    Text {
-                        x: 5px; width: parent.width - 10px;
-                        height: parent.height;
-                        text: root.privilege-label;
-                        color: #e2dac2; font-family: "Oxanium";
-                        font-size: 12px; font-weight: 800;
-                        vertical-alignment: center;
-                        horizontal-alignment: center;
-                        overflow: elide;
-                    }
-                }
-                Rectangle {
-                    // Hardware status may be green only if the process actually
-                    // reports healthy; this badge reports SST running, not WAN.
-                    visible: island.width >= 1200px;
-                    x: island.width - 726px; y: 25px;
-                    width: 125px; height: 31px;
-                    border-radius: 8px;
-                    background: #fa784f;
-                    Rectangle {
-                        x: 9px; y: 11px; width: 9px; height: 9px;
-                        border-radius: 5px; background: #add794;
-                        border-width: 1px; border-color: #27312b;
-                    }
-                    Text {
-                        x: 22px; y: 0px;
-                        width: parent.width - 27px; height: parent.height;
-                        text: "SST ACTIVO";
-                        color: #1b1c1b; font-family: "Oxanium";
-                        font-size: 12px; font-weight: 800;
-                        vertical-alignment: center; horizontal-alignment: center;
-                    }
+                    visible: island.width >= 830px;
+                    x: island.width - 235px;
+                    y: 0;
+                    width: 86px;
+                    height: parent.height;
+                    text: root.date-text;
+                    color: #c2b5a2;
+                    font-family: "Oxanium";
+                    font-size: 12px;
+                    vertical-alignment: center;
+                    horizontal-alignment: center;
                 }
 
                 Rectangle {
                     x: island.width - 114px;
-                    y: 21px;
-                    width: 38px; height: 35px;
-                    border-radius: 9px;
+                    y: 1px;
+                    width: 38px;
+                    height: island.height - 2px;
+                    border-radius: 10px;
                     background: minimize-touch.pressed
-                        ? #51483f
-                        : minimize-touch.has-hover ? #37312e : transparent;
+                        ? rgb(79, 79, 63)
+                        : minimize-touch.has-hover ? rgb(54, 64, 59) : transparent;
+
                     Path {
-                        x: 11px; y: 11px;
-                        width: 16px; height: 12px;
+                        x: 11px;
+                        y: 10px;
+                        width: 16px;
+                        height: 12px;
                         commands: root.maximized
-                            ? "M 1 6 L 15 6" : "M 1 1 L 8 9 L 15 1";
-                        stroke: #e2dac2; stroke-width: 2.4px;
-                        stroke-line-cap: round; stroke-line-join: round;
+                            ? "M 1 6 L 15 6"
+                            : "M 1 1 L 8 9 L 15 1";
+                        stroke: #e2dac2;
+                        stroke-width: 2.4px;
+                        stroke-line-cap: round;
+                        stroke-line-join: round;
                     }
+
                     minimize-touch := TouchArea {
                         mouse-cursor: pointer;
                         clicked => {
@@ -1022,23 +1009,31 @@ slint::slint! {
                         }
                     }
                 }
+
                 Rectangle {
                     x: island.width - 76px;
-                    y: 21px;
-                    width: 38px; height: 35px;
-                    border-radius: 9px;
+                    y: 1px;
+                    width: 38px;
+                    height: island.height - 2px;
+                    border-radius: 10px;
                     background: maximize-touch.pressed
-                        ? #51483f
-                        : maximize-touch.has-hover ? #37312e : transparent;
+                        ? rgb(79, 79, 63)
+                        : maximize-touch.has-hover ? rgb(54, 64, 59) : transparent;
+
                     Path {
-                        x: 11px; y: 11px;
-                        width: 16px; height: 12px;
+                        x: 11px;
+                        y: 11px;
+                        width: 16px;
+                        height: 12px;
                         commands: root.maximized
                             ? "M 1 1 L 8 9 L 15 1"
                             : "M 1 10 L 8 2 L 15 10";
-                        stroke: #e2dac2; stroke-width: 2.4px;
-                        stroke-line-cap: round; stroke-line-join: round;
+                        stroke: #d5c4a1;
+                        stroke-width: 2.4px;
+                        stroke-line-cap: round;
+                        stroke-line-join: round;
                     }
+
                     maximize-touch := TouchArea {
                         mouse-cursor: pointer;
                         clicked => {
@@ -1047,21 +1042,28 @@ slint::slint! {
                         }
                     }
                 }
+
                 Rectangle {
                     x: island.width - 38px;
-                    y: 21px;
-                    width: 38px; height: 35px;
-                    border-radius: 9px;
+                    y: 1px;
+                    width: 38px;
+                    height: island.height - 2px;
+                    border-radius: 10px;
                     background: close-touch.pressed
-                        ? #642d26
-                        : close-touch.has-hover ? #502823 : transparent;
+                        ? rgb(100, 45, 38)
+                        : close-touch.has-hover ? rgb(80, 40, 35) : transparent;
+
                     Path {
-                        x: 10px; y: 8px;
-                        width: 18px; height: 18px;
+                        x: 10px;
+                        y: 8px;
+                        width: 18px;
+                        height: 18px;
                         commands: "M 9 1 L 9 8 M 3.3 3.7 A 7 7 0 1 0 14.7 3.7";
-                        stroke: close-touch.has-hover ? #fb4934 : #f39120;
-                        stroke-width: 2px; stroke-line-cap: round;
+                        stroke: close-touch.has-hover ? #fb4934 : #fe8019;
+                        stroke-width: 2px;
+                        stroke-line-cap: round;
                     }
+
                     close-touch := TouchArea {
                         mouse-cursor: pointer;
                         clicked => { root.close-window(); }
