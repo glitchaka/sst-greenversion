@@ -202,8 +202,8 @@ fn render_page(
     width: usize,
     height: usize,
 ) -> (String, Vec<TerminalPanel>) {
-    let body_top = 3;
-    let body_rows = height.saturating_sub(6).max(1);
+    let body_top = 4;
+    let body_rows = height.saturating_sub(7).max(1);
     let visible = lines.iter().skip(scroll).take(body_rows).cloned().collect::<Vec<_>>();
     let mut view = String::new();
     let brand = format!("SST  /  {}", title);
@@ -221,7 +221,8 @@ fn render_page(
     if let Some(meter) = memory_meter(content, width) {
         view.push_str(&meter);
     }
-    view.push_str("\r\n");
+    // Keep one empty terminal row for the native vector frame's top stroke.
+    view.push_str("\r\n\r\n");
 
     for line in &visible {
         view.push_str("    ");
@@ -256,7 +257,7 @@ pub fn show_report(
         let (cols, rows) = terminal.size()?;
         let width = usize::from(cols).max(28);
         let height = usize::from(rows).max(10);
-        let body_rows = height.saturating_sub(6).max(1);
+        let body_rows = height.saturating_sub(7).max(1);
         let lines = wrapped_lines(content, width.saturating_sub(7));
         let max_scroll = lines.len().saturating_sub(body_rows);
         scroll = scroll.min(max_scroll);
