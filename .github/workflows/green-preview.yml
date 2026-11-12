@@ -1,13 +1,7 @@
 name: SST Green · prueba visual real de Windows
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - ".github/workflows/green-preview.yml"
-      - "scripts/green-visual-smoke.ps1"
   workflow_dispatch:
-
 permissions:
   contents: read
 
