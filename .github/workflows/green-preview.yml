@@ -7,6 +7,7 @@ on:
       - "src/**"
       - "assets/branding/**"
       - "assets/fonts/**"
+      - "scripts/green-visual-smoke.ps1"
       - ".github/workflows/green-ci.yml"
       - ".github/workflows/green-preview.yml"
   workflow_dispatch:
