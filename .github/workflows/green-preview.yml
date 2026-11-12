@@ -1,0 +1,58 @@
+name: SST Green · prueba visual real de Windows
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/green-preview.yml"
+      - "scripts/green-visual-smoke.ps1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sst-green-visual-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  windows-visual-smoke:
+    name: Ejecutable y capturas de SST Green
+    runs-on: windows-latest
+    timeout-minutes: 45
+    env:
+      SST_IEEE_MAL_CSV: ${{ github.workspace }}/.ci-ieee/oui.csv
+      SST_IEEE_MAM_CSV: ${{ github.workspace }}/.ci-ieee/mam.csv
+      SST_IEEE_MAS_CSV: ${{ github.workspace }}/.ci-ieee/oui36.csv
+    steps:
+      - uses: actions/checkout@v4
+      - name: Registros IEEE de prueba anclados
+        uses: actions/checkout@v4
+        with:
+          repository: StewAlexander-com/maclookup.py
+          ref: 65f556005f63a22ae353e6f129440dbdb3c29c06
+          path: .ci-ieee
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Compilar ejecutable Windows real
+        run: cargo build --locked
+      - name: Verificar versión Green sin publicar release
+        shell: pwsh
+        run: |
+          $version = (& .\target\debug\sst.exe --version | Out-String).Trim()
+          Write-Host $version
+          if ($version -notmatch 'green') { throw 'El binario no corresponde al canal Green' }
+      - name: Ejecutar SST y capturar consola / sys / regreso
+        shell: pwsh
+        run: |
+          .\scripts\green-visual-smoke.ps1 -Executable .\target\debug\sst.exe -OutputDirectory .\prueba-green
+      - name: Guardar prueba verificable (sin release ni actualizar Blue)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: SST-Green-Windows-prueba-visual
+          path: |
+            target/debug/sst.exe
+            prueba-green/**
+          if-no-files-found: warn
+          retention-days: 14
