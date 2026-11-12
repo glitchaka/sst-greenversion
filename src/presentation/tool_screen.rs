@@ -410,8 +410,8 @@ mod tests {
     }
     #[test]
     fn dashboard_only_uses_actual_system_report_fields() {
-        assert!(parse_system_overview("SISTEMA\\nhostname: demo").is_none());
-        let report = "SISTEMA\\nhostname: PC-TEST\\nos: Windows\\ncpus: 8\\nmemory_total: 16384 MiB\\nmemory_used: 4096 MiB\\n\\nDISCOS\\nMOUNT  TOTAL\\nC:\\\\  120.0";
+        assert!(parse_system_overview("SISTEMA\nhostname: demo").is_none());
+        let report = "SISTEMA\nhostname: PC-TEST\nos: Windows\ncpus: 8\nmemory_total: 16384 MiB\nmemory_used: 4096 MiB\n\nDISCOS\nMOUNT  TOTAL\nC:\\\\  120.0";
         let value = parse_system_overview(report).unwrap();
         assert_eq!(value.host, "PC-TEST");
         assert_eq!(value.cpu_count, "8");
