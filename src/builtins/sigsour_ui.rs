@@ -344,7 +344,7 @@ fn render(
     let mut out = String::new();
     if native {
         // Slint paints the real display face in the top three lines.
-        out.push_str("\r\n\r\n\r\n");
+        out.push_str("\n\n\n");
     } else {
         out.push_str("\x1b[1;38;2;226;218;194m  SIGSOUR\x1b[0m");
         out.push_str("  \x1b[38;2;207;181;128m/  Catálogo de paquetes SST\x1b[0m\n");
