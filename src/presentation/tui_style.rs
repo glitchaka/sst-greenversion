@@ -21,7 +21,15 @@ pub struct LiveScreen {
 
 impl LiveScreen {
     pub fn new() -> Self {
-        Self { text: String::new(), line: 0, panels: Vec::new() }
+        // A Slint alternate screen has an actual vector title occupying four
+        // rows. Never print live network data or draw borders beneath it.
+        // External terminals retain the original zero-offset TUI.
+        let native_view = crate::adapters::terminal::io::output_sender().is_some();
+        Self {
+            text: if native_view { "\r\n".repeat(4) } else { String::new() },
+            line: if native_view { 4 } else { 0 },
+            panels: Vec::new(),
+        }
     }
 
     pub fn section(&mut self, title: &str, body: &str) {
