@@ -5,6 +5,12 @@ use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
 use super::io::{self, WindowIo};
 use crate::core::ports::TerminalPanel;
 
+// Dedicated startup control frames. The relay must not infer worker state
+// from user-visible Spanish text or terminal chunk boundaries.
+pub(super) const STARTUP_PRELOAD_BEGIN: &[u8] = b"\x1b]777;SST_PRELOAD_BEGIN\x07";
+pub(super) const STARTUP_PRELOAD_END: &[u8] = b"\x1b]777;SST_PRELOAD_END\x07";
+pub(super) const STARTUP_READY: &[u8] = b"\x1b]777;SST_READY\x07";
+
 enum WorkerRequest {
     Execute(String),
     Complete {
@@ -129,11 +135,16 @@ impl EmbeddedSession {
                 // The existing fetch/neofetch/fastfetch commands remain usable
                 // on demand, with their original system-information output.
 
+                // Hide only the explicit startup security preload, never
+                // subsequent command results. Control frames are delivered as
+                // complete channel messages, not guessed from report text.
+                io::write(STARTUP_PRELOAD_BEGIN)?;
                 let security = crate::application::security::shared_security_service(paths.clone());
                 let report = security.run_startup_preload(|line| {
                     let _ = io::write(line.as_bytes());
                 });
                 io::write(security.render_startup(&report).as_bytes())?;
+                io::write(STARTUP_PRELOAD_END)?;
 
                 let (prompt_stdout, prompt_stderr, bash_prompt) = engine.prepare_prompt(false)?;
                 io::write(prompt_stdout.as_bytes())?;
@@ -146,6 +157,7 @@ impl EmbeddedSession {
                 *worker_timeout.lock().unwrap_or_else(|error| error.into_inner()) = engine.input_timeout();
                 *worker_last_activity.lock().unwrap_or_else(|error| error.into_inner()) = Instant::now();
                 worker_busy.store(false, Ordering::SeqCst);
+                io::write(STARTUP_READY)?;
                 for request in requests {
                     match request {
                         WorkerRequest::Execute(command) => {
