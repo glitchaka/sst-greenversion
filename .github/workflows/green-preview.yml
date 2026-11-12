@@ -24,6 +24,8 @@ jobs:
     runs-on: windows-latest
     timeout-minutes: 45
     env:
+      # Hosted Windows runner has no OpenGL 2.0 driver.
+      SST_SOFTWARE_RENDERER: "1"
       SST_IEEE_MAL_CSV: ${{ github.workspace }}/.ci-ieee/oui.csv
       SST_IEEE_MAM_CSV: ${{ github.workspace }}/.ci-ieee/mam.csv
       SST_IEEE_MAS_CSV: ${{ github.workspace }}/.ci-ieee/oui36.csv
