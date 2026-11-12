@@ -1062,28 +1062,28 @@ slint::slint! {
                 // The mockup's telemetry rail lives *inside* the original
                 // floating island. It uses measured Windows values only.
                 GreenHeaderMetric {
-                    visible: island.width >= 1100px;
+                    visible: island.width >= 1160px;
                     x: island.width - 700px; y: 6px;
                     width: 175px; height: 52px;
                     label-text: "HOST";
                     value-text: root.header-host;
                 }
                 GreenHeaderMetric {
-                    visible: island.width >= 1100px;
+                    visible: island.width >= 1160px;
                     x: island.width - 523px; y: 6px;
                     width: 125px; height: 52px;
                     label-text: "UPTIME";
                     value-text: root.header-uptime;
                 }
                 GreenHeaderMetric {
-                    visible: island.width >= 1100px;
+                    visible: island.width >= 1160px;
                     x: island.width - 396px; y: 6px;
                     width: 120px; height: 52px;
                     label-text: "MEM";
                     value-text: root.header-memory;
                 }
                 GreenHeaderMetric {
-                    visible: island.width >= 1100px;
+                    visible: island.width >= 1160px;
                     x: island.width - 274px; y: 6px;
                     width: 123px; height: 52px;
                     label-text: "CPU";
