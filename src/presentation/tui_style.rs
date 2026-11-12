@@ -21,13 +21,23 @@ pub struct LiveScreen {
 
 impl LiveScreen {
     pub fn new() -> Self {
-        // A Slint alternate screen has an actual vector title occupying four
-        // rows. Never print live network data or draw borders beneath it.
-        // External terminals retain the original zero-offset TUI.
+        // Write an actual terminal header, not a graphical Slint overlay.
+        // Users can select and copy its characters like any other output.
         let native_view = crate::adapters::terminal::io::output_sender().is_some();
+        let header = if native_view {
+            crate::presentation::tool_screen::active_tool_title()
+                .unwrap_or_else(|| "SST / MONITOR".to_owned())
+        } else {
+            String::new()
+        };
+        let heading = if native_view {
+            format!("  {ACCENT}SST  /  {header}{RESET}\r\n\r\n")
+        } else {
+            String::new()
+        };
         Self {
-            text: if native_view { "\r\n".repeat(4) } else { String::new() },
-            line: if native_view { 4 } else { 0 },
+            text: heading,
+            line: if native_view { 2 } else { 0 },
             panels: Vec::new(),
         }
     }
