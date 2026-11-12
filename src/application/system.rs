@@ -116,6 +116,9 @@ impl SystemService {
 
     fn top(&self) -> anyhow::Result<CommandOutput> {
         let mut terminal = self.terminal.alternate_screen()?;
+        // Activate the native full-window tool surface before the first paint.
+        // Do not depend on recognizing a title in already-rendered VT text.
+        let _tool_view = crate::presentation::tool_screen::enter_native_tool("MONITOR DE PROCESOS");
         let native_green = crate::adapters::terminal::io::output_sender().is_some();
         let mut sort_cpu = true;
         // Keep the same process sampler across frames. Reconstructing System on
