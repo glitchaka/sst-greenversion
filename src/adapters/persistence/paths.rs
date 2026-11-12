@@ -321,6 +321,22 @@ impl AppPaths {
             text.push_str(GREEN_TYPOGRAPHY_MARKER);
             text.push_str("\n");
         }
+        // One-time migration for the original blank Green wallpaper preset.
+        // A user choice made after migration is preserved, including "off".
+        // Do not mark as migrated before bg/ actually contains an image:
+        // installations can receive wallpapers later.
+        const WALLPAPER_MIGRATION: &str = "# SST_GREEN_BG_FOLDER_V1";
+        if !text.contains(WALLPAPER_MIGRATION)
+            && assignment_value(&text, "SST_BACKGROUND_MODE").as_deref() == Some("off")
+            && assignment_value(&text, "SST_BACKGROUND_IMAGE")
+                .is_none_or(|image| image.is_empty())
+            && !self.background_images()?.is_empty()
+        {
+            set_assignment(&mut text, "SST_BACKGROUND_MODE", "fixed");
+            text.push_str("\n");
+            text.push_str(WALLPAPER_MIGRATION);
+            text.push_str("\n");
+        }
         fs::write(path, text)?;
         Ok(())
     }
