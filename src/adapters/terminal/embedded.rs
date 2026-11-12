@@ -124,11 +124,10 @@ impl EmbeddedSession {
 
                 io::write(crate::presentation::shell::prompt::banner().as_bytes())?;
 
-                // Fetch is part of the visual startup and appears before the
-                // potentially slower security preload.
-                let fetch = engine.execute("fetch")?;
-                io::write(fetch.stdout.as_bytes())?;
-                io::write(fetch.stderr.as_bytes())?;
+                // The native Green island already owns the SST wordmark and
+                // host metrics. Do not print a second pixel-art logo on launch.
+                // The existing fetch/neofetch/fastfetch commands remain usable
+                // on demand, with their original system-information output.
 
                 let security = crate::application::security::shared_security_service(paths.clone());
                 let report = security.run_startup_preload(|line| {
