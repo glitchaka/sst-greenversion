@@ -2378,12 +2378,9 @@ pub fn run() -> Result<()> {
         ui.on_pointer_up(move |_x, _y, right| {
             let mut model = model.borrow_mut();
             if right {
-                if !model.copy_selection()
-                    && let Ok(mut clipboard) = Clipboard::new()
-                    && let Ok(value) = clipboard.get_text()
-                {
-                    model.paste(&value);
-                }
+                // A right click must never inject clipboard contents into
+                // a command. Paste is explicit: Ctrl+V or Shift+Insert.
+                let _ = model.copy_selection();
             } else {
                 let _ = model.pointer_up();
             }
