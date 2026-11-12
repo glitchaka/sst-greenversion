@@ -354,95 +354,6 @@ slint::slint! {
         }
     }
 
-    component GreenMetricCard inherits Rectangle {
-        in property <string> metric-label;
-        in property <string> metric-value;
-        in property <string> metric-detail;
-        in property <float> metric-ratio: -1.0;
-        in property <string> metric-tone: "neutral";
-
-        background: #242625;
-        border-radius: 11px;
-        border-width: 1px;
-        border-color: #a89c88;
-
-        Rectangle {
-            x: 0px;
-            y: 0px;
-            width: 5px;
-            height: parent.height;
-            background: root.metric-tone == "critical" ? #ec4624
-                : root.metric-tone == "warning" ? #f39120
-                : root.metric-tone == "ok" ? #add794
-                : root.metric-tone == "optimal" ? #4fbbbc
-                : #fa784f;
-            border-radius: 2px;
-        }
-
-        Text {
-            x: 16px;
-            y: 10px;
-            width: parent.width - 26px;
-            height: 20px;
-            text: root.metric-label;
-            color: #e0cdb0;
-            font-family: "Oxanium";
-            font-size: 11px;
-            font-weight: 700;
-            overflow: elide;
-        }
-
-        Text {
-            x: 16px;
-            y: 31px;
-            width: parent.width - 25px;
-            height: 31px;
-            text: root.metric-value;
-            color: #fff0d7;
-            font-family: "Segoe UI Variable";
-            font-size: 22px;
-            font-weight: 800;
-            overflow: elide;
-            vertical-alignment: center;
-        }
-
-        Text {
-            x: 16px;
-            y: 65px;
-            width: parent.width - 25px;
-            height: 18px;
-            text: root.metric-detail;
-            color: #adbfb4;
-            font-family: "Segoe UI Variable";
-            font-size: 11px;
-            overflow: elide;
-        }
-
-        Rectangle {
-            visible: root.metric-ratio >= 0.0;
-            x: 16px;
-            y: parent.height - 15px;
-            width: parent.width - 32px;
-            height: 6px;
-            background: #4d5852;
-            border-radius: 3px;
-            clip: true;
-
-            Rectangle {
-                width: parent.width * root.metric-ratio;
-                height: parent.height;
-                background: root.metric-tone == "critical" ? #ec4624
-                    : root.metric-tone == "warning" ? #f39120
-                    : root.metric-tone == "ok" ? #add794
-                    : root.metric-tone == "optimal" ? #4fbbbc
-                    : #e8a04a;
-                border-radius: 3px;
-            }
-        }
-    }
-
-    // Actual sys service measurements, composed like the reference's large
-    // SYSTEM STATUS instrument instead of four generic cards.
     component GreenSystemOverview inherits Rectangle {
         in property <string> host-name;
         in property <string> os-name;
@@ -568,59 +479,6 @@ slint::slint! {
         }
     }
 
-    component GreenTriageOverview inherits Rectangle {
-        in property <string> process-count;
-        in property <string> new-routes;
-        in property <string> finding-count;
-        in property <string> learning-count;
-        background: transparent;
-        border-width: 0px;
-        GreenMetricCard {
-            x: 0px; y: 0px;
-            width: (parent.width - 30px) / 4;
-            height: parent.height;
-            metric-label: "PROCESOS";
-            metric-value: root.process-count;
-            metric-detail: "Inspeccionados";
-        }
-        GreenMetricCard {
-            x: (parent.width - 30px) / 4 + 10px;
-            y: 0px;
-            width: (parent.width - 30px) / 4;
-            height: parent.height;
-            metric-label: "RUTAS NUEVAS";
-            metric-value: root.new-routes;
-            metric-detail: "Detectadas";
-        }
-        GreenMetricCard {
-            x: ((parent.width - 30px) / 4 + 10px) * 2;
-            y: 0px;
-            width: (parent.width - 30px) / 4;
-            height: parent.height;
-            metric-label: "HALLAZGOS";
-            metric-value: root.finding-count;
-            // Any verified finding requires review; that is a warning,
-            // not automatically a critical incident.
-            metric-tone: root.finding-count == "0" ? "ok" : "warning";
-            metric-detail: "Requieren revisión";
-        }
-        GreenMetricCard {
-            x: ((parent.width - 30px) / 4 + 10px) * 3;
-            y: 0px;
-            width: (parent.width - 30px) / 4;
-            height: parent.height;
-            metric-label: "RELACIONES";
-            metric-value: root.learning-count;
-            metric-detail: "Aprendidas";
-        }
-    }
-
-    // The download panel is independent of the VT100 pixel surface.
-    // It appears only during a transfer and never paints over fetch or
-    // modifies the user's background/transparency/terminal rows.
-    // Inline transfer graphic. The command reserves terminal rows and prints
-    // its own label. This component fills ONLY those rows: no floating window,
-    // popup, opaque card, shadow, frame, or toolbar.
     component InlineTransferBar inherits Rectangle {
         in property <string> transfer-percent;
         in property <string> transfer-amount;
@@ -740,11 +598,6 @@ slint::slint! {
         in property <float> system-memory-ratio: 0.0;
         in property <string> system-memory-percent: "—";
         in property <string> system-disk-count: "";
-        in property <bool> triage-overview-visible: false;
-        in property <string> triage-processes: "";
-        in property <string> triage-routes: "";
-        in property <string> triage-findings: "";
-        in property <string> triage-learned: "";
 
 
         in property <int> report-heading-count: 0;
@@ -926,22 +779,6 @@ slint::slint! {
                 memory-percent: root.system-memory-percent;
                 disk-count: root.system-disk-count;
             }
-            // Real, refreshed host-scan evidence. Nothing here is demo data.
-            GreenTriageOverview {
-                visible: root.triage-overview-visible;
-                x: root.system-overview-left * 1px;
-                y: root.system-overview-top * 1px;
-                width: root.system-overview-width * 1px;
-                height: root.system-overview-height * 1px;
-                process-count: root.triage-processes;
-                new-routes: root.triage-routes;
-                finding-count: root.triage-findings;
-                learning-count: root.triage-learned;
-            }
-
-
-
-
             // Ordinary SST help and reports receive the same genuine native
             // section accents. No box characters enter the command stream.
             ReportHeadingBand {
@@ -3115,25 +2952,6 @@ pub fn run() -> Result<()> {
                     ui.set_system_memory_ratio(overview.memory_ratio);
                     ui.set_system_memory_percent(format!("{:.0}%", overview.memory_ratio * 100.0).into());
                     ui.set_system_disk_count(overview.disk_count.into());
-                }
-                let triage_overview = if tool_active {
-                    crate::presentation::tool_screen::triage_overview_snapshot()
-                } else {
-                    None
-                };
-                ui.set_triage_overview_visible(triage_overview.is_some());
-                if let Some(triage) = triage_overview {
-                    let (left, top, cell_width, cell_height) = model.geometry();
-                    let factor = model.scale.max(0.5);
-                    let (_, cols) = model.parser.screen().size();
-                    ui.set_system_overview_left((left + 0.30 * cell_width) / factor);
-                    ui.set_system_overview_top((top + 4.25 * cell_height) / factor);
-                    ui.set_system_overview_width(((f32::from(cols) - 0.6) * cell_width) / factor);
-                    ui.set_system_overview_height((8.0 * cell_height) / factor);
-                    ui.set_triage_processes(triage.processes.into());
-                    ui.set_triage_routes(triage.new_routes.into());
-                    ui.set_triage_findings(triage.findings.into());
-                    ui.set_triage_learned(triage.learned.into());
                 }
                 ui.set_monitor_panel_count(panels.len().min(4) as i32);
                 if !panels.is_empty() {
