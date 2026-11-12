@@ -155,6 +155,9 @@ const NERD_FONT_BYTES: &[u8] = include_bytes!(concat!(
 ));
 
 slint::slint! {
+    // Display face for the angular, extended industrial typography of the mockup.
+    // Embedded in the executable; no host font installation is required.
+    import "../../assets/fonts/Oxanium-ExtraBold.ttf";
     // Rendered vector outlines, never made of VT100/ASCII characters.
     // Transparent interiors preserve the user's terminal artwork and logo.
     // Text-report section headings are individual native vector outlines,
@@ -179,9 +182,9 @@ slint::slint! {
     // Full-window industrial views: real Slint geometry behind the VT100
     // text surface. These are not terminal text borders or side widgets.
     component TerminalSectionFrame inherits Rectangle {
-        background: #292f2e;
+        background: #222423;
         border-width: 1px;
-        border-color: #50605a;
+        border-color: #e6d6be;
         border-radius: 12px;
 
         Rectangle {
@@ -189,7 +192,7 @@ slint::slint! {
             y: 1px;
             width: parent.width - 2px;
             height: min(37px, parent.height - 2px);
-            background: #37413d;
+            background: #353331;
             border-radius: 11px;
         }
         Rectangle {
@@ -198,7 +201,7 @@ slint::slint! {
             width: 5px;
             height: min(25px, parent.height - 18px);
             border-radius: 2px;
-            background: #fa8e35;
+            background: #fa784f;
         }
         Rectangle {
             x: 19px;
@@ -224,41 +227,56 @@ slint::slint! {
         }
     }
 
+    // Every invoked tool owns the complete viewport. The heavy black
+    // lettering on cream is the main heading treatment from the mockup.
     component GreenToolHero inherits Rectangle {
-        background: #303b37;
-        border-color: #66746a;
+        in property <string> tool-title;
+        background: #e9dec8;
+        border-color: #d3c2a6;
         border-width: 1px;
-        border-radius: 11px;
+        border-radius: 12px;
 
         Rectangle {
             x: 0px;
             y: 0px;
             width: 7px;
             height: parent.height;
-            background: #f28c36;
+            background: #fa784f;
             border-radius: 3px;
         }
-        Rectangle {
-            x: 15px;
+        Text {
+            x: 18px;
             y: 0px;
-            width: min(132px, parent.width - 30px);
-            height: 3px;
-            background: #f3dbb6;
-            border-radius: 1px;
+            width: parent.width - 174px;
+            height: parent.height;
+            text: root.tool-title;
+            color: #1a1b1a;
+            font-family: "Oxanium";
+            font-weight: 800;
+            font-size: 28px;
+            vertical-alignment: center;
+            overflow: elide;
         }
         Rectangle {
-            x: parent.width - 86px;
-            y: parent.height - 10px;
-            width: 38px;
-            height: 2px;
-            background: #bbd5b9;
-        }
-        Rectangle {
-            x: parent.width - 42px;
-            y: parent.height - 10px;
-            width: 24px;
-            height: 2px;
-            background: #f28c36;
+            x: parent.width - 136px;
+            y: 9px;
+            width: 117px;
+            height: parent.height - 18px;
+            border-radius: 6px;
+            background: #f5b84a;
+            Text {
+                text: "SST  /  GREEN";
+                x: 7px;
+                width: parent.width - 14px;
+                height: parent.height;
+                font-family: "Oxanium";
+                font-weight: 800;
+                font-size: 12px;
+                color: #191a18;
+                vertical-alignment: center;
+                horizontal-alignment: center;
+                overflow: elide;
+            }
         }
     }
 
@@ -268,17 +286,17 @@ slint::slint! {
         in property <string> metric-detail;
         in property <float> metric-ratio: -1.0;
 
-        background: #303835;
+        background: #242625;
         border-radius: 11px;
         border-width: 1px;
-        border-color: #61736b;
+        border-color: #a89c88;
 
         Rectangle {
             x: 0px;
             y: 0px;
             width: 5px;
             height: parent.height;
-            background: #ee8c3d;
+            background: #fa784f;
             border-radius: 2px;
         }
 
@@ -288,8 +306,8 @@ slint::slint! {
             width: parent.width - 26px;
             height: 20px;
             text: root.metric-label;
-            color: #c4d5c9;
-            font-family: "Segoe UI Variable";
+            color: #e0cdb0;
+            font-family: "Oxanium";
             font-size: 11px;
             font-weight: 700;
             overflow: elide;
@@ -301,7 +319,7 @@ slint::slint! {
             width: parent.width - 25px;
             height: 31px;
             text: root.metric-value;
-            color: #f3e9d4;
+            color: #fff0d7;
             font-family: "Segoe UI Variable";
             font-size: 22px;
             font-weight: 800;
@@ -474,6 +492,7 @@ slint::slint! {
 
         in property <image> terminal-image;
         in property <bool> tool-view-active: false;
+        in property <string> tool-header: "HERRAMIENTA";
         in property <float> tool-hero-left: 16.0;
         in property <float> tool-hero-top: 48.0;
         in property <float> tool-hero-width: 800.0;
@@ -581,13 +600,14 @@ slint::slint! {
                 y: 0;
                 width: 100%;
                 height: 100%;
-                background: rgba(26, 30, 28, 0.96);
+                background: rgba(22, 23, 22, 0.98);
             }
 
             // Distinct screen for active tools; the console remains
             // completely unobstructed when no tool is running.
             GreenToolHero {
                 visible: root.tool-view-active;
+                tool-title: root.tool-header;
                 x: root.tool-hero-left * 1px;
                 y: root.tool-hero-top * 1px;
                 width: root.tool-hero-width * 1px;
@@ -2632,6 +2652,33 @@ pub fn run() -> Result<()> {
                 }
                 let tool_active = model.session.raw_mode();
                 ui.set_tool_view_active(tool_active);
+                // Never invent a command name: derive it from the current
+                // active alternate-screen report or use a neutral label.
+                if tool_active {
+                    let screen = model.parser.screen();
+                    let (_, columns) = screen.size();
+                    let mut top_line = String::new();
+                    for column in 0..columns {
+                        if let Some(cell) = screen.cell(0, column) {
+                            if !cell.is_wide_continuation() {
+                                top_line.push_str(cell.contents());
+                            }
+                        }
+                    }
+                    let upper = top_line.to_uppercase();
+                    let name = if crate::presentation::tool_screen::system_overview_snapshot().is_some()
+                        || upper.contains("ESTADO DEL SISTEMA") {
+                        "SYSTEM STATUS"
+                    } else if upper.contains("TRIAGE") {
+                        "TRIAGE"
+                    } else if upper.contains("NET") || upper.contains("RED EN VIVO") {
+                        "NET MONITOR"
+                    } else {
+                        "SST / HERRAMIENTA"
+                    };
+                    ui.set_tool_header(name.into());
+                }
+
                 if tool_active {
                     let (left, top, cell_width, cell_height) = model.geometry();
                     let factor = model.scale.max(0.5);
