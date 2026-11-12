@@ -6,7 +6,7 @@ use crate::{
     application::packages::{PackageManifest, PackageService},
     core::{
         CommandOutput,
-        ports::{TerminalFactory, TerminalKey, TerminalSession},
+        ports::{TerminalFactory, TerminalKey, TerminalSession, TerminalPanel},
     },
 };
 
@@ -15,6 +15,7 @@ pub fn run_catalog(
     terminal_factory: &dyn TerminalFactory,
 ) -> Result<CommandOutput> {
     let mut terminal = terminal_factory.alternate_screen()?;
+    let _green_screen = crate::presentation::tool_screen::enter_native_tool("SIGSOUR / PAQUETES");
     let mut catalog = service.search(None)?;
     let mut installed = installed_ids(service)?;
     let mut query = String::new();
@@ -286,9 +287,9 @@ fn catalog_row(
     let restricted = matches!(package.portability.as_str(), "system" | "driver")
         || package.install.kind == "system";
     let state = if installed { "INSTALADO" } else if restricted { "SISTEMA" } else { "DISPONIBLE" };
-    let state_color = if installed { "\x1b[38;2;114;229;171m" }
-        else if restricted { "\x1b[38;2;237;192;120m" }
-        else { "\x1b[38;2;129;177;208m" };
+    let state_color = if installed { "\x1b[38;2;173;215;148m" }
+        else if restricted { "\x1b[38;2;243;145;32m" }
+        else { "\x1b[38;2;226;218;194m" };
     let marker = if active { "▌" } else { " " };
     let label = if width >= 84 {
         format!(
@@ -302,11 +303,11 @@ fn catalog_row(
     let line = clip(&label, width.saturating_sub(1));
     if active {
         // A single row highlight. No fill, box or background on other rows.
-        format!("\x1b[1;38;2;245;250;255;48;2;20;69;115m{line:<width$}\x1b[0m", width=width.saturating_sub(1))
+        format!("\x1b[1;38;2;27;32;32;48;2;243;145;32m{line:<width$}\x1b[0m", width=width.saturating_sub(1))
     } else {
         let prefix = &line[..line.char_indices().nth(2).map_or(line.len(), |(i,_)| i)];
         let rest = &line[prefix.len()..];
-        format!("\x1b[38;2;151;168;191m{prefix}\x1b[0m{state_color}{rest}\x1b[0m")
+        format!("\x1b[38;2;189;174;147m{prefix}\x1b[0m{state_color}{rest}\x1b[0m")
     }
 }
 
@@ -331,7 +332,8 @@ fn render(
         .map(|package| wrap_text(&format!("Comandos: {}", exposed_command_names(package)), columns))
         .unwrap_or_default();
     let message_lines = wrap_text(message, columns);
-    let fixed_rows = 9usize
+    let native = crate::adapters::terminal::io::output_sender().is_some();
+    let fixed_rows = (if native { 11usize } else { 9usize })
         .saturating_add(command_lines.len())
         .saturating_add(message_lines.len());
     let list_rows = height.saturating_sub(fixed_rows).max(3);
@@ -340,20 +342,25 @@ fn render(
 
     terminal.clear()?;
     let mut out = String::new();
-    out.push_str("\x1b[1;38;2;90;216;254m  SIGSOUR\x1b[0m");
-    out.push_str("  \x1b[38;2;141;157;181m/  Catálogo de paquetes SST\x1b[0m\n");
+    if native {
+        // Slint paints the real display face in the top three lines.
+        out.push_str("\r\n\r\n\r\n");
+    } else {
+        out.push_str("\x1b[1;38;2;226;218;194m  SIGSOUR\x1b[0m");
+        out.push_str("  \x1b[38;2;207;181;128m/  Catálogo de paquetes SST\x1b[0m\n");
+    }
     out.push_str(&format!(
-        "  \x1b[38;2;141;157;181mCategoría\x1b[0m  \x1b[38;2;183;228;247m{:<12}\x1b[0m  \
-         \x1b[38;2;141;157;181mPaquetes\x1b[0m  {}    \
-         \x1b[38;2;141;157;181mFiltro\x1b[0m  {}{}\n",
+        "  \x1b[38;2;189;174;147mCategoría\x1b[0m  \x1b[38;2;226;218;194m{:<12}\x1b[0m  \
+         \x1b[38;2;189;174;147mPaquetes\x1b[0m  {}    \
+         \x1b[38;2;189;174;147mFiltro\x1b[0m  {}{}\n",
         category, packages.len(),
-        if search_mode { "\x1b[1;38;2;90;216;254m› \x1b[0m" } else { "" },
+        if search_mode { "\x1b[1;38;2;243;145;32m› \x1b[0m" } else { "" },
         if query.is_empty() { "todos" } else { query },
     ));
     out.push('\n');
 
     if packages.is_empty() {
-        out.push_str("  \x1b[38;2;237;192;120mNo hay paquetes para este filtro.\x1b[0m\n");
+        out.push_str("  \x1b[38;2;243;145;32mNo hay paquetes para este filtro.\x1b[0m\n");
         for _ in 1..list_rows { out.push('\n'); }
     } else {
         for index in start..end {
@@ -366,24 +373,39 @@ fn render(
     out.push('\n');
     if let Some(package) = packages.get(selected).copied() {
         out.push_str(&format!(
-            "  \x1b[1;38;2;90;216;254m{}\x1b[0m  \
-             \x1b[38;2;155;175;199m{} · {} · {}\x1b[0m\n",
+            "  \x1b[1;38;2;243;145;32m{}\x1b[0m  \
+             \x1b[38;2;226;218;194m{} · {} · {}\x1b[0m\n",
             clip(&package.name, columns.saturating_sub(28)),
             clip(&package.version, 12), clip(&package.category, 13),
             package.portability.to_ascii_uppercase(),
         ));
-        out.push_str(&format!("  \x1b[38;2;213;223;238m{}\x1b[0m\n",clip(&package.description, columns)));
+        out.push_str(&format!("  \x1b[38;2;226;218;194m{}\x1b[0m\n",clip(&package.description, columns)));
         for line in &command_lines {
-            out.push_str(&format!("  \x1b[38;2;142;190;215m{}\x1b[0m\n",clip(line, columns)));
+            out.push_str(&format!("  \x1b[38;2;207;181;128m{}\x1b[0m\n",clip(line, columns)));
         }
     } else {
         out.push_str("  Sin selección.\n\n");
     }
     for line in &message_lines {
-        out.push_str(&format!("  \x1b[38;2;179;195;214m{}\x1b[0m\n",clip(line, columns)));
+        out.push_str(&format!("  \x1b[38;2;226;218;194m{}\x1b[0m\n",clip(line, columns)));
     }
-    out.push_str("\x1b[38;2;117;151;182m  ↑↓ Mover    / Buscar    C Categoría    I Temporal    P Persistente    R Quitar    U Actualizar    Esc Salir\x1b[0m\n");
-    terminal.write(&out)?;
+    out.push_str("\x1b[38;2;189;174;147m  ↑↓ Mover    / Buscar    C Categoría    I Temporal    P Persistente    R Quitar    U Actualizar    Esc Salir\x1b[0m\n");
+    if native {
+        // Two independent native sections: package grid and selection
+        // details. These are true Slint vector frames, never ASCII boxes.
+        let details_top = 6 + list_rows;
+        terminal.set_panels(vec![
+            TerminalPanel {
+                start_row: 4,
+                rows: (list_rows + 2).min(u16::MAX as usize) as u16,
+            },
+            TerminalPanel {
+                start_row: details_top.min(u16::MAX as usize) as u16,
+                rows: (3 + command_lines.len() + message_lines.len()).min(u16::MAX as usize) as u16,
+            },
+        ])?;
+    }
+    terminal.write(&out.replace('\n', "\r\n"))?;
     terminal.flush()
 }
 
