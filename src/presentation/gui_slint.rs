@@ -441,6 +441,8 @@ slint::slint! {
         }
     }
 
+    // Actual sys service measurements, composed like the reference's large
+    // SYSTEM STATUS instrument instead of four generic cards.
     component GreenSystemOverview inherits Rectangle {
         in property <string> host-name;
         in property <string> os-name;
@@ -450,47 +452,118 @@ slint::slint! {
         in property <float> memory-ratio: 0.0;
         in property <string> disk-count;
 
-        background: transparent;
-        border-width: 0px;
+        background: #222a2a;
+        border-width: 2px;
+        border-color: #e2dac2;
+        border-radius: 13px;
+        clip: true;
 
-        GreenMetricCard {
-            x: 0px;
-            y: 0px;
-            width: (parent.width - 30px) / 4;
-            height: parent.height;
-            metric-label: "EQUIPO  /  WINDOWS";
-            metric-value: root.host-name;
-            metric-detail: root.os-name;
+        Rectangle {
+            x: 0px; y: 0px;
+            width: parent.width; height: 35px;
+            background: #e2dac2;
+            Text {
+                x: 20px; width: parent.width - 40px; height: 35px;
+                text: "SYSTEM STATUS";
+                font-family: "Oxanium"; font-size: 24px;
+                font-weight: 800; color: #1c1e1d;
+                vertical-alignment: center;
+            }
         }
-        GreenMetricCard {
-            x: (parent.width - 30px) / 4 + 10px;
-            y: 0px;
-            width: (parent.width - 30px) / 4;
-            height: parent.height;
-            metric-label: "PROCESADORES";
-            metric-value: root.cpu-count;
-            metric-detail: "Núcleos lógicos";
+
+        Rectangle {
+            x: 14px; y: 46px;
+            width: min(216px, (parent.width - 44px) * 0.29);
+            height: parent.height - 60px;
+            border-width: 1px;
+            border-color: #827a6c;
+            border-radius: 10px;
+            background: #1b1f1e;
+            Text {
+                x: 14px; y: 7px;
+                width: parent.width - 28px; height: 19px;
+                text: "MEMORIA / REAL";
+                font-family: "Oxanium"; font-size: 12px;
+                font-weight: 800; color: #e2dac2;
+            }
+            Text {
+                x: 14px; y: 26px;
+                width: parent.width - 28px; height: 48px;
+                text: round(root.memory-ratio * 100) + "%";
+                font-family: "Oxanium"; font-size: 40px;
+                font-weight: 800;
+                color: root.memory-ratio >= 0.90 ? #ec4624
+                    : root.memory-ratio >= 0.75 ? #f39120 : #4fbbbc;
+                vertical-alignment: center;
+            }
+            Rectangle {
+                x: 14px; y: parent.height - 30px;
+                width: parent.width - 28px; height: 9px;
+                background: #4a4a44;
+                border-radius: 4px;
+                clip: true;
+                Rectangle {
+                    width: parent.width * root.memory-ratio;
+                    height: parent.height;
+                    background: root.memory-ratio >= 0.90 ? #ec4624
+                        : root.memory-ratio >= 0.75 ? #f39120 : #4fbbbc;
+                    border-radius: 4px;
+                }
+            }
         }
-        GreenMetricCard {
-            x: ((parent.width - 30px) / 4 + 10px) * 2;
-            y: 0px;
-            width: (parent.width - 30px) / 4;
-            height: parent.height;
-            metric-label: "MEMORIA  /  MIB";
-            metric-value: root.memory-used;
-            metric-detail: "de " + root.memory-total + " MiB";
-            metric-ratio: root.memory-ratio;
-            metric-tone: root.memory-ratio >= 0.90 ? "critical"
-                : root.memory-ratio >= 0.75 ? "warning" : "ok";
-        }
-        GreenMetricCard {
-            x: ((parent.width - 30px) / 4 + 10px) * 3;
-            y: 0px;
-            width: (parent.width - 30px) / 4;
-            height: parent.height;
-            metric-label: "ALMACENAMIENTO";
-            metric-value: root.disk-count;
-            metric-detail: "Unidades detectadas";
+
+        Rectangle {
+            x: min(216px, (parent.width - 44px) * 0.29) + 31px;
+            y: 46px;
+            width: parent.width - self.x - 14px;
+            height: parent.height - 60px;
+            background: transparent;
+
+            Text {
+                x: 0px; y: 0px;
+                width: parent.width; height: 22px;
+                text: "HOST    " + root.host-name;
+                color: #e2dac2;
+                font-family: "Oxanium"; font-size: 17px;
+                font-weight: 800; overflow: elide;
+            }
+            Text {
+                x: 0px; y: 25px;
+                width: parent.width; height: 22px;
+                text: root.os-name;
+                color: #b9d5c5;
+                font-family: "Oxanium"; font-size: 15px;
+                overflow: elide;
+            }
+            Rectangle {
+                x: 0px; y: 51px;
+                width: parent.width; height: 1px;
+                background: #928878;
+            }
+            Text {
+                x: 0px; y: 60px;
+                width: parent.width * 0.48; height: 31px;
+                text: "CPU LÓGICOS   " + root.cpu-count;
+                color: #f39120;
+                font-family: "Oxanium"; font-size: 15px;
+                font-weight: 800; overflow: elide;
+            }
+            Text {
+                x: parent.width * 0.51; y: 60px;
+                width: parent.width * 0.49; height: 31px;
+                text: "DISCOS   " + root.disk-count;
+                color: #4fbbbc;
+                font-family: "Oxanium"; font-size: 15px;
+                font-weight: 800; overflow: elide;
+            }
+            Text {
+                x: 0px; y: parent.height - 26px;
+                width: parent.width; height: 24px;
+                text: "RAM    " + root.memory-used + " / " + root.memory-total + " MiB";
+                color: #e2dac2;
+                font-family: "Oxanium"; font-size: 14px;
+                font-weight: 700; overflow: elide;
+            }
         }
     }
 
@@ -3025,7 +3098,7 @@ pub fn run() -> Result<()> {
                     ui.set_system_overview_left((left + 0.30 * cell_width) / factor);
                     ui.set_system_overview_top((top + 4.25 * cell_height) / factor);
                     ui.set_system_overview_width(((f32::from(cols) - 0.6) * cell_width) / factor);
-                    ui.set_system_overview_height((6.5 * cell_height) / factor);
+                    ui.set_system_overview_height((8.0 * cell_height) / factor);
                     ui.set_system_host(overview.host.into());
                     ui.set_system_os(overview.os.into());
                     ui.set_system_cpu_count(overview.cpu_count.into());
@@ -3047,7 +3120,7 @@ pub fn run() -> Result<()> {
                     ui.set_system_overview_left((left + 0.30 * cell_width) / factor);
                     ui.set_system_overview_top((top + 4.25 * cell_height) / factor);
                     ui.set_system_overview_width(((f32::from(cols) - 0.6) * cell_width) / factor);
-                    ui.set_system_overview_height((6.5 * cell_height) / factor);
+                    ui.set_system_overview_height((8.0 * cell_height) / factor);
                     ui.set_triage_processes(triage.processes.into());
                     ui.set_triage_routes(triage.new_routes.into());
                     ui.set_triage_findings(triage.findings.into());
