@@ -258,53 +258,79 @@ slint::slint! {
     // The PTY always uses the entire body below this one ornamental heading.
     // Industrial full-window console shell from the approved SST reference.
     // No status widgets share the terminal: only this bezel surrounds the PTY.
+    // One industrial chassis with a continuous full-width PTY underneath.
+    // The existing 90px floating island is preserved above this surface.
     component GreenConsoleChrome inherits Rectangle {
         in property <string> channel-version;
-        background: #1a1c1b;
+        background: #171c1a;
         border-width: 2px;
         border-color: #e2dac2;
-        border-radius: 17px;
+        border-radius: 16px;
         clip: true;
 
         Rectangle {
             x: 2px; y: 2px;
-            width: parent.width - 4px; height: 46px;
-            background: #272725;
+            width: parent.width - 4px;
+            height: parent.height - 4px;
+            background: #191d1b;
             border-radius: 14px;
         }
 
-        // Angled coral title tab, rather than a generic rectangular widget.
+        // Architectural top fascia; not a permanent widget or sidebar.
+        Rectangle {
+            x: 2px; y: 2px;
+            width: parent.width - 4px;
+            height: 53px;
+            background: #2b2c28;
+        }
         Path {
             x: 2px; y: 2px;
-            width: 332px; height: 45px;
-            commands: "M 0 0 L 330 0 L 307 8 L 283 34 L 270 44 L 0 44 Z";
+            width: 338px; height: 53px;
+            commands: "M 0 0 L 336 0 L 318 13 L 302 31 L 285 53 L 0 53 Z";
             fill: #fe8254;
         }
         Image {
-            x: 21px; y: 2px;
-            width: 260px; height: 42px;
+            x: 21px; y: 7px;
+            width: 269px; height: 39px;
             source: @image-url("../../assets/branding/sst-console-label.svg");
             image-fit: contain;
         }
 
         Rectangle {
-            x: 2px; y: 48px;
-            width: parent.width - 4px; height: 2px;
+            x: 2px; y: 55px;
+            width: parent.width - 4px; height: 3px;
             background: #f39120;
         }
         Rectangle {
-            x: 2px; y: 50px;
+            x: 2px; y: 58px;
             width: parent.width - 4px; height: 1px;
-            background: #776a54;
+            background: #655e50;
+        }
+
+        // The frame encompasses the whole tool area, not left-hand cards.
+        Rectangle {
+            x: 4px; y: 68px;
+            width: 3px; height: max(0px, parent.height - 98px);
+            background: #5e7765;
+        }
+        Rectangle {
+            x: parent.width - 7px; y: 68px;
+            width: 3px; height: max(0px, parent.height - 98px);
+            background: #5e7765;
+        }
+        Rectangle {
+            x: 4px; y: parent.height - 21px;
+            width: parent.width - 8px; height: 1px;
+            background: #5e6657;
         }
 
         Text {
-            visible: parent.width > 770px;
-            x: parent.width - 456px; y: 9px;
-            width: 436px; height: 28px;
-            text: "SHELL SHOCK TOOL   /   " + root.channel-version;
+            visible: parent.width > 780px;
+            x: parent.width - 455px; y: 9px;
+            width: 432px; height: 30px;
+            text: "SHELL SHOCK TOOL  /  " + root.channel-version;
             font-family: "Oxanium";
-            font-size: 13px;
+            font-size: 14px;
             font-weight: 800;
             color: #e2dac2;
             horizontal-alignment: right;
@@ -312,17 +338,28 @@ slint::slint! {
             overflow: elide;
         }
 
+        // Decorative score marks only; system values come from the island.
         Rectangle {
-            x: 20px; y: parent.height - 13px;
+            x: 20px; y: parent.height - 14px;
             width: min(116px, parent.width - 40px);
             height: 3px;
             background: #fe8254;
         }
         Rectangle {
-            x: 148px; y: parent.height - 13px;
-            width: min(40px, parent.width - 160px);
+            x: 148px; y: parent.height - 14px;
+            width: min(40px, parent.width - 164px);
             height: 3px;
             background: #f39120;
+        }
+        Rectangle {
+            x: parent.width - 88px; y: parent.height - 14px;
+            width: 28px; height: 3px;
+            background: #8eaf93;
+        }
+        Rectangle {
+            x: parent.width - 50px; y: parent.height - 14px;
+            width: 28px; height: 3px;
+            background: #8eaf93;
         }
     }
 
