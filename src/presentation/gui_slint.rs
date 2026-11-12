@@ -1843,11 +1843,12 @@ impl TerminalModel {
                     if cell.inverse() {
                         std::mem::swap(&mut fg, &mut bg);
                     }
-                    if tool_mode {
-                        fg = gruvbox_terminal_color(fg);
-                        if paint_background {
-                            bg = tool_background_color(bg);
-                        }
+                    // All console output shares Green's industrial palette.
+                    // The same policy applies to existing and future commands,
+                    // without command-specific styling or fake diagnostics.
+                    fg = industrial_terminal_color(fg);
+                    if tool_mode && paint_background {
+                        bg = tool_background_color(bg);
                     }
 
                     let index = row as usize * cols as usize + col as usize;
@@ -1926,27 +1927,28 @@ impl TerminalModel {
     }
 }
 
-// Central SST Gruvbox color policy. Legacy commands may still emit cyan or
-// bright blue ANSI values; neutralize those at the terminal rendering boundary.
-// Semantic red/amber/green and the muted blue used for explicitly optimal
-// states remain distinguishable.
-fn gruvbox_terminal_color(color: Rgb) -> Rgb {
+// Applied at the VT100 renderer boundary to every shell command. Preserve
+// the distinct operational states: red critical, orange warning, green OK,
+// blue optimal, aqua informational, warm cream for text.
+fn industrial_terminal_color(color: Rgb) -> Rgb {
     let Rgb(r, g, b) = color;
-    // Bright cyan/blue display accents become industrial orange *only*
-    // inside fullscreen tools, not in the normal terminal or SST logo.
-    if b >= 175 && b > r.saturating_add(55) && b > g.saturating_add(20) {
-        return Rgb(0xFE, 0x80, 0x19);
+    if r >= 195 && g < 125 && b < 125 {
+        return Rgb(0xEC, 0x46, 0x24);
     }
-    // Cool near-white text becomes readable warm architectural cream.
+    if r >= 165 && g >= 110 && b < 125 {
+        return Rgb(0xF3, 0x91, 0x20);
+    }
+    if g >= 145 && g > r.saturating_add(35) && g > b.saturating_add(25) {
+        return Rgb(0xAD, 0xD7, 0x94);
+    }
+    if b >= 175 && b > r.saturating_add(55) && b > g.saturating_add(25) {
+        return Rgb(0x79, 0xB8, 0xEA);
+    }
+    if g >= 150 && b >= 150 && r < 165 {
+        return Rgb(0x4F, 0xBB, 0xBC);
+    }
     if b >= 165 && b > r.saturating_add(18) && b > g.saturating_add(7) {
-        return Rgb(0xEB, 0xDB, 0xB2);
-    }
-    // Desaturated blue-gray labels become warm neutral labels.
-    if b >= 125 && b > r.saturating_add(12) && b > g.saturating_add(6) {
-        return Rgb(0xBD, 0xAE, 0x93);
-    }
-    if b >= 120 && b.saturating_add(5) >= g && g > r.saturating_add(18) {
-        return Rgb(0xEB, 0xDB, 0xB2);
+        return Rgb(0xE2, 0xDA, 0xC2);
     }
     color
 }
