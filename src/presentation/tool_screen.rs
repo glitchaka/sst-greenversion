@@ -312,11 +312,10 @@ fn section_panels(visible: &[ReportLine], body_top: usize, bottom: usize) -> Vec
     panels
 }
 
-fn report_body_top(native_view: bool, native_overview: bool) -> usize {
-    // Green graphical heading covers rows 0..=2. Native metrics occupy the
-    // eight rows immediately below the command line, never the report text.
-    let heading_rows = 5;
-    heading_rows + if native_overview { 8 } else { 0 }
+fn report_body_top(native_overview: bool, textual_meter: bool) -> usize {
+    // Graphical heading and actual metric cards are reserved by Slint.
+    // The text-only client gets one extra row for its memory meter.
+    5 + if native_overview { 8 } else { 0 } + usize::from(textual_meter)
 }
 
 fn render_page(
@@ -330,7 +329,12 @@ fn render_page(
     native_overview: bool,
     native_view: bool,
 ) -> (String, Vec<TerminalPanel>) {
-    let body_top = report_body_top(native_view, native_overview);
+    let meter = if !native_view && !native_overview {
+        memory_meter(content, width)
+    } else {
+        None
+    };
+    let body_top = report_body_top(native_overview, meter.is_some());
     let body_rows = height.saturating_sub(body_top + 3).max(1);
     let visible = lines.iter().skip(scroll).take(body_rows).cloned().collect::<Vec<_>>();
     let mut view = String::new();
@@ -354,9 +358,12 @@ fn render_page(
     ));
     view.push_str("\r\n");
     if native_overview {
-        // A real native meter is layered in these precise rows. Never draw
-        // textual output behind it.
+        // Cards occupy precisely eight rows, without covering text.
         for _ in 0..8 { view.push_str("\r\n"); }
+    }
+    if let Some(meter) = meter {
+        view.push_str(&meter);
+        view.push_str("\r\n");
     }
     for line in &visible {
         view.push_str("    ");
@@ -409,7 +416,8 @@ pub fn show_report(
         let (cols, rows) = terminal.size()?;
         let width = usize::from(cols).max(28);
         let height = usize::from(rows).max(10);
-        let body_rows = height.saturating_sub(report_body_top(native_view, native_overview) + 3).max(1);
+        let text_meter = !native_view && !native_overview && memory_meter(content, width).is_some();
+        let body_rows = height.saturating_sub(report_body_top(native_overview, text_meter) + 3).max(1);
         let lines = wrapped_lines(content, width.saturating_sub(7));
         let max_scroll = lines.len().saturating_sub(body_rows);
         scroll = scroll.min(max_scroll);
