@@ -359,12 +359,12 @@ slint::slint! {
         Rectangle {
             x: parent.width - 88px; y: parent.height - 14px;
             width: 28px; height: 3px;
-            background: #8eaf93;
+            background: rgb(142, 175, 147);
         }
         Rectangle {
             x: parent.width - 50px; y: parent.height - 14px;
             width: 28px; height: 3px;
-            background: #8eaf93;
+            background: rgb(142, 175, 147);
         }
     }
 
