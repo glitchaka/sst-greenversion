@@ -879,7 +879,7 @@ fn handle_monitor_key(
             *message_input = Some(String::new());
             Ok(MonitorInput::Redraw)
         }
-        TerminalKey::Char('q') | TerminalKey::Escape => Ok(MonitorInput::Exit),
+        TerminalKey::Char('q') | TerminalKey::Char('Q') | TerminalKey::Escape => Ok(MonitorInput::Exit),
         _ => Ok(MonitorInput::None),
     }
 }
