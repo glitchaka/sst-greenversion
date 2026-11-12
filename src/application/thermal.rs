@@ -275,8 +275,16 @@ fn native_storage_sensors() -> anyhow::Result<Vec<Reading>> {
 #[cfg(windows)]
 fn nvidia_sensors() -> anyhow::Result<Vec<Reading>> {
     use windows_sys::Win32::System::LibraryLoader::{
-        FreeLibrary, GetProcAddress, LoadLibraryExW, LOAD_LIBRARY_SEARCH_SYSTEM32,
+        GetProcAddress, LoadLibraryExW, LOAD_LIBRARY_SEARCH_SYSTEM32,
     };
+
+    // windows-sys 0.61 no longer exports FreeLibrary from this module.
+    // Link directly against the documented Kernel32 export. The RAII
+    // wrapper below releases the NVML module on every return path.
+    #[link(name = "kernel32")]
+    unsafe extern "system" {
+        fn FreeLibrary(module: windows_sys::Win32::Foundation::HMODULE) -> i32;
+    }
 
     type NvmlInit = unsafe extern "C" fn() -> i32;
     type NvmlShutdown = unsafe extern "C" fn() -> i32;
