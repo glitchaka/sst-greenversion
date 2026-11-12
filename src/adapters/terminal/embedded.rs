@@ -7,8 +7,7 @@ use crate::core::ports::TerminalPanel;
 
 // Dedicated startup control frames. The relay must not infer worker state
 // from user-visible Spanish text or terminal chunk boundaries.
-pub(super) const STARTUP_PRELOAD_BEGIN: &[u8] = b"\x1b]777;SST_PRELOAD_BEGIN\x07";
-pub(super) const STARTUP_PRELOAD_END: &[u8] = b"\x1b]777;SST_PRELOAD_END\x07";
+pub(super) const STARTUP_FOOTER_REQUEST: &[u8] = b"\x1b]777;SST_FOOTER\x07";
 pub(super) const STARTUP_READY: &[u8] = b"\x1b]777;SST_READY\x07";
 
 enum WorkerRequest {
@@ -135,16 +134,20 @@ impl EmbeddedSession {
                 // The existing fetch/neofetch/fastfetch commands remain usable
                 // on demand, with their original system-information output.
 
-                // Hide only the explicit startup security preload, never
-                // subsequent command results. Control frames are delivered as
-                // complete channel messages, not guessed from report text.
-                io::write(STARTUP_PRELOAD_BEGIN)?;
+                // A normal shell must be usable immediately. Security sampling
+                // is deliberately moved off the prompt's critical path; its
+                // results stay available in triage without discarding any
+                // command output or changing the foreground terminal.
                 let security = crate::application::security::shared_security_service(paths.clone());
-                let report = security.run_startup_preload(|line| {
-                    let _ = io::write(line.as_bytes());
-                });
-                io::write(security.render_startup(&report).as_bytes())?;
-                io::write(STARTUP_PRELOAD_END)?;
+                if let Err(error) = std::thread::Builder::new()
+                    .name("sst-green-security-preload".to_owned())
+                    .spawn(move || {
+                        let _ = security.run_startup_preload(|_| {});
+                    })
+                {
+                    io::write(format!("Aviso: análisis inicial no iniciado: {error}\r\n").as_bytes())?;
+                }
+                io::write(STARTUP_FOOTER_REQUEST)?;
 
                 let (prompt_stdout, prompt_stderr, bash_prompt) = engine.prepare_prompt(false)?;
                 io::write(prompt_stdout.as_bytes())?;
