@@ -257,16 +257,11 @@ slint::slint! {
             commands: "M 0 0 L 330 0 L 307 8 L 283 34 L 270 44 L 0 44 Z";
             fill: #fe8254;
         }
-        Text {
-            x: 25px; y: 4px;
-            width: 260px; height: 40px;
-            text: "CONSOLE  /  SST";
-            font-family: "Oxanium";
-            font-size: 25px;
-            font-weight: 800;
-            color: #171c1c;
-            vertical-alignment: center;
-            overflow: elide;
+        Image {
+            x: 21px; y: 2px;
+            width: 260px; height: 42px;
+            source: @image-url("../../assets/branding/sst-console-label.svg");
+            image-fit: contain;
         }
 
         Rectangle {
@@ -1037,16 +1032,12 @@ slint::slint! {
                     image-fit: contain;
                 }
 
-                Text {
+                Image {
                     visible: island.width >= 700px;
-                    x: 268px; y: 12px;
-                    width: 120px; height: 67px;
-                    text: "SHELL\nSHOCK\nTOOL";
-                    color: #e2dac2;
-                    font-family: "Oxanium";
-                    font-size: 20px; font-weight: 800;
-                    vertical-alignment: center;
-                    overflow: elide;
+                    x: 270px; y: 6px;
+                    width: 135px; height: 77px;
+                    source: @image-url("../../assets/branding/sst-stacked-title.svg");
+                    image-fit: contain;
                 }
 
                 Rectangle {
