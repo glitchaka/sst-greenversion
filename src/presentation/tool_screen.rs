@@ -226,12 +226,14 @@ fn color_line(line: &ReportLine) -> String {
     // A warning in evidence is shown as a warning, not a false positive badge
     // inferred from a filename or a passing occurrence of the word "error".
     if text.starts_with("CRÍTICO ") || text.starts_with("CRITICO ")
+        || text.starts_with("CRITICAL ") || text.starts_with("ALERTA CRÍTICA")
         || text.starts_with("ERROR:") || text.starts_with("DENEGADO:")
     {
         return format!("{}{}{}", theme::BAD, line.text, theme::RESET);
     }
     if text.starts_with("ADVERTENCIA:") || text.starts_with("ATENCIÓN:")
-        || text.starts_with("ATENCION:")
+        || text.starts_with("ATENCION:") || text.starts_with("ATTENTION ")
+        || text.starts_with("WARNING ") || text.starts_with("REVISAR:")
     {
         return format!("{}{}{}", theme::WARN, line.text, theme::RESET);
     }
@@ -516,6 +518,15 @@ mod tests {
         assert_eq!(counts.new_routes, "3");
         assert_eq!(counts.findings, "9");
         assert_eq!(counts.learned, "21");
+    }
+    #[test]
+    fn triage_severity_must_preserve_meaning() {
+        let observed = ReportLine { text: "ATTENTION app.exe [476]".to_owned(), heading: false };
+        assert!(color_line(&observed).contains(theme::WARN));
+        let critical = ReportLine { text: "CRITICAL incidente [123]".to_owned(), heading: false };
+        assert!(color_line(&critical).contains(theme::BAD));
+        let unavailable = ReportLine { text: "falta: sensor UNAVAILABLE".to_owned(), heading: false };
+        assert!(!color_line(&unavailable).contains(theme::BAD));
     }
 
 }
