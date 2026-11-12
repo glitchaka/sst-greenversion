@@ -10,4 +10,3 @@ pub const MUTED: &str = "\x1b[38;2;168;153;132m";
 pub const GOOD: &str = "\x1b[1;38;2;184;187;38m";
 pub const WARN: &str = "\x1b[1;38;2;250;189;47m";
 pub const BAD: &str = "\x1b[1;38;2;251;73;52m";
-pub const OPTIMAL: &str = "\x1b[1;38;2;142;192;124m";
