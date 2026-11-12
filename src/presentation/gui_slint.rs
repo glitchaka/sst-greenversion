@@ -1780,30 +1780,13 @@ impl TerminalModel {
         self.dirty = true;
     }
 
-    /// Only SST-owned monitors receive native dashboard chrome. Generic
-    /// terminal programs (Helix, editors, installers) keep their own UI.
+    /// Full-window SST tools are identified by their own lifecycle guard
+    /// or semantic panel geometry. Never infer active tool state by scanning
+    /// rendered characters: command output and localization can change.
     fn native_tool_view(&self) -> bool {
-        if !self.session.raw_mode() {
-            return false;
-        }
-        if crate::presentation::tool_screen::active_tool_title().is_some()
-            || !self.session.panels_snapshot().is_empty()
-        {
-            return true;
-        }
-        let screen = self.parser.screen();
-        let (rows, cols) = screen.size();
-        let mut top = String::new();
-        for row in 0..rows.min(9) {
-            for col in 0..cols.min(85) {
-                if let Some(cell) = screen.cell(row, col)
-                    && !cell.is_wide_continuation()
-                {
-                    top.push_str(cell.contents());
-                }
-            }
-        }
-        top.contains("MONITOR DE PROCESOS")
+        self.session.raw_mode()
+            && (crate::presentation::tool_screen::active_tool_title().is_some()
+                || !self.session.panels_snapshot().is_empty())
     }
 
     fn render(&mut self) -> Image {
@@ -2890,40 +2873,12 @@ pub fn run() -> Result<()> {
                 }
                 let tool_active = model.native_tool_view();
                 ui.set_tool_view_active(tool_active);
-                // Fullscreen views reserve the graphical title rows; look
-                // at the actual visible headings rather than the blank first
-                // line. A static report additionally provides its real name.
+                // Display only the identity declared by the tool itself.
+                // Do not scrape the terminal framebuffer or guess from data.
                 if tool_active {
-                    let explicit = crate::presentation::tool_screen::active_tool_title();
-                    let mut text = String::new();
-                    let screen = model.parser.screen();
-                    let (rows, columns) = screen.size();
-                    for row in 0..rows.min(11) {
-                        for column in 0..columns.min(82) {
-                            if let Some(cell) = screen.cell(row, column)
-                                && !cell.is_wide_continuation()
-                            {
-                                text.push_str(cell.contents());
-                            }
-                        }
-                        text.push(' ');
-                    }
-                    let upper = text.to_uppercase();
-                    let name = if crate::presentation::tool_screen::system_overview_snapshot().is_some()
-                        || upper.contains("ESTADO DEL SISTEMA") {
-                        "SYSTEM STATUS".to_owned()
-                    } else if upper.contains("MONITOR DE PROCESOS") {
-                        "MONITOR DE PROCESOS".to_owned()
-                    } else if upper.contains("TRIAGE") {
-                        "TRIAGE".to_owned()
-                    } else if upper.contains("RED EN VIVO")
-                        || upper.contains("EQUIPOS DETECTADOS")
-                        || upper.contains("NET MONITOR") {
-                        "NET MONITOR".to_owned()
-                    } else {
-                        explicit.unwrap_or_else(|| "SST / HERRAMIENTA".to_owned())
-                    };
-                    ui.set_tool_header(name.into());
+                    let title = crate::presentation::tool_screen::active_tool_title()
+                        .unwrap_or_else(|| "SST / HERRAMIENTA".to_owned());
+                    ui.set_tool_header(title.into());
                 }
 
                 if tool_active {
