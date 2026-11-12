@@ -1075,11 +1075,27 @@ slint::slint! {
                 }
                 Text {
                     visible: island.width >= 940px && island.width < 1120px;
-                    x: 537px; y: 18px;
-                    width: island.width - 674px; height: 54px;
-                    text: "MEM " + root.header-memory + "\nCPU " + root.header-cpu;
+                    x: 515px; y: 7px;
+                    width: island.width - 630px; height: 30px;
+                    text: "› CONSOLA AVANZADA";
                     font-family: "Oxanium";
-                    font-size: 16px; font-weight: 800;
+                    font-size: 15px; font-weight: 800;
+                    color: #e2dac2; vertical-alignment: center;
+                    overflow: elide;
+                }
+                Rectangle {
+                    visible: island.width >= 940px && island.width < 1120px;
+                    x: 515px; y: 39px;
+                    width: island.width - 630px; height: 1px;
+                    background: #a69a88;
+                }
+                Text {
+                    visible: island.width >= 940px && island.width < 1120px;
+                    x: 537px; y: 48px;
+                    width: island.width - 674px; height: 30px;
+                    text: "MEM " + root.header-memory + "   CPU " + root.header-cpu;
+                    font-family: "Oxanium";
+                    font-size: 14px; font-weight: 800;
                     color: #e2dac2;
                     vertical-alignment: center;
                     overflow: elide;
