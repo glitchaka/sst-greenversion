@@ -52,9 +52,21 @@ use crate::adapters::{
 
 const INITIAL_COLS: u16 = 112;
 const INITIAL_ROWS: u16 = 31;
-const ISLAND_TOP: f32 = 6.0;
+// Shared geometry with the actual Slint island and console chassis.
+const ISLAND_TOP: f32 = 7.0;
 const ISLAND_HEIGHT: f32 = 90.0;
+const CONSOLE_CHROME_TOP: f32 = 109.0;
 const CONSOLE_CHROME_HEIGHT: f32 = 57.0;
+
+fn terminal_content_top(native_tool: bool, gap: u16, padding: u16, scale: f32) -> f32 {
+    let body_start = if native_tool {
+        ISLAND_TOP + ISLAND_HEIGHT
+    } else {
+        CONSOLE_CHROME_TOP + CONSOLE_CHROME_HEIGHT
+    };
+    ((body_start + f32::from(gap)) * scale).round()
+        + (f32::from(padding) * scale).round()
+}
 
 // The frameless Slint window can briefly report an icon-sized client area
 // *before* IsIconic becomes true, or *after* it becomes false. Never send
@@ -120,6 +132,17 @@ mod viewport_regression_tests {
         assert_eq!(super::gruvbox_terminal_color(super::Rgb(251, 73, 52)),
             super::Rgb(251, 73, 52));
 
+    }
+
+    #[test]
+    fn terminal_starts_after_real_industrial_masthead() {
+        let standard = super::terminal_content_top(false, 12, 6, 1.0);
+        let fullscreen = super::terminal_content_top(true, 12, 6, 1.0);
+        assert_eq!(standard, 184.0);
+        assert_eq!(fullscreen, 115.0);
+        assert!(standard > super::CONSOLE_CHROME_TOP + super::CONSOLE_CHROME_HEIGHT);
+        assert!(fullscreen >= super::ISLAND_TOP + super::ISLAND_HEIGHT);
+        assert_eq!(super::terminal_content_top(false, 12, 6, 2.0), 368.0);
     }
 
     #[test]
@@ -1524,15 +1547,12 @@ impl TerminalModel {
         let pad_x = (self.appearance.terminal_padding_x as f32 * scale)
             .max(if native { 10.0 } else { 28.0 } * scale)
             .round();
-        let pad_y = (self.appearance.terminal_padding_y as f32 * scale).round();
-        let chrome_height = if native { 0.0 } else { CONSOLE_CHROME_HEIGHT };
-        let top_pad = ((ISLAND_TOP
-            + ISLAND_HEIGHT
-            + chrome_height
-            + self.appearance.content_top_gap as f32)
-            * scale)
-            .round()
-            + pad_y;
+        let top_pad = terminal_content_top(
+            native,
+            self.appearance.content_top_gap,
+            self.appearance.terminal_padding_y,
+            scale,
+        );
 
         (
             pad_x,
