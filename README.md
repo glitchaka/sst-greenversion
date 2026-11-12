@@ -12,7 +12,7 @@
 
 ## Aislamiento
 
-El código fue importado de la línea Blue únicamente como base de desarrollo. Se excluyeron disparadores de publicación y workflows de Blue. La versión local es `0.1.9-green.1`; el comparador del actualizador rechaza cambios entre canales.
+El código fue importado de la línea Blue únicamente como base de desarrollo. Se excluyeron disparadores de publicación y workflows de Blue. La versión local es `0.0.greenversion.2`; el comparador del actualizador rechaza cambios entre canales.
 
 **Compilación local Windows:** `cargo build --release` desde este repositorio. No hay una compilación Windows verificada para Green todavía.
 
