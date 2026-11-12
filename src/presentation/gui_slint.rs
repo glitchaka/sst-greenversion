@@ -707,9 +707,9 @@ slint::slint! {
         in property <float> background-image-opacity: 0.0;
         in property <string> background-image-fit-mode: "cover";
         in property <string> privilege-label: "TOKEN ?";
-        in property <string> cpu-text: "CPU 0%";
-        in property <string> ram-text: "RAM 0.0 GiB";
-        in property <string> clock-text: "00:00";
+        in property <string> cpu-text: "CPU —";
+        in property <string> ram-text: "RAM —";
+        in property <string> clock-text: "--:--";
         in property <string> date-text: "00 ---";
         in property <string> header-host: "—";
         in property <string> header-uptime: "—";
@@ -1189,13 +1189,14 @@ slint::slint! {
                     Rectangle {
                         x: 11px; y: 15px;
                         width: 12px; height: 12px; border-radius: 6px;
-                        background: #add794;
+                        background: (root.privilege-label == "USUARIO" || root.privilege-label == "LIMITADO")
+                            ? #add794 : #f39120;
                         border-width: 2px; border-color: #1b2623;
                     }
                     Text {
                         x: 28px; y: 0px;
                         width: parent.width - 35px; height: parent.height;
-                        text: "SST ACTIVO";
+                        text: root.privilege-label;
                         color: #171717;
                         font-family: "Oxanium"; font-weight: 800; font-size: 14px;
                         vertical-alignment: center; horizontal-alignment: center;
