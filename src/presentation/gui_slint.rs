@@ -289,6 +289,7 @@ slint::slint! {
         in property <string> metric-value;
         in property <string> metric-detail;
         in property <float> metric-ratio: -1.0;
+        in property <string> metric-tone: "neutral";
 
         background: #242625;
         border-radius: 11px;
@@ -300,7 +301,11 @@ slint::slint! {
             y: 0px;
             width: 5px;
             height: parent.height;
-            background: #fa784f;
+            background: root.metric-tone == "critical" ? #ec4624
+                : root.metric-tone == "warning" ? #f39120
+                : root.metric-tone == "ok" ? #add794
+                : root.metric-tone == "optimal" ? #4fbbbc
+                : #fa784f;
             border-radius: 2px;
         }
 
@@ -356,7 +361,11 @@ slint::slint! {
             Rectangle {
                 width: parent.width * root.metric-ratio;
                 height: parent.height;
-                background: #e8a04a;
+                background: root.metric-tone == "critical" ? #ec4624
+                    : root.metric-tone == "warning" ? #f39120
+                    : root.metric-tone == "ok" ? #add794
+                    : root.metric-tone == "optimal" ? #4fbbbc
+                    : #e8a04a;
                 border-radius: 3px;
             }
         }
@@ -401,6 +410,8 @@ slint::slint! {
             metric-value: root.memory-used;
             metric-detail: "de " + root.memory-total + " MiB";
             metric-ratio: root.memory-ratio;
+            metric-tone: root.memory-ratio >= 0.90 ? "critical"
+                : root.memory-ratio >= 0.75 ? "warning" : "ok";
         }
         GreenMetricCard {
             x: ((parent.width - 30px) / 4 + 10px) * 3;
@@ -444,6 +455,9 @@ slint::slint! {
             height: parent.height;
             metric-label: "HALLAZGOS";
             metric-value: root.finding-count;
+            // Any verified finding requires review; that is a warning,
+            // not automatically a critical incident.
+            metric-tone: root.finding-count == "0" ? "ok" : "warning";
             metric-detail: "Requieren revisión";
         }
         GreenMetricCard {
