@@ -527,7 +527,7 @@ slint::slint! {
             x: 10px; y: 22px;
             width: parent.width - 20px; height: 28px;
             text: root.value-text;
-            font-family: "Oxanium"; font-size: 17px; font-weight: 800;
+            font-family: "Oxanium"; font-size: root.label-text == "HOST" ? 15px : 17px; font-weight: 800;
             color: #f5ead6; vertical-alignment: center; overflow: elide;
         }
     }
@@ -927,35 +927,35 @@ slint::slint! {
                 // Every value is read from Windows; no simulated load metric.
                 Rectangle {
                     visible: island.width >= 1450px;
-                    x: island.width - 826px; y: 10px;
-                    width: 564px; height: 56px;
+                    x: island.width - 870px; y: 10px;
+                    width: 608px; height: 56px;
                     background: transparent;
                     border-width: 2px; border-color: #e2dac2;
                     border-radius: 13px;
                     GreenHeaderMetric {
-                        x: 2px; y: 0px; width: 173px; height: parent.height;
+                        x: 2px; y: 0px; width: 217px; height: parent.height;
                         label-text: "HOST"; value-text: root.header-host;
                     }
                     GreenHeaderMetric {
-                        x: 177px; y: 0px; width: 116px; height: parent.height;
+                        x: 221px; y: 0px; width: 116px; height: parent.height;
                         label-text: "UPTIME"; value-text: root.header-uptime;
                     }
                     GreenHeaderMetric {
-                        x: 295px; y: 0px; width: 88px; height: parent.height;
+                        x: 339px; y: 0px; width: 88px; height: parent.height;
                         label-text: "ARCH"; value-text: root.header-arch;
                     }
                     GreenHeaderMetric {
-                        x: 385px; y: 0px; width: 79px; height: parent.height;
+                        x: 429px; y: 0px; width: 79px; height: parent.height;
                         label-text: "MEM"; value-text: root.header-memory;
                     }
                     GreenHeaderMetric {
-                        x: 466px; y: 0px; width: 96px; height: parent.height;
+                        x: 510px; y: 0px; width: 96px; height: parent.height;
                         label-text: "CPU"; value-text: root.header-cpu;
                     }
-                    Rectangle { x: 176px; width: 1px; height: parent.height; background: #958778; }
-                    Rectangle { x: 294px; width: 1px; height: parent.height; background: #958778; }
-                    Rectangle { x: 384px; width: 1px; height: parent.height; background: #958778; }
-                    Rectangle { x: 465px; width: 1px; height: parent.height; background: #958778; }
+                    Rectangle { x: 220px; width: 1px; height: parent.height; background: #958778; }
+                    Rectangle { x: 338px; width: 1px; height: parent.height; background: #958778; }
+                    Rectangle { x: 428px; width: 1px; height: parent.height; background: #958778; }
+                    Rectangle { x: 509px; width: 1px; height: parent.height; background: #958778; }
                 }
 
                 // At the normal 1340px window size preserve all five
@@ -963,35 +963,35 @@ slint::slint! {
                 // the operator manually enlarged the application.
                 Rectangle {
                     visible: island.width >= 1120px && island.width < 1450px;
-                    x: island.width - 688px; y: 10px;
-                    width: 564px; height: 56px;
+                    x: island.width - 733px; y: 10px;
+                    width: 609px; height: 56px;
                     background: transparent;
                     border-width: 2px; border-color: #e2dac2;
                     border-radius: 13px;
                     GreenHeaderMetric {
-                        x: 2px; y: 0px; width: 173px; height: parent.height;
+                        x: 2px; y: 0px; width: 217px; height: parent.height;
                         label-text: "HOST"; value-text: root.header-host;
                     }
                     GreenHeaderMetric {
-                        x: 177px; y: 0px; width: 116px; height: parent.height;
+                        x: 221px; y: 0px; width: 116px; height: parent.height;
                         label-text: "UPTIME"; value-text: root.header-uptime;
                     }
                     GreenHeaderMetric {
-                        x: 295px; y: 0px; width: 88px; height: parent.height;
+                        x: 339px; y: 0px; width: 88px; height: parent.height;
                         label-text: "ARCH"; value-text: root.header-arch;
                     }
                     GreenHeaderMetric {
-                        x: 385px; y: 0px; width: 79px; height: parent.height;
+                        x: 429px; y: 0px; width: 79px; height: parent.height;
                         label-text: "MEM"; value-text: root.header-memory;
                     }
                     GreenHeaderMetric {
-                        x: 466px; y: 0px; width: 96px; height: parent.height;
+                        x: 510px; y: 0px; width: 96px; height: parent.height;
                         label-text: "CPU"; value-text: root.header-cpu;
                     }
-                    Rectangle { x: 176px; width: 1px; height: parent.height; background: #958778; }
-                    Rectangle { x: 294px; width: 1px; height: parent.height; background: #958778; }
-                    Rectangle { x: 384px; width: 1px; height: parent.height; background: #958778; }
-                    Rectangle { x: 465px; width: 1px; height: parent.height; background: #958778; }
+                    Rectangle { x: 220px; width: 1px; height: parent.height; background: #958778; }
+                    Rectangle { x: 338px; width: 1px; height: parent.height; background: #958778; }
+                    Rectangle { x: 428px; width: 1px; height: parent.height; background: #958778; }
+                    Rectangle { x: 509px; width: 1px; height: parent.height; background: #958778; }
                 }
 
                 Rectangle {
