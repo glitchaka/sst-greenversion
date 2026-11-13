@@ -53,10 +53,10 @@ use crate::adapters::{
 const INITIAL_COLS: u16 = 112;
 const INITIAL_ROWS: u16 = 31;
 // Shared geometry with the actual Slint island and console chassis.
-const ISLAND_TOP: f32 = 5.0;
-const ISLAND_HEIGHT: f32 = 76.0;
-const CONSOLE_CHROME_TOP: f32 = 88.0;
-const CONSOLE_CHROME_HEIGHT: f32 = 43.0;
+const ISLAND_TOP: f32 = 3.0;
+const ISLAND_HEIGHT: f32 = 52.0;
+const CONSOLE_CHROME_TOP: f32 = 61.0;
+const CONSOLE_CHROME_HEIGHT: f32 = 29.0;
 
 fn terminal_content_top(native_tool: bool, gap: u16, padding: u16, scale: f32) -> f32 {
     let body_start = if native_tool {
@@ -137,11 +137,11 @@ mod viewport_regression_tests {
     fn terminal_starts_after_real_industrial_masthead() {
         let standard = super::terminal_content_top(false, 12, 6, 1.0);
         let fullscreen = super::terminal_content_top(true, 12, 6, 1.0);
-        assert_eq!(standard, 149.0);
-        assert_eq!(fullscreen, 99.0);
+        assert_eq!(standard, 108.0);
+        assert_eq!(fullscreen, 73.0);
         assert!(standard > super::CONSOLE_CHROME_TOP + super::CONSOLE_CHROME_HEIGHT);
         assert!(fullscreen >= super::ISLAND_TOP + super::ISLAND_HEIGHT);
-        assert_eq!(super::terminal_content_top(false, 12, 6, 2.0), 298.0);
+        assert_eq!(super::terminal_content_top(false, 12, 6, 2.0), 216.0);
     }
 
     #[test]
@@ -274,9 +274,9 @@ slint::slint! {
 
         // User background stays behind the PTY rather than behind the frame.
         Image {
-            x: 6px; y: 44px;
+            x: 6px; y: 30px;
             width: parent.width - 12px;
-            height: max(0px, parent.height - 51px);
+            height: max(0px, parent.height - 37px);
             source: root.wallpaper-image;
             image-fit: root.wallpaper-fit-mode == "contain"
                 ? contain : root.wallpaper-fit-mode == "fill"
@@ -285,47 +285,47 @@ slint::slint! {
             opacity: root.wallpaper-opacity;
         }
         Rectangle {
-            x: 6px; y: 44px;
+            x: 6px; y: 30px;
             width: parent.width - 12px;
-            height: max(0px, parent.height - 51px);
+            height: max(0px, parent.height - 37px);
             background: rgba(20, 24, 22, 0.35);
             visible: root.wallpaper-opacity > 0.0;
         }
         Rectangle {
             x: 2px; y: 2px;
             width: parent.width - 4px;
-            height: 40px;
+            height: 26px;
             background: #292a27;
         }
         // One deliberate diagonal end, as in the original reference.
         Path {
             x: 2px; y: 2px;
-            width: 317px; height: 40px;
-            commands: "M 0 0 L 317 0 L 273 40 L 0 40 Z";
+            width: 252px; height: 26px;
+            commands: "M 0 0 L 252 0 L 220 26 L 0 26 Z";
             fill: #fe8254;
         }
         Text {
-            x: 19px; y: 3px;
-            width: 175px; height: 38px;
+            x: 15px; y: 2px;
+            width: 145px; height: 25px;
             text: "CONSOLE";
             font-family: "Oxanium";
-            font-size: 21px;
+            font-size: 16px;
             font-weight: 800;
             color: #171c1b;
             vertical-alignment: center;
         }
         Text {
-            x: 208px; y: 3px;
-            width: 60px; height: 38px;
+            x: 160px; y: 2px;
+            width: 50px; height: 25px;
             text: "SST";
             font-family: "SST Industrial";
-            font-size: 21px;
+            font-size: 16px;
             color: #171c1b;
             horizontal-alignment: center;
             vertical-alignment: center;
         }
         Rectangle {
-            x: 2px; y: 42px;
+            x: 2px; y: 28px;
             width: parent.width - 4px; height: 2px;
             background: #f39120;
         }
@@ -517,17 +517,17 @@ slint::slint! {
         background: transparent;
         border-width: 0px;
         Text {
-            x: 10px; y: 4px;
-            width: parent.width - 20px; height: 16px;
+            x: 10px; y: 2px;
+            width: parent.width - 20px; height: 12px;
             text: root.label-text;
-            font-family: "Oxanium"; font-size: 12px; font-weight: 800;
+            font-family: "Oxanium"; font-size: 10px; font-weight: 800;
             color: #e2dac2; overflow: elide;
         }
         Text {
-            x: 10px; y: 22px;
-            width: parent.width - 20px; height: 28px;
+            x: 10px; y: 15px;
+            width: parent.width - 20px; height: 20px;
             text: root.value-text;
-            font-family: "Oxanium"; font-size: root.label-text == "HOST" ? 15px : 17px; font-weight: 800;
+            font-family: "Oxanium"; font-size: root.label-text == "HOST" ? 13px : 15px; font-weight: 800;
             color: #f5ead6; vertical-alignment: center; overflow: elide;
         }
     }
@@ -637,9 +637,9 @@ slint::slint! {
             Image {
                 visible: root.tool-view-active;
                 x: 13px;
-                y: 88px;
+                y: 61px;
                 width: root.width - 26px;
-                height: root.height - 101px;
+                height: root.height - 74px;
                 source: root.background-image;
                 image-fit: root.background-image-fit-mode == "contain"
                     ? contain
@@ -654,9 +654,9 @@ slint::slint! {
             GreenConsoleChrome {
                 visible: !root.tool-view-active;
                 x: 13px;
-                y: 88px;
+                y: 61px;
                 width: root.width - 26px;
-                height: root.height - 101px;
+                height: root.height - 74px;
                 wallpaper-image: root.background-image;
                 wallpaper-opacity: root.background-image-opacity;
                 wallpaper-fit-mode: root.background-image-fit-mode;
@@ -668,9 +668,9 @@ slint::slint! {
             Rectangle {
                 visible: root.tool-view-active;
                 x: 13px;
-                y: 88px;
+                y: 61px;
                 width: root.width - 26px;
-                height: root.height - 101px;
+                height: root.height - 74px;
                 background: root.background-image-opacity > 0.0
                     ? rgba(22, 23, 22, 0.58) : #161716;
             }
@@ -879,9 +879,9 @@ slint::slint! {
         // approved reference, while the terminal retains its own full surface.
         island := Rectangle {
             width: min(1600px, root.width - 20px);
-            height: 76px;
+            height: 52px;
             x: (root.width - self.width) / 2;
-            y: 5px;
+            y: 3px;
             border-radius: 15px;
             background: rgba(25, 25, 24, 0.99);
             border-width: 1px;
@@ -894,9 +894,9 @@ slint::slint! {
                 // Real TrueType glyphs throughout; no vectorized text,
                 // duplicate version labels or decorative slashes.
                 Rectangle {
-                    x: 7px; y: 7px;
-                    width: island.width >= 700px ? 214px : 190px;
-                    height: 61px;
+                    x: 5px; y: 5px;
+                    width: island.width >= 700px ? 160px : 146px;
+                    height: 42px;
                     background: #e2dac2;
                     border-radius: 7px;
                     Text {
@@ -905,19 +905,19 @@ slint::slint! {
                         text: "SST";
                         color: #191919;
                         font-family: "SST Industrial";
-                        font-size: island.width >= 700px ? 68px : 60px;
+                        font-size: island.width >= 700px ? 46px : 42px;
                         horizontal-alignment: center;
                         vertical-alignment: center;
                     }
                 }
                 Text {
                     visible: island.width >= 700px;
-                    x: 233px; y: 5px;
-                    width: 113px; height: 67px;
+                    x: 176px; y: 2px;
+                    width: 105px; height: 47px;
                     text: "SHELL\nSHOCK\nTOOL";
                     color: #e2dac2;
                     font-family: "Oxanium";
-                    font-size: 16px;
+                    font-size: 11px;
                     font-weight: 800;
                     vertical-alignment: center;
                 }
@@ -927,8 +927,8 @@ slint::slint! {
                 // Every value is read from Windows; no simulated load metric.
                 Rectangle {
                     visible: island.width >= 1450px;
-                    x: island.width - 870px; y: 10px;
-                    width: 608px; height: 56px;
+                    x: island.width - 870px; y: 6px;
+                    width: 608px; height: 39px;
                     background: transparent;
                     border-width: 2px; border-color: #e2dac2;
                     border-radius: 13px;
@@ -963,8 +963,8 @@ slint::slint! {
                 // the operator manually enlarged the application.
                 Rectangle {
                     visible: island.width >= 1120px && island.width < 1450px;
-                    x: island.width - 733px; y: 10px;
-                    width: 609px; height: 56px;
+                    x: island.width - 733px; y: 6px;
+                    width: 609px; height: 39px;
                     background: transparent;
                     border-width: 2px; border-color: #e2dac2;
                     border-radius: 13px;
@@ -996,12 +996,12 @@ slint::slint! {
 
                 Rectangle {
                     visible: island.width >= 1450px;
-                    x: island.width - 250px; y: 17px;
-                    width: 123px; height: 42px;
+                    x: island.width - 250px; y: 10px;
+                    width: 123px; height: 33px;
                     background: #fe8254;
                     border-radius: 11px;
                     Rectangle {
-                        x: 11px; y: 15px;
+                        x: 11px; y: 10px;
                         width: 12px; height: 12px; border-radius: 6px;
                         background: (root.privilege-label == "USUARIO" || root.privilege-label == "LIMITADO")
                             ? #add794 : #f39120;
@@ -1021,9 +1021,9 @@ slint::slint! {
                 Rectangle {
                     visible: island.width < 1120px;
                     x: island.width < 700px ? island.width - 243px : 404px;
-                    y: island.width >= 850px ? 48px : 25px;
+                    y: 7px;
                     width: 112px;
-                    height: island.width >= 850px ? 30px : 38px;
+                    height: 35px;
                     border-radius: 7px;
                     border-width: 1px; border-color: #f39120;
                     background: rgb(57, 53, 46);
@@ -1037,10 +1037,10 @@ slint::slint! {
                 }
 
                 Rectangle {
-                    x: island.width - 114px;
-                    y: 18px;
-                    width: 38px;
-                    height: 38px;
+                    x: island.width - 102px;
+                    y: 8px;
+                    width: 34px;
+                    height: 34px;
                     border-radius: 10px;
                     background: minimize-touch.pressed
                         ? rgb(79, 79, 63)
@@ -1070,10 +1070,10 @@ slint::slint! {
                 }
 
                 Rectangle {
-                    x: island.width - 76px;
-                    y: 18px;
-                    width: 38px;
-                    height: 38px;
+                    x: island.width - 68px;
+                    y: 8px;
+                    width: 34px;
+                    height: 34px;
                     border-radius: 10px;
                     background: maximize-touch.pressed
                         ? rgb(79, 79, 63)
@@ -1103,10 +1103,10 @@ slint::slint! {
                 }
 
                 Rectangle {
-                    x: island.width - 38px;
-                    y: 18px;
-                    width: 38px;
-                    height: 38px;
+                    x: island.width - 34px;
+                    y: 8px;
+                    width: 34px;
+                    height: 34px;
                     border-radius: 10px;
                     background: close-touch.pressed
                         ? rgb(100, 45, 38)
