@@ -40,7 +40,7 @@ jobs:
           persist-credentials: false
       - uses: dtolnay/rust-toolchain@stable
       - name: Compilar ejecutable Windows real
-        run: cargo build --locked
+        run: cargo build
       - name: Verificar versión Green sin publicar release
         shell: pwsh
         run: |
