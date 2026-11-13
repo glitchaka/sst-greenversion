@@ -545,10 +545,10 @@ slint::slint! {
         in property <string> arch-text;
         in property <string> memory-text;
         in property <string> cpu-text;
-        in property <length> host-width: parent.width * 0.35;
-        in property <length> uptime-width: parent.width * 0.17;
-        in property <length> arch-width: parent.width * 0.17;
-        in property <length> mem-width: parent.width * 0.15;
+        in property <length> host-width: root.width * 0.35;
+        in property <length> uptime-width: root.width * 0.17;
+        in property <length> arch-width: root.width * 0.17;
+        in property <length> mem-width: root.width * 0.15;
         background: transparent;
         border-width: 1px;
         border-color: #e2dac2;
