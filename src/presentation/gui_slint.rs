@@ -968,9 +968,9 @@ slint::slint! {
                 }
 
                 GreenTelemetryRail {
-                    visible: island.width >= 880px;
+                    visible: island.width >= 1010px;
                     x: 270px; y: 5px;
-                    width: island.width - 382px; height: 30px;
+                    width: island.width - 464px; height: 30px;
                     host-text: root.header-host;
                     uptime-text: root.header-uptime;
                     arch-text: root.header-arch;
@@ -980,7 +980,7 @@ slint::slint! {
                 // When the user narrows the window, keep the most actionable
                 // telemetry readable without overlapping the real title.
                 Text {
-                    visible: island.width >= 520px && island.width < 880px;
+                    visible: island.width >= 520px && island.width < 1010px;
                     x: 258px; y: 3px; width: max(0px, island.width - 367px);
                     height: 34px;
                     text: "MEM " + root.header-memory + "  CPU " + root.header-cpu;
@@ -988,6 +988,34 @@ slint::slint! {
                     color: #e2dac2;
                     vertical-alignment: center;
                     overflow: elide;
+                }
+
+                // Privilege belongs to the approved header, with a real
+                // Windows token reading rather than a static mockup label.
+                Rectangle {
+                    visible: island.width >= 650px;
+                    x: island.width - 183px; y: 8px;
+                    width: 76px; height: 24px;
+                    background: #fe8254;
+                    border-radius: 7px;
+                    Rectangle {
+                        x: 7px; y: 9px;
+                        width: 7px; height: 7px;
+                        border-radius: 4px;
+                        background: (root.privilege-label == "USUARIO"
+                          || root.privilege-label == "LIMITADO")
+                            ? #add794 : #f39120;
+                        border-width: 1px; border-color: #1b2623;
+                    }
+                    Text {
+                        x: 18px; y: 0px; width: 55px; height: parent.height;
+                        text: root.privilege-label;
+                        font-family: "Oxanium"; font-size: 10px;
+                        font-weight: 800; color: #171717;
+                        vertical-alignment: center;
+                        horizontal-alignment: center;
+                        overflow: elide;
+                    }
                 }
 
                 Rectangle {
