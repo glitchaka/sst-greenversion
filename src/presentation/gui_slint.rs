@@ -981,7 +981,8 @@ slint::slint! {
                 // telemetry readable without overlapping the real title.
                 Text {
                     visible: island.width >= 520px && island.width < 1010px;
-                    x: 258px; y: 3px; width: max(0px, island.width - 367px);
+                    x: 258px; y: 3px;
+                    width: max(0px, island.width - (island.width >= 650px ? 451px : 367px));
                     height: 34px;
                     text: "MEM " + root.header-memory + "  CPU " + root.header-cpu;
                     font-family: "Oxanium"; font-size: 11px; font-weight: 800;
