@@ -537,39 +537,52 @@ slint::slint! {
         }
     }
 
+    // A responsive rail consumes available header width; no empty slab
+    // between the logo and the real host metrics.
     component GreenTelemetryRail inherits Rectangle {
         in property <string> host-text;
         in property <string> uptime-text;
         in property <string> arch-text;
         in property <string> memory-text;
         in property <string> cpu-text;
+        in property <length> host-width: parent.width * 0.35;
+        in property <length> uptime-width: parent.width * 0.17;
+        in property <length> arch-width: parent.width * 0.17;
+        in property <length> mem-width: parent.width * 0.15;
         background: transparent;
-        border-width: 1px; border-color: #e2dac2;
+        border-width: 1px;
+        border-color: #e2dac2;
         border-radius: 9px;
+
         GreenHeaderMetric {
-            x: 1px; y: 0px; width: 205px; height: parent.height;
+            x: 1px; y: 0px; width: root.host-width - 1px; height: parent.height;
             label-text: "HOST"; value-text: root.host-text;
         }
         GreenHeaderMetric {
-            x: 206px; y: 0px; width: 91px; height: parent.height;
+            x: root.host-width; y: 0px;
+            width: root.uptime-width; height: parent.height;
             label-text: "UPTIME"; value-text: root.uptime-text;
         }
         GreenHeaderMetric {
-            x: 297px; y: 0px; width: 78px; height: parent.height;
+            x: root.host-width + root.uptime-width; y: 0px;
+            width: root.arch-width; height: parent.height;
             label-text: "ARCH"; value-text: root.arch-text;
         }
         GreenHeaderMetric {
-            x: 375px; y: 0px; width: 69px; height: parent.height;
+            x: root.host-width + root.uptime-width + root.arch-width; y: 0px;
+            width: root.mem-width; height: parent.height;
             label-text: "MEM"; value-text: root.memory-text;
         }
         GreenHeaderMetric {
-            x: 444px; y: 0px; width: 67px; height: parent.height;
+            x: root.host-width + root.uptime-width + root.arch-width + root.mem-width;
+            y: 0px;
+            width: parent.width - self.x - 2px; height: parent.height;
             label-text: "CPU"; value-text: root.cpu-text;
         }
-        Rectangle { x: 206px; width: 1px; height: parent.height; background: #958778; }
-        Rectangle { x: 297px; width: 1px; height: parent.height; background: #958778; }
-        Rectangle { x: 375px; width: 1px; height: parent.height; background: #958778; }
-        Rectangle { x: 444px; width: 1px; height: parent.height; background: #958778; }
+        Rectangle { x: root.host-width; width: 1px; height: parent.height; background: #958778; }
+        Rectangle { x: root.host-width + root.uptime-width; width: 1px; height: parent.height; background: #958778; }
+        Rectangle { x: root.host-width + root.uptime-width + root.arch-width; width: 1px; height: parent.height; background: #958778; }
+        Rectangle { x: root.host-width + root.uptime-width + root.arch-width + root.mem-width; width: 1px; height: parent.height; background: #958778; }
     }
 
     export component SstGreenWindow inherits Window {
@@ -956,8 +969,8 @@ slint::slint! {
 
                 GreenTelemetryRail {
                     visible: island.width >= 880px;
-                    x: island.width - 618px; y: 5px;
-                    width: 512px; height: 30px;
+                    x: 270px; y: 5px;
+                    width: island.width - 382px; height: 30px;
                     host-text: root.header-host;
                     uptime-text: root.header-uptime;
                     arch-text: root.header-arch;
