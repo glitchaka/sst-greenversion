@@ -1,3 +1,4 @@
+#![allow(deprecated)]
 //! Slint/FemtoVG frontend for the native SST Green presentation.
 //!
 //! The terminal owns the whole client area. The top status island is an overlay:
@@ -179,10 +180,9 @@ const NERD_FONT_BYTES: &[u8] = include_bytes!(concat!(
     "/JetBrainsMonoNerdFontMono-Regular.ttf"
 ));
 
-#[allow(deprecated)]
 slint::slint! {
     import { GreenPalette } from "../../assets/themes/green-palette.slint";
-    export { GreenPalette };
+    export { GreenPalette }
     // Display face for the angular, extended industrial typography of the mockup.
     // Embedded in the executable; no host font installation is required.
     import "../../assets/fonts/Oxanium-ExtraBold.ttf";
