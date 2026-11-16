@@ -769,7 +769,7 @@ slint::slint! {
         }
         packages-card := Rectangle {
             x: 0px; y: triage-card.y + triage-card.height + 7px; width: parent.width;
-            height: root.package-status == "Inventario sin consultar" ? 92px : 108px;
+            height: root.package-status == "Inventario sin consultar" ? 92px : 120px;
             border-radius: 11px; border-width: 1px;
             border-color: #e2dac2; background: #1b1b1a;
             clip: true;
@@ -785,7 +785,8 @@ slint::slint! {
             }
             Text {
                 x: parent.width - 133px; y: 4px; width: 120px; height: 22px;
-                text: "INSTP"; font-family: "Oxanium";
+                text: root.package-status == "Inventario sin consultar" ? "INSTP" : root.package-status;
+                font-family: "Oxanium";
                 font-size: 11px; font-weight: 800; color: #161716;
                 horizontal-alignment: right; vertical-alignment: center;
             }
@@ -795,15 +796,8 @@ slint::slint! {
                 background: #20201f;
             }
             Text {
-                x: 18px; y: 44px; width: parent.width - 36px;
-                height: 20px; text: root.package-status;
-                font-family: "Oxanium"; font-size: 14px;
-                font-weight: 800; color: #e2dac2;
-            }
-            Rectangle { x: 18px; y: 67px; width: parent.width - 36px; height: 1px; background: #6e665b; }
-            Text {
-                x: 18px; y: 71px; width: parent.width - 36px;
-                height: max(16px, parent.height - 77px);
+                x: 18px; y: 42px; width: parent.width - 36px;
+                height: max(20px, parent.height - 47px);
                 text: root.package-detail;
                 font-family: "Oxanium"; font-size: 12px;
                 color: #c8bfac; overflow: elide;
