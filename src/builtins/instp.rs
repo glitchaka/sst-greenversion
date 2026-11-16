@@ -5,6 +5,7 @@ use anyhow::{Context, Result};
 use crate::{
     adapters::persistence::AppPaths,
     application::{packages::PackageService, update},
+    presentation::tool_screen,
     core::{
         CommandContext, CommandOutput,
     },
@@ -203,6 +204,10 @@ impl InstpBuiltin {
 
     fn list(&self) -> Result<CommandOutput> {
         let packages = self.service.installed()?;
+        tool_screen::record_package_inventory(
+            packages.len(),
+            packages.last().map(|package| (package.id.as_str(), package.version.as_str())),
+        );
         if packages.is_empty() {
             return Ok(CommandOutput::ok("No hay paquetes instalados por instp.\n"));
         }
