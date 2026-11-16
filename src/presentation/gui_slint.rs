@@ -183,6 +183,7 @@ const NERD_FONT_BYTES: &[u8] = include_bytes!(concat!(
 
 slint::slint! {
     #[edition = "1.19"]
+    import { GreenPalette } from "../../assets/themes/green-palette.slint";
     // Display face for the angular, extended industrial typography of the mockup.
     // Embedded in the executable; no host font installation is required.
     import "../../assets/fonts/Oxanium-ExtraBold.ttf";
@@ -195,7 +196,7 @@ slint::slint! {
         // Restrained semantic outline: no cyan wash, no opaque overlay.
         background: transparent;
         border-width: 1px;
-        border-color: #a89c88;
+        border-color: GreenPalette.heading-outline;
         border-radius: 6px;
 
         Rectangle {
@@ -204,16 +205,16 @@ slint::slint! {
             width: 3px;
             height: max(4px, parent.height - 6px);
             border-radius: 2px;
-            background: #fe8254;
+            background: GreenPalette.salmon;
         }
     }
 
     // Full-window industrial views: real Slint geometry behind the VT100
     // text surface. These are not terminal text borders or side widgets.
     component TerminalSectionFrame inherits Rectangle {
-        background: #222423;
+        background: GreenPalette.section-bg;
         border-width: 1px;
-        border-color: rgb(230, 214, 190);
+        border-color: GreenPalette.legacy-230-214-190;
         border-radius: 12px;
 
         Rectangle {
@@ -221,7 +222,7 @@ slint::slint! {
             y: 1px;
             width: parent.width - 2px;
             height: min(37px, parent.height - 2px);
-            background: #353331;
+            background: GreenPalette.section-title-bg;
             border-radius: 11px;
         }
         Rectangle {
@@ -230,7 +231,7 @@ slint::slint! {
             width: 5px;
             height: min(25px, parent.height - 18px);
             border-radius: 2px;
-            background: #fa784f;
+            background: GreenPalette.coral;
         }
         Rectangle {
             x: 19px;
@@ -238,21 +239,21 @@ slint::slint! {
             width: min(74px, parent.width - 39px);
             height: 3px;
             border-radius: 2px;
-            background: #e9a54d;
+            background: GreenPalette.topline-amber;
         }
         Rectangle {
             x: parent.width - 42px;
             y: 12px;
             width: 16px;
             height: 2px;
-            background: #6e857b;
+            background: GreenPalette.decorative-rule;
         }
         Rectangle {
             x: parent.width - 22px;
             y: 12px;
             width: 9px;
             height: 2px;
-            background: #6e857b;
+            background: GreenPalette.decorative-rule;
         }
     }
 
@@ -269,9 +270,9 @@ slint::slint! {
         in property <image> wallpaper-image;
         in property <float> wallpaper-opacity;
         in property <string> wallpaper-fit-mode;
-        background: #191d1b;
+        background: GreenPalette.chassis-bg;
         border-width: 1px;
-        border-color: #e2dac2;
+        border-color: GreenPalette.cream;
         border-radius: 10px;
         clip: true;
         Image {
@@ -289,26 +290,26 @@ slint::slint! {
             x: 3px; y: 31px;
             width: max(0px, parent.width - 6px);
             height: max(0px, parent.height - 34px);
-            background: rgba(20, 24, 22, 0.35);
+            background: GreenPalette.wallpaper-wash;
             visible: root.wallpaper-opacity > 0.0;
         }
         Rectangle {
             x: 1px; y: 1px;
             width: max(0px, parent.width - 2px);
             height: 29px;
-            background: #292a27;
+            background: GreenPalette.chrome-bg;
         }
         // Curved, stepped fascia with the thin upper rail from the reference.
         Rectangle {
             x: 254px; y: 1px;
             width: max(0px, parent.width - 263px);
-            height: 2px; background: #fe8254;
+            height: 2px; background: GreenPalette.salmon;
         }
         Path {
             x: 1px; y: 1px;
             width: 275px; height: 30px;
             commands: "M 10 0 L 275 0 Q 263 0 253 8 L 237 25 Q 232 30 216 30 L 0 30 L 0 10 Q 0 0 10 0 Z";
-            fill: #fe8254;
+            fill: GreenPalette.salmon;
         }
         Text {
             x: 20px; y: 4px;
@@ -317,7 +318,7 @@ slint::slint! {
             font-family: "Oxanium";
             font-size: 14px;
             font-weight: 800;
-            color: #171c1b;
+            color: GreenPalette.near-black;
             vertical-alignment: center;
         }
         Text {
@@ -326,14 +327,14 @@ slint::slint! {
             text: "/  SST";
             font-family: "Oxanium";
             font-size: 13px;
-            color: #171c1b;
+            color: GreenPalette.near-black;
             horizontal-alignment: center;
             vertical-alignment: center;
         }
         Rectangle {
             x: 1px; y: 30px;
             width: max(0px, parent.width - 2px); height: 1px;
-            background: #f39120;
+            background: GreenPalette.warning-orange;
         }
     }
 
@@ -347,9 +348,9 @@ slint::slint! {
         in property <string> memory-percent: "—";
         in property <string> disk-count;
 
-        background: #222a2a;
+        background: GreenPalette.system-bg;
         border-width: 2px;
-        border-color: #e2dac2;
+        border-color: GreenPalette.cream;
         border-radius: 13px;
         clip: true;
 
@@ -358,15 +359,15 @@ slint::slint! {
             width: min(216px, (parent.width - 44px) * 0.29);
             height: parent.height - 28px;
             border-width: 1px;
-            border-color: #827a6c;
+            border-color: GreenPalette.secondary-outline;
             border-radius: 10px;
-            background: rgb(27, 31, 30);
+            background: GreenPalette.legacy-27-31-30;
             Text {
                 x: 14px; y: 7px;
                 width: parent.width - 28px; height: 19px;
                 text: "MEMORIA / REAL";
                 font-family: "Oxanium"; font-size: 12px;
-                font-weight: 800; color: #e2dac2;
+                font-weight: 800; color: GreenPalette.cream;
             }
             Text {
                 x: 14px; y: 26px;
@@ -374,21 +375,21 @@ slint::slint! {
                 text: root.memory-percent;
                 font-family: "Oxanium"; font-size: 40px;
                 font-weight: 800;
-                color: root.memory-ratio >= 0.90 ? #ec4624
-                    : root.memory-ratio >= 0.75 ? #f39120 : #4fbbbc;
+                color: root.memory-ratio >= 0.90 ? GreenPalette.critical-red
+                    : root.memory-ratio >= 0.75 ? GreenPalette.warning-orange : GreenPalette.info-cyan;
                 vertical-alignment: center;
             }
             Rectangle {
                 x: 14px; y: parent.height - 30px;
                 width: parent.width - 28px; height: 9px;
-                background: #4a4a44;
+                background: GreenPalette.meter-track;
                 border-radius: 4px;
                 clip: true;
                 Rectangle {
                     width: parent.width * root.memory-ratio;
                     height: parent.height;
-                    background: root.memory-ratio >= 0.90 ? #ec4624
-                        : root.memory-ratio >= 0.75 ? #f39120 : #4fbbbc;
+                    background: root.memory-ratio >= 0.90 ? GreenPalette.critical-red
+                        : root.memory-ratio >= 0.75 ? GreenPalette.warning-orange : GreenPalette.info-cyan;
                     border-radius: 4px;
                 }
             }
@@ -405,7 +406,7 @@ slint::slint! {
                 x: 0px; y: 0px;
                 width: parent.width; height: 22px;
                 text: "HOST    " + root.host-name;
-                color: #e2dac2;
+                color: GreenPalette.cream;
                 font-family: "Oxanium"; font-size: 17px;
                 font-weight: 800; overflow: elide;
             }
@@ -413,20 +414,20 @@ slint::slint! {
                 x: 0px; y: 25px;
                 width: parent.width; height: 22px;
                 text: root.os-name;
-                color: #b9d5c5;
+                color: GreenPalette.muted-mint;
                 font-family: "Oxanium"; font-size: 15px;
                 overflow: elide;
             }
             Rectangle {
                 x: 0px; y: 51px;
                 width: parent.width; height: 1px;
-                background: #928878;
+                background: GreenPalette.dashboard-rule;
             }
             Text {
                 x: 0px; y: 60px;
                 width: parent.width * 0.48; height: 31px;
                 text: "CPU LÓGICOS   " + root.cpu-count;
-                color: #f39120;
+                color: GreenPalette.warning-orange;
                 font-family: "Oxanium"; font-size: 15px;
                 font-weight: 800; overflow: elide;
             }
@@ -434,7 +435,7 @@ slint::slint! {
                 x: parent.width * 0.51; y: 60px;
                 width: parent.width * 0.49; height: 31px;
                 text: "DISCOS   " + root.disk-count;
-                color: #4fbbbc;
+                color: GreenPalette.info-cyan;
                 font-family: "Oxanium"; font-size: 15px;
                 font-weight: 800; overflow: elide;
             }
@@ -442,7 +443,7 @@ slint::slint! {
                 x: 0px; y: parent.height - 26px;
                 width: parent.width; height: 24px;
                 text: "RAM    " + root.memory-used + " / " + root.memory-total + " MiB";
-                color: #e2dac2;
+                color: GreenPalette.cream;
                 font-family: "Oxanium"; font-size: 14px;
                 font-weight: 700; overflow: elide;
             }
@@ -465,7 +466,7 @@ slint::slint! {
             width: max(0px, parent.width - 14px); height: 15px;
             text: root.label-text;
             font-family: "Oxanium"; font-size: 9px; font-weight: 800;
-            color: #e2dac2; overflow: elide;
+            color: GreenPalette.cream; overflow: elide;
         }
         Text {
             x: 7px; y: 22px;
@@ -474,7 +475,7 @@ slint::slint! {
             font-family: "Oxanium";
             font-size: root.label-text == "HOST" ? 13px : 14px;
             font-weight: 800;
-            color: #f5ead6;
+            color: GreenPalette.ivory;
             vertical-alignment: center;
             overflow: elide;
         }
@@ -494,7 +495,7 @@ slint::slint! {
         in property <length> mem-width: root.width * 0.14;
         background: transparent;
         border-width: 1px;
-        border-color: #e2dac2;
+        border-color: GreenPalette.cream;
         border-radius: 9px;
 
         GreenHeaderMetric {
@@ -522,10 +523,10 @@ slint::slint! {
             width: parent.width - self.x - 2px; height: parent.height;
             label-text: "CPU"; value-text: root.cpu-text;
         }
-        Rectangle { x: root.host-width; width: 1px; height: parent.height; background: #958778; }
-        Rectangle { x: root.host-width + root.uptime-width; width: 1px; height: parent.height; background: #958778; }
-        Rectangle { x: root.host-width + root.uptime-width + root.arch-width; width: 1px; height: parent.height; background: #958778; }
-        Rectangle { x: root.host-width + root.uptime-width + root.arch-width + root.mem-width; width: 1px; height: parent.height; background: #958778; }
+        Rectangle { x: root.host-width; width: 1px; height: parent.height; background: GreenPalette.metric-rule; }
+        Rectangle { x: root.host-width + root.uptime-width; width: 1px; height: parent.height; background: GreenPalette.metric-rule; }
+        Rectangle { x: root.host-width + root.uptime-width + root.arch-width; width: 1px; height: parent.height; background: GreenPalette.metric-rule; }
+        Rectangle { x: root.host-width + root.uptime-width + root.arch-width + root.mem-width; width: 1px; height: parent.height; background: GreenPalette.metric-rule; }
     }
 
 
@@ -554,26 +555,26 @@ slint::slint! {
             x: 0px; y: 0px; width: parent.width;
             height: 164px;
             border-radius: 11px;
-            border-width: 1px; border-color: #e2dac2;
-            background: #1b1b1a;
+            border-width: 1px; border-color: GreenPalette.cream;
+            background: GreenPalette.card-bg;
             clip: true;
             Rectangle {
                 x: 1px; y: 1px; width: parent.width - 2px; height: 29px;
-                background: #e2dac2; border-radius: 10px;
+                background: GreenPalette.cream; border-radius: 10px;
             }
             Text {
                 x: 12px; y: 2px; width: parent.width - 145px; height: 27px;
                 text: "SYSTEM STATUS";
                 font-family: "SST Industrial"; font-size: 18px;
-                color: #161716; overflow: elide;
+                color: GreenPalette.charcoal; overflow: elide;
                 vertical-alignment: center;
             }
             Rectangle {
                 x: parent.width - 118px; y: 5px; width: 105px; height: 21px;
                 border-radius: 7px;
                 background: root.memory-ratio >= 0.90 || root.cpu-ratio >= 0.95
-                    ? #ec4624 : root.memory-ratio >= 0.75 || root.cpu-ratio >= 0.80
-                    ? #f5b94f : #9acdb5;
+                    ? GreenPalette.critical-red : root.memory-ratio >= 0.75 || root.cpu-ratio >= 0.80
+                    ? GreenPalette.warning-yellow : GreenPalette.healthy-bg;
                 Text {
                     width: parent.width; height: parent.height;
                     text: root.cpu-value == "—" || root.memory-value == "—"
@@ -581,74 +582,74 @@ slint::slint! {
                         ? "HEALTH: CRIT" : root.memory-ratio >= 0.75 || root.cpu-ratio >= 0.80
                         ? "HEALTH: WARN" : "HEALTH: OK";
                     font-family: "Oxanium"; font-size: 10px; font-weight: 800;
-                    color: #151615; horizontal-alignment: center;
+                    color: GreenPalette.text-dark; horizontal-alignment: center;
                     vertical-alignment: center;
                 }
             }
             Rectangle {
                 x: 4px; y: 34px; width: parent.width - 8px;
                 height: parent.height - 38px; border-radius: 9px;
-                background: #20201f;
+                background: GreenPalette.card-content;
             }
             Rectangle {
                 x: 18px; y: 49px; width: 78px; height: 78px;
                 border-radius: 40px; border-width: 9px;
-                border-color: rgb(100, 100, 94); background: transparent;
+                border-color: GreenPalette.legacy-100-100-94; background: transparent;
             }
             Path {
                 x: 18px; y: 49px; width: 78px; height: 78px;
                 commands: "M 39 4 A 35 35 0 1 1 14 65";
-                stroke: #9bd2bb; stroke-width: 8px;
+                stroke: GreenPalette.healthy-accent; stroke-width: 8px;
                 fill: transparent;
             }
             Text {
                 x: 24px; y: 61px; width: 65px; height: 47px;
                 text: root.memory-value;
                 font-family: "Oxanium"; font-size: 23px; font-weight: 800;
-                color: #e2dac2; horizontal-alignment: center;
+                color: GreenPalette.cream; horizontal-alignment: center;
                 vertical-alignment: center; overflow: elide;
             }
             Text {
                 x: 34px; y: 110px; width: 46px; height: 14px;
-                text: "MEM"; color: #e2dac2;
+                text: "MEM"; color: GreenPalette.cream;
                 font-family: "Oxanium"; font-size: 11px;
                 horizontal-alignment: center;
             }
             Text {
                 x: 116px; y: 48px; width: 48px; height: 20px;
                 text: "CPU"; font-family: "Oxanium"; font-size: 14px;
-                font-weight: 800; color: #e2dac2;
+                font-weight: 800; color: GreenPalette.cream;
             }
             Text {
                 x: parent.width - 95px; y: 48px; width: 72px; height: 20px;
                 text: root.cpu-value; font-family: "Oxanium"; font-size: 14px;
-                color: #e2dac2; horizontal-alignment: right;
+                color: GreenPalette.cream; horizontal-alignment: right;
             }
             Rectangle {
                 x: 116px; y: 70px; width: max(0px, parent.width - 139px);
-                height: 9px; background: rgb(81, 81, 78); border-radius: 4px;
+                height: 9px; background: GreenPalette.legacy-81-81-78; border-radius: 4px;
                 Rectangle {
                     width: parent.width * root.cpu-ratio;
-                    height: parent.height; background: #9bd2bb;
+                    height: parent.height; background: GreenPalette.healthy-accent;
                     border-radius: 4px;
                 }
             }
             Text {
                 x: 116px; y: 86px; width: 48px; height: 18px;
                 text: "MEM"; font-family: "Oxanium"; font-size: 14px;
-                font-weight: 800; color: #e2dac2;
+                font-weight: 800; color: GreenPalette.cream;
             }
             Text {
                 x: parent.width - 95px; y: 86px; width: 72px; height: 18px;
                 text: root.memory-value; font-family: "Oxanium"; font-size: 14px;
-                color: #e2dac2; horizontal-alignment: right;
+                color: GreenPalette.cream; horizontal-alignment: right;
             }
             Rectangle {
                 x: 116px; y: 107px; width: max(0px, parent.width - 139px);
-                height: 9px; background: rgb(81, 81, 78); border-radius: 4px;
+                height: 9px; background: GreenPalette.legacy-81-81-78; border-radius: 4px;
                 Rectangle {
                     width: parent.width * root.memory-ratio;
-                    height: parent.height; background: #f5b94f;
+                    height: parent.height; background: GreenPalette.warning-yellow;
                     border-radius: 4px;
                 }
             }
@@ -657,77 +658,77 @@ slint::slint! {
                 height: 16px;
                 text: root.host-value + "   ·   " + root.uptime-value;
                 font-family: "Oxanium"; font-size: 11px;
-                color: #c8bfac; overflow: elide;
+                color: GreenPalette.muted-text; overflow: elide;
             }
             Text {
                 visible: parent.height >= 160px;
                 x: 116px; y: 143px; width: max(0px, parent.width - 130px);
                 height: 17px; text: "PROCESOS    " + root.process-count;
                 font-family: "Oxanium"; font-size: 11px;
-                color: #e2dac2; overflow: elide;
+                color: GreenPalette.cream; overflow: elide;
             }
         }
         network-card := Rectangle {
             x: 0px; y: system-card.y + system-card.height + 7px; width: parent.width;
             height: 125px;
             border-radius: 11px;
-            border-width: 1px; border-color: #e2dac2;
-            background: #1b1b1a;
+            border-width: 1px; border-color: GreenPalette.cream;
+            background: GreenPalette.card-bg;
             clip: true;
             Rectangle {
                 x: 1px; y: 1px; width: parent.width - 2px; height: 29px;
-                border-radius: 10px; background: #e2dac2;
+                border-radius: 10px; background: GreenPalette.cream;
             }
             Text {
                 x: 12px; y: 2px; width: parent.width - 104px; height: 27px;
                 text: "NET MONITOR"; font-family: "SST Industrial";
-                font-size: 18px; color: #161716; overflow: elide;
+                font-size: 18px; color: GreenPalette.charcoal; overflow: elide;
                 vertical-alignment: center;
             }
             Text {
                 x: parent.width - 92px; y: 4px; width: 79px; height: 22px;
                 text: root.network-interfaces == "—" ? "○ OFF" : "● LIVE"; font-family: "Oxanium"; font-size: 12px;
-                color: #399d54; font-weight: 800;
+                color: GreenPalette.live-green; font-weight: 800;
                 horizontal-alignment: right; vertical-alignment: center;
             }
             Rectangle {
                 x: 4px; y: 34px; width: parent.width - 8px;
                 height: parent.height - 38px; border-radius: 9px;
-                background: #20201f;
+                background: GreenPalette.card-content;
             }
             Text {
                 x: 18px; y: 45px; width: 120px; height: 16px;
                 text: "INTERFACES"; font-family: "Oxanium"; font-size: 11px;
-                font-weight: 800; color: rgb(182, 173, 158);
+                font-weight: 800; color: GreenPalette.legacy-182-173-158;
             }
             Text {
                 x: parent.width - 102px; y: 45px; width: 85px; height: 16px;
                 text: root.network-interfaces;
                 font-family: "Oxanium"; font-size: 12px;
-                color: #e2dac2; horizontal-alignment: right;
+                color: GreenPalette.cream; horizontal-alignment: right;
             }
-            Rectangle { x: 18px; y: 66px; width: parent.width - 36px; height: 1px; background: #6e665b; }
+            Rectangle { x: 18px; y: 66px; width: parent.width - 36px; height: 1px; background: GreenPalette.subtle-rule; }
             Text {
                 x: 18px; y: 73px; width: 120px; height: 18px;
                 text: "RX / RECIBIDO"; font-family: "Oxanium";
-                font-size: 11px; color: rgb(182, 173, 158);
+                font-size: 11px; color: GreenPalette.legacy-182-173-158;
             }
             Text {
                 x: parent.width - 180px; y: 73px; width: 162px; height: 18px;
                 text: root.network-received; font-family: "Oxanium";
-                font-size: 12px; color: #9bd2bb;
+                font-size: 12px; color: GreenPalette.healthy-accent;
                 horizontal-alignment: right;
             }
-            Rectangle { x: 18px; y: 96px; width: parent.width - 36px; height: 1px; background: #6e665b; }
+            Rectangle { x: 18px; y: 96px; width: parent.width - 36px; height: 1px; background: GreenPalette.subtle-rule; }
             Text {
                 x: 18px; y: 101px; width: 120px; height: 18px;
                 text: "TX / ENVIADO"; font-family: "Oxanium";
-                font-size: 11px; color: rgb(182, 173, 158);
+                font-size: 11px; color: GreenPalette.legacy-182-173-158;
             }
             Text {
                 x: parent.width - 180px; y: 101px; width: 162px; height: 18px;
                 text: root.network-transmitted; font-family: "Oxanium";
-                font-size: 12px; color: #9bd2bb;
+                font-size: 12px; color: GreenPalette.healthy-accent;
                 horizontal-alignment: right;
             }
         }
@@ -735,34 +736,34 @@ slint::slint! {
             x: 0px; y: network-card.y + network-card.height + 7px; width: parent.width;
             height: root.triage-status == "SIN ANÁLISIS" ? 94px : 112px;
             border-radius: 11px; border-width: 1px;
-            border-color: #e2dac2; background: #1b1b1a;
+            border-color: GreenPalette.cream; background: GreenPalette.card-bg;
             clip: true;
             Rectangle {
                 x: 1px; y: 1px; width: parent.width - 2px; height: 29px;
-                border-radius: 10px; background: #e2dac2;
+                border-radius: 10px; background: GreenPalette.cream;
             }
             Text {
                 x: 12px; y: 2px; width: parent.width - 150px; height: 27px;
                 text: "TRIAGE"; font-family: "SST Industrial";
-                font-size: 18px; color: #161716;
+                font-size: 18px; color: GreenPalette.charcoal;
                 vertical-alignment: center;
             }
             Text {
                 x: parent.width - 155px; y: 4px; width: 140px; height: 22px;
                 text: root.triage-status; font-family: "Oxanium";
-                font-size: 11px; font-weight: 800; color: #171716;
+                font-size: 11px; font-weight: 800; color: GreenPalette.ink;
                 horizontal-alignment: right; vertical-alignment: center;
             }
             Rectangle {
                 x: 4px; y: 34px; width: parent.width - 8px;
-                height: parent.height - 38px; background: #20201f;
+                height: parent.height - 38px; background: GreenPalette.card-content;
                 border-radius: 9px;
             }
             Text {
                 x: 18px; y: 44px; width: parent.width - 36px;
                 height: max(22px, parent.height - 53px);
                 text: root.triage-detail;
-                font-family: "Oxanium"; font-size: 13px; color: #e2dac2;
+                font-family: "Oxanium"; font-size: 13px; color: GreenPalette.cream;
                 vertical-alignment: center; horizontal-alignment: center;
                 overflow: elide;
             }
@@ -771,36 +772,36 @@ slint::slint! {
             x: 0px; y: triage-card.y + triage-card.height + 7px; width: parent.width;
             height: root.package-status == "Inventario sin consultar" ? 92px : 120px;
             border-radius: 11px; border-width: 1px;
-            border-color: #e2dac2; background: #1b1b1a;
+            border-color: GreenPalette.cream; background: GreenPalette.card-bg;
             clip: true;
             Rectangle {
                 x: 1px; y: 1px; width: parent.width - 2px; height: 29px;
-                border-radius: 10px; background: #e2dac2;
+                border-radius: 10px; background: GreenPalette.cream;
             }
             Text {
                 x: 12px; y: 2px; width: parent.width - 130px; height: 27px;
                 text: "PACKAGES"; font-family: "SST Industrial";
-                font-size: 18px; color: #161716;
+                font-size: 18px; color: GreenPalette.charcoal;
                 vertical-alignment: center;
             }
             Text {
                 x: parent.width - 133px; y: 4px; width: 120px; height: 22px;
                 text: root.package-status == "Inventario sin consultar" ? "INSTP" : root.package-status;
                 font-family: "Oxanium";
-                font-size: 11px; font-weight: 800; color: #161716;
+                font-size: 11px; font-weight: 800; color: GreenPalette.charcoal;
                 horizontal-alignment: right; vertical-alignment: center;
             }
             Rectangle {
                 x: 4px; y: 34px; width: parent.width - 8px;
                 height: parent.height - 38px; border-radius: 9px;
-                background: #20201f;
+                background: GreenPalette.card-content;
             }
             Text {
                 x: 18px; y: 42px; width: parent.width - 36px;
                 height: max(20px, parent.height - 47px);
                 text: root.package-detail;
                 font-family: "Oxanium"; font-size: 12px;
-                color: #c8bfac; overflow: elide;
+                color: GreenPalette.muted-text; overflow: elide;
             }
         }
     }
@@ -815,7 +816,7 @@ slint::slint! {
         resize-border-width: 7px;
         // The physical gap between the title island and console bezel is
         // opaque; the user's wallpaper belongs inside the terminal surface.
-        background: #1b2020;
+        background: GreenPalette.window-bg;
 
         in property <image> terminal-image;
         in property <bool> tool-view-active: false;
@@ -903,7 +904,7 @@ slint::slint! {
             y: 0;
             width: 100%;
             height: 100%;
-            background: #1b2020;
+            background: GreenPalette.window-bg;
 
             // Only the tool's content body may show a wallpaper here.
             // The structural gap around the floating island stays solid.
@@ -966,7 +967,7 @@ slint::slint! {
                 width: root.width - 26px;
                 height: root.height - 83px;
                 background: root.background-image-opacity > 0.0
-                    ? rgba(22, 23, 22, 0.58) : #161716;
+                    ? GreenPalette.alternate-wash : GreenPalette.charcoal;
             }
 
             // Draw only for a TUI that explicitly supplies semantic sections.
@@ -1160,8 +1161,8 @@ slint::slint! {
             x: (root.width - self.width) / 2;
             y: 3px;
             border-radius: 11px;
-            background: #191918;
-            border-width: 1px; border-color: #514a40;
+            background: GreenPalette.island-bg;
+            border-width: 1px; border-color: GreenPalette.island-outline;
 
             WindowMoveArea {
                 width: parent.width;
@@ -1174,14 +1175,14 @@ slint::slint! {
                     commands: island.width >= 1260px
                         ? "M 19 0 L 210 0 L 210 56 L 0 56 L 0 19 Q 0 0 19 0 Z"
                         : "M 9 0 L 108 0 L 108 56 L 0 56 L 0 9 Q 0 0 9 0 Z";
-                    fill: #e2dac2;
+                    fill: GreenPalette.cream;
                 }
                 Text {
                     x: island.width >= 1260px ? 8px : 5px;
                     y: 3px;
                     width: island.width >= 1260px ? 188px : 95px;
                     height: 55px; text: "SST";
-                    color: #171717;
+                    color: GreenPalette.black-ink;
                     font-family: "SST Industrial";
                     font-size: island.width >= 1260px ? 49px : 27px;
                     horizontal-alignment: center; vertical-alignment: center;
@@ -1194,7 +1195,7 @@ slint::slint! {
                     width: island.width >= 1260px ? 84px : 72px;
                     height: 52px;
                     text: "SHELL\nSHOCK\nTOOL";
-                    color: #e2dac2;
+                    color: GreenPalette.cream;
                     font-family: "Oxanium";
                     font-size: island.width >= 1260px ? 14px : 10px;
                     font-weight: 800;
@@ -1203,7 +1204,7 @@ slint::slint! {
                 Rectangle {
                     visible: island.width >= 1260px;
                     x: 318px; y: 11px; width: 1px; height: 40px;
-                    background: #e2dac2;
+                    background: GreenPalette.cream;
                 }
                 Rectangle {
                     visible: island.width >= 1260px;
@@ -1212,24 +1213,24 @@ slint::slint! {
                     Path {
                         x: 0px; y: 2px; width: 58px; height: 23px;
                         commands: "M 10 0 L 19 0 L 10 23 L 1 23 Z M 23 0 L 32 0 L 23 23 L 14 23 Z M 36 0 L 45 0 L 36 23 L 27 23 Z M 49 0 L 58 0 L 49 23 L 40 23 Z";
-                        fill: #a99f90;
+                        fill: GreenPalette.slant-blades;
                     }
                     Text {
                         x: 69px; y: 2px; width: 210px; height: 23px;
                         text: "› ADVANCED SYSTEM CONSOLE";
-                        color: #e2dac2; font-family: "Oxanium";
+                        color: GreenPalette.cream; font-family: "Oxanium";
                         font-size: 12px; font-weight: 800;
                         vertical-alignment: center; overflow: elide;
                     }
                     Rectangle {
                         x: 0px; y: 28px; width: 280px; height: 1px;
-                        background: #918575;
+                        background: GreenPalette.header-rule;
                     }
                     Text {
                         x: 0px; y: 31px; width: 280px; height: 13px;
                         text: "VERSION " + root.header-version + "   |   " + root.header-arch + "   |   " + root.privilege-label;
                         font-family: "Oxanium"; font-size: 9px;
-                        color: #d8c9b1; overflow: elide;
+                        color: GreenPalette.secondary-text; overflow: elide;
                     }
                 }
                 GreenTelemetryRail {
@@ -1251,19 +1252,19 @@ slint::slint! {
                     height: 33px;
                     text: "HOST " + root.header-host + "   MEM " + root.header-memory + "   CPU " + root.header-cpu;
                     font-family: "Oxanium"; font-size: 11px; font-weight: 800;
-                    color: #e2dac2; vertical-alignment: center;
+                    color: GreenPalette.cream; vertical-alignment: center;
                     overflow: elide;
                 }
                 Rectangle {
                     x: island.width - (island.width >= 880px ? 211px : 139px);
                     y: 17px;
                     width: island.width >= 880px ? 115px : 42px;
-                    height: 27px; background: #fe8254;
+                    height: 27px; background: GreenPalette.salmon;
                     border-radius: 8px;
                     Rectangle {
                         x: 6px; y: 10px; width: 8px; height: 8px;
-                        border-radius: 4px; background: #52cd78;
-                        border-width: 1px; border-color: #1b2623;
+                        border-radius: 4px; background: GreenPalette.online-green;
+                        border-width: 1px; border-color: GreenPalette.dark-outline;
                     }
                     Text {
                         x: 17px; y: 1px; width: parent.width - 19px;
@@ -1273,7 +1274,7 @@ slint::slint! {
                             : root.privilege-label == "ADMINISTRADOR" ? "ADM"
                             : root.privilege-label == "ADMIN" ? "ADM" : "?";
                         font-family: "Oxanium"; font-size: 11px;
-                        font-weight: 800; color: #171717;
+                        font-weight: 800; color: GreenPalette.black-ink;
                         horizontal-alignment: center;
                         vertical-alignment: center; overflow: elide;
                     }
@@ -1282,11 +1283,11 @@ slint::slint! {
                     x: island.width - 93px; y: 14px;
                     width: 29px; height: 34px;
                     border-radius: 7px;
-                    background: minimize-touch.has-hover ? #363e39 : transparent;
+                    background: minimize-touch.has-hover ? GreenPalette.control-hover : transparent;
                     Path {
                         x: 6px; y: 10px; width: 17px; height: 13px;
                         commands: "M 1 1 L 8.5 10 L 16 1";
-                        stroke: #e2dac2; stroke-width: 2px;
+                        stroke: GreenPalette.cream; stroke-width: 2px;
                         stroke-line-cap: round; stroke-line-join: round;
                     }
                     minimize-touch := TouchArea {
@@ -1301,13 +1302,13 @@ slint::slint! {
                     x: island.width - 62px; y: 14px;
                     width: 29px; height: 34px;
                     border-radius: 7px;
-                    background: maximize-touch.has-hover ? #363e39 : transparent;
+                    background: maximize-touch.has-hover ? GreenPalette.control-hover : transparent;
                     Path {
                         x: 6px; y: 10px; width: 17px; height: 13px;
                         commands: root.maximized
                             ? "M 1 1 L 8.5 10 L 16 1"
                             : "M 1 10 L 8.5 1 L 16 10";
-                        stroke: #d5c4a1; stroke-width: 2px;
+                        stroke: GreenPalette.warm-text; stroke-width: 2px;
                         stroke-line-cap: round; stroke-line-join: round;
                     }
                     maximize-touch := TouchArea {
@@ -1322,11 +1323,11 @@ slint::slint! {
                     x: island.width - 31px; y: 14px;
                     width: 29px; height: 34px;
                     border-radius: 7px;
-                    background: close-touch.has-hover ? #502823 : transparent;
+                    background: close-touch.has-hover ? GreenPalette.close-hover : transparent;
                     Path {
                         x: 6px; y: 8px; width: 18px; height: 18px;
                         commands: "M 9 1 L 9 8 M 3.3 3.7 A 7 7 0 1 0 14.7 3.7";
-                        stroke: #fe8019; stroke-width: 2px;
+                        stroke: GreenPalette.power-orange; stroke-width: 2px;
                         stroke-line-cap: round;
                     }
                     close-touch := TouchArea {
