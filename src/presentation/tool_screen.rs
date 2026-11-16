@@ -310,12 +310,12 @@ fn memory_meter(report: &str, width: usize) -> Option<String> {
 
 fn section_panels(visible: &[ReportLine], body_top: usize, bottom: usize) -> Vec<TerminalPanel> {
     if visible.is_empty() { return Vec::new(); }
-    let mut boundaries = vec![0usize];
-    for (index, line) in visible.iter().enumerate().skip(1) {
-        if line.heading && boundaries.len() < 4 {
-            boundaries.push(index);
-        }
-    }
+    // Panels start at genuine section headings. Do not paint a header over
+    // ordinary report rows before the first heading.
+    let boundaries: Vec<usize> = visible.iter().enumerate()
+        .filter_map(|(index, line)| line.heading.then_some(index))
+        .take(4)
+        .collect();
     let mut panels = Vec::new();
     for (group, start) in boundaries.iter().enumerate() {
         let end = boundaries.get(group + 1).copied().unwrap_or(visible.len());
@@ -381,7 +381,15 @@ fn render_page(
     }
     for line in &visible {
         view.push_str("    ");
-        view.push_str(&color_line(line));
+        if native_view && line.heading {
+            // Text is a real terminal glyph over the Slint cream band.
+            // ANSI black resolves through the external terminal theme.
+            view.push_str("\x1b[30m");
+            view.push_str(&line.text);
+            view.push_str(theme::RESET);
+        } else {
+            view.push_str(&color_line(line));
+        }
         view.push_str("\r\n");
     }
     for _ in visible.len()..body_rows {
