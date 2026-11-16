@@ -275,9 +275,9 @@ slint::slint! {
         border-radius: 10px;
         clip: true;
         Image {
-            x: 3px; y: 20px;
+            x: 3px; y: 31px;
             width: max(0px, parent.width - 6px);
-            height: max(0px, parent.height - 23px);
+            height: max(0px, parent.height - 34px);
             source: root.wallpaper-image;
             image-fit: root.wallpaper-fit-mode == "contain"
                 ? contain : root.wallpaper-fit-mode == "fill"
@@ -286,46 +286,46 @@ slint::slint! {
             opacity: root.wallpaper-opacity;
         }
         Rectangle {
-            x: 3px; y: 20px;
+            x: 3px; y: 31px;
             width: max(0px, parent.width - 6px);
-            height: max(0px, parent.height - 23px);
+            height: max(0px, parent.height - 34px);
             background: rgba(20, 24, 22, 0.35);
             visible: root.wallpaper-opacity > 0.0;
         }
         Rectangle {
             x: 1px; y: 1px;
             width: max(0px, parent.width - 2px);
-            height: 17px;
+            height: 29px;
             background: #292a27;
         }
         Path {
             x: 1px; y: 1px;
-            width: 255px; height: 17px;
-            commands: "M 9 0 L 255 0 L 245 3 L 229 16 L 216 17 L 0 17 L 0 9 Q 0 0 9 0 Z";
+            width: 255px; height: 30px;
+            commands: "M 10 0 L 255 0 Q 243 0 238 7 L 226 24 Q 221 30 210 30 L 0 30 L 0 10 Q 0 0 10 0 Z";
             fill: #fe8254;
         }
         Text {
-            x: 12px; y: 1px;
-            width: 110px; height: 17px;
+            x: 20px; y: 4px;
+            width: 110px; height: 23px;
             text: "CONSOLE";
             font-family: "Oxanium";
-            font-size: 11px;
+            font-size: 14px;
             font-weight: 800;
             color: #171c1b;
             vertical-alignment: center;
         }
         Text {
-            x: 124px; y: 1px;
-            width: 55px; height: 17px;
+            x: 128px; y: 4px;
+            width: 70px; height: 23px;
             text: "/  SST";
             font-family: "Oxanium";
-            font-size: 11px;
+            font-size: 13px;
             color: #171c1b;
             horizontal-alignment: center;
             vertical-alignment: center;
         }
         Rectangle {
-            x: 1px; y: 18px;
+            x: 1px; y: 30px;
             width: max(0px, parent.width - 2px); height: 1px;
             background: #f39120;
         }
@@ -455,18 +455,18 @@ slint::slint! {
         background: transparent;
         border-width: 0px;
         Text {
-            x: 7px; y: 1px;
-            width: max(0px, parent.width - 14px); height: 11px;
+            x: 7px; y: 6px;
+            width: max(0px, parent.width - 14px); height: 15px;
             text: root.label-text;
             font-family: "Oxanium"; font-size: 9px; font-weight: 800;
             color: #e2dac2; overflow: elide;
         }
         Text {
-            x: 7px; y: 12px;
-            width: max(0px, parent.width - 14px); height: 17px;
+            x: 7px; y: 22px;
+            width: max(0px, parent.width - 14px); height: 20px;
             text: root.value-text;
             font-family: "Oxanium";
-            font-size: root.label-text == "HOST" ? 11px : 12px;
+            font-size: root.label-text == "HOST" ? 13px : 14px;
             font-weight: 800;
             color: #f5ead6;
             vertical-alignment: center;
@@ -482,10 +482,10 @@ slint::slint! {
         in property <string> arch-text;
         in property <string> memory-text;
         in property <string> cpu-text;
-        in property <length> host-width: root.width * 0.30;
-        in property <length> uptime-width: root.width * 0.22;
-        in property <length> arch-width: root.width * 0.18;
-        in property <length> mem-width: root.width * 0.15;
+        in property <length> host-width: root.width * 0.36;
+        in property <length> uptime-width: root.width * 0.19;
+        in property <length> arch-width: root.width * 0.16;
+        in property <length> mem-width: root.width * 0.14;
         background: transparent;
         border-width: 1px;
         border-color: #e2dac2;
@@ -1187,7 +1187,7 @@ slint::slint! {
                     x: 334px; y: 9px; width: 283px; height: 45px;
                     background: transparent;
                     Path {
-                        x: 0px; y: 2px; width: 49px; height: 23px;
+                        x: 0px; y: 2px; width: 58px; height: 23px;
                         commands: "M 10 0 L 19 0 L 10 23 L 1 23 Z M 23 0 L 32 0 L 23 23 L 14 23 Z M 36 0 L 45 0 L 36 23 L 27 23 Z M 49 0 L 58 0 L 49 23 L 40 23 Z";
                         fill: #a99f90;
                     }
