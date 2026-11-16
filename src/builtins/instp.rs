@@ -204,10 +204,10 @@ impl InstpBuiltin {
 
     fn list(&self) -> Result<CommandOutput> {
         let packages = self.service.installed()?;
-        tool_screen::record_package_inventory(
-            packages.len(),
-            packages.last().map(|package| (package.id.as_str(), package.version.as_str())),
-        );
+        let dashboard_rows = packages.iter()
+            .map(|package| (package.id.as_str(), package.version.as_str()))
+            .collect::<Vec<_>>();
+        tool_screen::record_package_inventory(&dashboard_rows);
         if packages.is_empty() {
             return Ok(CommandOutput::ok("No hay paquetes instalados por instp.\n"));
         }
