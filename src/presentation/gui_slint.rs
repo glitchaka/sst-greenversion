@@ -442,70 +442,6 @@ slint::slint! {
         }
     }
 
-    component InlineTransferBar inherits Rectangle {
-        in property <string> transfer-percent;
-        in property <string> transfer-amount;
-        in property <string> transfer-speed;
-        in property <string> transfer-eta;
-        in property <float> transfer-ratio: 0.0;
-        in property <bool> transfer-known-total: false;
-
-        background: transparent;
-        border-width: 0px;
-
-        track := Rectangle {
-            x: 4px;
-            y: 6px;
-            width: parent.width - 144px;
-            height: 10px;
-            background: #38403d;
-            border-radius: 5px;
-            clip: true;
-
-            Rectangle {
-                x: 0px;
-                y: 0px;
-                width: root.transfer-known-total ? parent.width * root.transfer-ratio : 0px;
-                height: parent.height;
-                background: #f39120;
-                border-radius: 5px;
-
-                Rectangle {
-                    x: 1px;
-                    y: 1px;
-                    width: parent.width - 2px;
-                    height: 3px;
-                    background: #fe8254;
-                    border-radius: 2px;
-                }
-            }
-        }
-
-        Text {
-            x: parent.width - 131px;
-            y: 0px;
-            width: 126px;
-            height: 22px;
-            text: root.transfer-percent;
-            color: #fe8254;
-            font-family: "Segoe UI Variable";
-            font-size: 16px;
-            font-weight: 700;
-            horizontal-alignment: right;
-        }
-
-        Text {
-            x: 4px;
-            y: 23px;
-            width: parent.width - 9px;
-            height: 19px;
-            text: root.transfer-amount + "   ·   " + root.transfer-speed + "   ·   ETA " + root.transfer-eta;
-            color: #d5c4a1;
-            font-family: "Segoe UI Variable";
-            font-size: 12px;
-            overflow: elide;
-        }
-    }
 
     // Industrial instrumentation uses real host metrics; no static demo values.
     // One contiguous telemetry rail, rather than disconnected mini-widgets.
@@ -660,16 +596,6 @@ slint::slint! {
         in property <string> header-version: "—";
         in property <string> header-arch: "—";
         // Logical coordinates align the live transfer indicator to the command output.
-        in property <float> transfer-x: 22.0;
-        in property <float> transfer-y: 65.0;
-        in property <bool> transfer-visible: false;
-        in property <bool> transfer-known-total: false;
-        in property <float> transfer-ratio: 0.0;
-        in property <string> transfer-percent: "";
-        in property <string> transfer-amount: "";
-        in property <string> transfer-speed: "";
-        in property <string> transfer-eta: "";
-
         callback key-input(string, bool, bool, bool);
         callback pointer-down(float, float);
         callback pointer-move(float, float);
@@ -907,22 +833,6 @@ slint::slint! {
                     accept
                 }
             }
-        }
-
-        // This graphic occupies lines reserved by the command *inside* SST.
-        // It is not a floating modal/card and does not obstruct other output.
-        InlineTransferBar {
-            visible: root.transfer-visible;
-            x: root.transfer-x * 1px;
-            y: root.transfer-y * 1px;
-            width: min(585px, root.width - root.transfer-x * 1px - 18px);
-            height: 43px;
-            transfer-percent: root.transfer-percent;
-            transfer-amount: root.transfer-amount;
-            transfer-speed: root.transfer-speed;
-            transfer-eta: root.transfer-eta;
-            transfer-ratio: root.transfer-ratio;
-            transfer-known-total: root.transfer-known-total;
         }
 
         // Faithful, compact island: diagonal cream SST identity, three
@@ -2777,36 +2687,6 @@ pub fn run() -> Result<()> {
                     let (row, rows) = next();
                     ui.set_monitor_d_row(row);
                     ui.set_monitor_d_rows(rows);
-                }
-
-                // Shared transfer metrics are read by the Slint event loop.
-                // No ANSI progress bar, global reading layer, or window texture
-                // modification is used while downloading through instp.
-                if let Some(progress) = crate::support::transfer::snapshot() {
-                    if progress.finished {
-                        // Completion/failure is written as a normal command
-                        // line; remove the inline graphic immediately.
-                        ui.set_transfer_visible(false);
-                    } else {
-                        // The worker writes: title + two reserved lines, so
-                        // the native track goes in the first reserved row.
-                        // It follows the terminal cursor when the view scrolls.
-                        let (left, top, _, line_height) = model.geometry();
-                        let (cursor_row, _) = model.parser.screen().cursor_position();
-                        let graphic_row = cursor_row.saturating_sub(2);
-                        let factor = scale.max(0.5);
-                        ui.set_transfer_x((left / factor).max(8.0));
-                        ui.set_transfer_y((top + f32::from(graphic_row) * line_height) / factor);
-                        ui.set_transfer_visible(true);
-                        ui.set_transfer_ratio(progress.fraction());
-                        ui.set_transfer_known_total(progress.expected.is_some());
-                        ui.set_transfer_percent(progress.percentage().into());
-                        ui.set_transfer_amount(progress.amount().into());
-                        ui.set_transfer_speed(progress.speed().into());
-                        ui.set_transfer_eta(progress.remaining().into());
-                    }
-                } else if ui.get_transfer_visible() {
-                    ui.set_transfer_visible(false);
                 }
 
                 if drawable && model.dirty {
