@@ -1323,7 +1323,10 @@ fn apply_green_theme(ui: &SstGreenWindow, theme: &toml::Value) -> Result<()> {
     }
     if let Some(fonts) = theme.get("fonts").and_then(toml::Value::as_table) {
         if let Some(value) = fonts.get("heading").and_then(toml::Value::as_str) {
-            palette.set_heading_font(value.into());
+            // Prior Green installs may still reference the synthetic logo face.
+            // Replace it with a genuine bundled font without requiring migration.
+            let heading = if value == "SST Industrial" { "Oxanium" } else { value };
+            palette.set_heading_font(heading.into());
         }
         if let Some(value) = fonts.get("interface").and_then(toml::Value::as_str) {
             palette.set_interface_font(value.into());
@@ -1896,6 +1899,15 @@ impl TerminalModel {
             let tool_mode = self.native_tool_view();
 
             for row in 0..rows {
+                // A heading band is identified from the actual PTY text marker,
+                // never by matching a hardcoded command or drawing fake letters.
+                let heading_row = !tool_mode
+                    && (0..cols.min(12)).any(|col| {
+                        screen.cell(row, col).is_some_and(|cell| {
+                            matches!(cell.fgcolor(), vt100::Color::Rgb(213, 196, 161))
+                                && cell.contents().chars().any(char::is_alphabetic)
+                        })
+                    });
                 for col in 0..cols {
                     let Some(cell) = screen.cell(row, col) else {
                         continue;
@@ -1916,6 +1928,9 @@ impl TerminalModel {
                     // The same policy applies to existing and future commands,
                     // without command-specific styling or fake diagnostics.
                     fg = industrial_terminal_color(fg);
+                    if heading_row && !cell.contents().is_empty() {
+                        fg = terminal_palette().ansi[0];
+                    }
                     if tool_mode && paint_background {
                         bg = tool_background_color(bg);
                     }
