@@ -24,6 +24,41 @@ static SYSTEM_OVERVIEW: OnceLock<Mutex<Option<SystemOverview>>> = OnceLock::new(
 
 static ACTIVE_TOOL_TITLE: OnceLock<Mutex<Option<String>>> = OnceLock::new();
 
+#[derive(Default, Clone)]
+pub struct DashboardReportSummary {
+    pub triage_status: String,
+    pub triage_detail: String,
+    pub package_status: String,
+    pub package_detail: String,
+}
+
+static DASHBOARD_REPORT: OnceLock<Mutex<DashboardReportSummary>> = OnceLock::new();
+
+fn dashboard_report() -> &'static Mutex<DashboardReportSummary> {
+    DASHBOARD_REPORT.get_or_init(|| Mutex::new(DashboardReportSummary::default()))
+}
+
+/// Data is recorded only by a completed command. Never synthesize demo counts.
+pub fn dashboard_report_snapshot() -> DashboardReportSummary {
+    dashboard_report().lock().unwrap_or_else(|poison| poison.into_inner()).clone()
+}
+
+pub fn record_triage_result(report: &str) {
+    let rows = report.lines().filter(|line| !line.trim().is_empty()).count();
+    let mut state = dashboard_report().lock().unwrap_or_else(|poison| poison.into_inner());
+    state.triage_status = "INFORME DISPONIBLE".to_owned();
+    state.triage_detail = format!("{rows} líneas en el último informe");
+}
+
+pub fn record_package_inventory(count: usize, newest: Option<(&str, &str)>) {
+    let mut state = dashboard_report().lock().unwrap_or_else(|poison| poison.into_inner());
+    state.package_status = format!("{count} paquetes instalados");
+    state.package_detail = newest
+        .map(|(name, version)| format!("{name} · {version}"))
+        .unwrap_or_else(|| "Sin paquetes instalados".to_owned());
+}
+
+
 fn tool_title_state() -> &'static Mutex<Option<String>> {
     ACTIVE_TOOL_TITLE.get_or_init(|| Mutex::new(None))
 }
