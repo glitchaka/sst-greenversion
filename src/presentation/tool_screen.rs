@@ -459,6 +459,26 @@ mod tests {
         assert!(frames.iter().all(|frame| frame.rows >= 2));
     }
     #[test]
+    fn headers_are_only_drawn_for_actual_tool_sections() {
+        let rows = wrapped_lines("mensaje corriente\n\nSISTEMA\nhostname: TEST\n", 80);
+        let panels = section_panels(&rows, 5, 24);
+        assert_eq!(panels.len(), 1);
+        assert_eq!(panels[0].start_row, 7);
+
+        let text_only = wrapped_lines("mensaje corriente\nhostname: TEST", 80);
+        assert!(section_panels(&text_only, 5, 24).is_empty());
+    }
+
+    #[test]
+    fn graphical_headings_keep_real_pty_text() {
+        let rows = wrapped_lines("SISTEMA\nhostname: TEST", 80);
+        let (native, frames) = render_page("SYS", "sys", "", &rows, 0, 80, 25, false, true);
+        assert_eq!(frames.len(), 1);
+        assert!(native.contains("\x1b[30mSISTEMA\x1b[0m"));
+        let (plain, _) = render_page("SYS", "sys", "", &rows, 0, 80, 25, false, false);
+        assert!(plain.contains(&format!("{}SISTEMA", theme::ACCENT)));
+    }
+    #[test]
     fn dashboard_only_uses_actual_system_report_fields() {
         assert!(parse_system_overview("SISTEMA\nhostname: demo").is_none());
         let report = "SISTEMA\nhostname: PC-TEST\nos: Windows\ncpus: 8\nmemory_total: 16384 MiB\nmemory_used: 4096 MiB\n\nDISCOS\nMOUNT  TOTAL\nC:\\\\  120.0";
