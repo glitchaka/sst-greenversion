@@ -1,6 +1,6 @@
-//! Progress is written directly to SST's terminal output stream.
-//! Metrics come exclusively from bytes written by curl to its destination.
-//! No GUI overlay, card, popup or reserved terminal rows are involved.
+//! Download progress is rendered as one live row in SST's terminal output.
+//! Metrics come from bytes written by curl to its destination.
+//! The native GUI never places a floating download overlay over terminal cells.
 use std::{
     fs,
     io::IsTerminal,
@@ -83,8 +83,8 @@ fn transfer_state() -> &'static Mutex<Option<TransferSnapshot>> {
     GUI_TRANSFER.get_or_init(|| Mutex::new(None))
 }
 
-/// A completed transfer remains visible briefly so even fast downloads can be
-/// observed, then the native overlay disappears without altering the terminal.
+/// Legacy snapshot accessor; the native SST view renders the progress row in
+/// the PTY rather than a separate overlay.
 pub fn snapshot() -> Option<TransferSnapshot> {
     let mut state = transfer_state().lock().unwrap_or_else(|e| e.into_inner());
     if state.as_ref().is_some_and(|s| s.finished && s.updated_at.elapsed() >= Duration::from_secs(2)) {
@@ -112,8 +112,7 @@ fn eta(seconds: f64) -> String {
     }
 }
 
-/// libcaca handles the terminal-mode progress composition. The SST GUI does
-/// not print this ASCII/Unicode bar: it presents genuine rounded Slint shapes.
+/// Compose the progress display inside the terminal's existing row.
 fn draw(label: &str, current: u64, expected: Option<u64>, rate: f64, columns: usize) -> String {
     // Build a single PTY row, never a floating UI element. Width is measured
     // in terminal columns, not pixels, and no output may wrap into the next row.
@@ -136,14 +135,16 @@ fn draw(label: &str, current: u64, expected: Option<u64>, rate: f64, columns: us
     }
     // A narrow PTY must still show live progress without wrapping.
     let compact = format!("{} {}", snapshot.percentage(), snapshot.speed());
-    let available = width.saturating_sub(compact.chars().count() + 1);
+    if compact.chars().count() >= width {
+        return snapshot.percentage().chars().take(width).collect();
+    }
+    let available = width - compact.chars().count() - 1;
     let short_label: String = label.chars().take(available).collect();
     format!("{short_label} {compact}")
 }
 
-/// Execute curl without a terminal child. SST's native GUI receives progress
-/// snapshots and draws its own graphics; only external interactive consoles
-/// receive libcaca-composed terminal fallback output.
+/// Execute curl without attaching a terminal child. Progress is updated in
+/// place on one PTY row, both in SST's embedded console and a CLI terminal.
 pub fn run(
     command: &mut Command,
     destination: &Path,
