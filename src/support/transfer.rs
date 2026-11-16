@@ -6,7 +6,6 @@ use std::{
     io::IsTerminal,
     path::Path,
     process::{Command, Output, Stdio},
-    sync::{Mutex, OnceLock},
     thread,
     time::{Duration, Instant},
 };
@@ -20,8 +19,6 @@ pub struct TransferSnapshot {
     pub received: u64,
     pub expected: Option<u64>,
     pub bytes_per_second: f64,
-    pub finished: bool,
-    updated_at: Instant,
 }
 
 impl TransferSnapshot {
@@ -30,8 +27,6 @@ impl TransferSnapshot {
             received,
             expected: expected.filter(|value| *value > 0),
             bytes_per_second: rate,
-            finished: false,
-            updated_at: Instant::now(),
         }
     }
 
@@ -72,25 +67,6 @@ impl TransferSnapshot {
             _ => "—".to_owned(),
         }
     }
-}
-
-// One transfer is shown at a time: SST runs one foreground command per session.
-// The UI reads a snapshot from its own Slint event loop, never touching the
-// worker's terminal buffer or custom image/background configuration.
-static GUI_TRANSFER: OnceLock<Mutex<Option<TransferSnapshot>>> = OnceLock::new();
-
-fn transfer_state() -> &'static Mutex<Option<TransferSnapshot>> {
-    GUI_TRANSFER.get_or_init(|| Mutex::new(None))
-}
-
-/// Legacy snapshot accessor; the native SST view renders the progress row in
-/// the PTY rather than a separate overlay.
-pub fn snapshot() -> Option<TransferSnapshot> {
-    let mut state = transfer_state().lock().unwrap_or_else(|e| e.into_inner());
-    if state.as_ref().is_some_and(|s| s.finished && s.updated_at.elapsed() >= Duration::from_secs(2)) {
-        *state = None;
-    }
-    state.clone()
 }
 
 fn human_bytes(bytes: u64) -> String {
