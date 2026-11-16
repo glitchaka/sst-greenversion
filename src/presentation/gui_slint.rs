@@ -54,9 +54,9 @@ const INITIAL_COLS: u16 = 112;
 const INITIAL_ROWS: u16 = 31;
 // Shared geometry with the actual Slint island and console chassis.
 const ISLAND_TOP: f32 = 3.0;
-const ISLAND_HEIGHT: f32 = 40.0;
-const CONSOLE_CHROME_TOP: f32 = 47.0;
-const CONSOLE_CHROME_HEIGHT: f32 = 25.0;
+const ISLAND_HEIGHT: f32 = 34.0;
+const CONSOLE_CHROME_TOP: f32 = 41.0;
+const CONSOLE_CHROME_HEIGHT: f32 = 20.0;
 
 fn terminal_content_top(native_tool: bool, gap: u16, padding: u16, scale: f32) -> f32 {
     let body_start = if native_tool {
@@ -137,11 +137,11 @@ mod viewport_regression_tests {
     fn terminal_starts_after_real_industrial_masthead() {
         let standard = super::terminal_content_top(false, 12, 6, 1.0);
         let fullscreen = super::terminal_content_top(true, 12, 6, 1.0);
-        assert_eq!(standard, 90.0);
-        assert_eq!(fullscreen, 61.0);
+        assert_eq!(standard, 79.0);
+        assert_eq!(fullscreen, 55.0);
         assert!(standard > super::CONSOLE_CHROME_TOP + super::CONSOLE_CHROME_HEIGHT);
         assert!(fullscreen >= super::ISLAND_TOP + super::ISLAND_HEIGHT);
-        assert_eq!(super::terminal_content_top(false, 12, 6, 2.0), 180.0);
+        assert_eq!(super::terminal_content_top(false, 12, 6, 2.0), 158.0);
     }
 
     #[test]
@@ -274,9 +274,9 @@ slint::slint! {
         border-radius: 10px;
         clip: true;
         Image {
-            x: 3px; y: 25px;
+            x: 3px; y: 20px;
             width: max(0px, parent.width - 6px);
-            height: max(0px, parent.height - 28px);
+            height: max(0px, parent.height - 23px);
             source: root.wallpaper-image;
             image-fit: root.wallpaper-fit-mode == "contain"
                 ? contain : root.wallpaper-fit-mode == "fill"
@@ -285,46 +285,46 @@ slint::slint! {
             opacity: root.wallpaper-opacity;
         }
         Rectangle {
-            x: 3px; y: 25px;
+            x: 3px; y: 20px;
             width: max(0px, parent.width - 6px);
-            height: max(0px, parent.height - 28px);
+            height: max(0px, parent.height - 23px);
             background: rgba(20, 24, 22, 0.35);
             visible: root.wallpaper-opacity > 0.0;
         }
         Rectangle {
             x: 1px; y: 1px;
             width: max(0px, parent.width - 2px);
-            height: 21px;
+            height: 17px;
             background: #292a27;
         }
         Path {
             x: 1px; y: 1px;
-            width: 203px; height: 21px;
-            commands: "M 0 0 L 203 0 L 181 21 L 0 21 Z";
+            width: 170px; height: 17px;
+            commands: "M 0 0 L 170 0 L 155 17 L 0 17 Z";
             fill: #fe8254;
         }
         Text {
             x: 12px; y: 1px;
-            width: 119px; height: 21px;
+            width: 110px; height: 17px;
             text: "CONSOLE";
             font-family: "Oxanium";
-            font-size: 13px;
+            font-size: 11px;
             font-weight: 800;
             color: #171c1b;
             vertical-alignment: center;
         }
         Text {
-            x: 137px; y: 1px;
-            width: 40px; height: 21px;
+            x: 116px; y: 1px;
+            width: 34px; height: 17px;
             text: "SST";
             font-family: "SST Industrial";
-            font-size: 14px;
+            font-size: 12px;
             color: #171c1b;
             horizontal-alignment: center;
             vertical-alignment: center;
         }
         Rectangle {
-            x: 1px; y: 22px;
+            x: 1px; y: 18px;
             width: max(0px, parent.width - 2px); height: 1px;
             background: #f39120;
         }
@@ -690,9 +690,9 @@ slint::slint! {
             Image {
                 visible: root.tool-view-active;
                 x: 13px;
-                y: 47px;
+                y: 41px;
                 width: root.width - 26px;
-                height: root.height - 60px;
+                height: root.height - 54px;
                 source: root.background-image;
                 image-fit: root.background-image-fit-mode == "contain"
                     ? contain
@@ -707,9 +707,9 @@ slint::slint! {
             GreenConsoleChrome {
                 visible: !root.tool-view-active;
                 x: 13px;
-                y: 47px;
+                y: 41px;
                 width: root.width - 26px;
-                height: root.height - 60px;
+                height: root.height - 54px;
                 wallpaper-image: root.background-image;
                 wallpaper-opacity: root.background-image-opacity;
                 wallpaper-fit-mode: root.background-image-fit-mode;
@@ -721,9 +721,9 @@ slint::slint! {
             Rectangle {
                 visible: root.tool-view-active;
                 x: 13px;
-                y: 47px;
+                y: 41px;
                 width: root.width - 26px;
-                height: root.height - 60px;
+                height: root.height - 54px;
                 background: root.background-image-opacity > 0.0
                     ? rgba(22, 23, 22, 0.58) : #161716;
             }
@@ -928,8 +928,8 @@ slint::slint! {
         // Faithful, compact island: diagonal cream SST identity, three
         // window controls, and real metrics. No extra text or ornaments.
         island := Rectangle {
-            width: min(1600px, root.width - 20px);
-            height: 40px;
+            width: min(1120px, root.width - 16px);
+            height: 34px;
             x: (root.width - self.width) / 2;
             y: 3px;
             border-radius: 10px;
@@ -945,32 +945,32 @@ slint::slint! {
                 // Lettering itself is a real TrueType Text object.
                 Path {
                     x: 3px; y: 3px;
-                    width: 134px; height: 34px;
-                    commands: "M 5 0 L 134 0 L 117 34 L 5 34 Q 0 34 0 29 L 0 5 Q 0 0 5 0 Z";
+                    width: 108px; height: 28px;
+                    commands: "M 5 0 L 108 0 L 90 28 L 5 28 Q 0 28 0 23 L 0 5 Q 0 0 5 0 Z";
                     fill: #e2dac2;
                 }
                 Text {
-                    x: 7px; y: 3px; width: 111px; height: 34px;
+                    x: 5px; y: 3px; width: 86px; height: 28px;
                     text: "SST";
                     color: #191919;
                     font-family: "SST Industrial";
-                    font-size: 34px;
+                    font-size: 25px;
                     horizontal-alignment: center;
                     vertical-alignment: center;
                 }
                 Text {
-                    visible: island.width >= 520px;
-                    x: 147px; y: 1px; width: 97px; height: 38px;
+                    visible: island.width >= 540px;
+                    x: 117px; y: 1px; width: 73px; height: 32px;
                     text: "SHELL\nSHOCK\nTOOL";
                     color: #e2dac2;
-                    font-family: "Oxanium"; font-size: 9px; font-weight: 800;
+                    font-family: "Oxanium"; font-size: 8px; font-weight: 800;
                     vertical-alignment: center;
                 }
 
                 GreenTelemetryRail {
-                    visible: island.width >= 1010px;
-                    x: 270px; y: 5px;
-                    width: island.width - 464px; height: 30px;
+                    visible: island.width >= 760px;
+                    x: 200px; y: 3px;
+                    width: island.width - 333px; height: 28px;
                     host-text: root.header-host;
                     uptime-text: root.header-uptime;
                     arch-text: root.header-arch;
@@ -980,10 +980,10 @@ slint::slint! {
                 // When the user narrows the window, keep the most actionable
                 // telemetry readable without overlapping the real title.
                 Text {
-                    visible: island.width >= 520px && island.width < 1010px;
-                    x: 258px; y: 3px;
-                    width: max(0px, island.width - (island.width >= 650px ? 451px : 367px));
-                    height: 34px;
+                    visible: island.width >= 540px && island.width < 760px;
+                    x: 196px; y: 3px;
+                    width: max(0px, island.width - 320px);
+                    height: 28px;
                     text: "MEM " + root.header-memory + "  CPU " + root.header-cpu;
                     font-family: "Oxanium"; font-size: 11px; font-weight: 800;
                     color: #e2dac2;
@@ -994,14 +994,13 @@ slint::slint! {
                 // Privilege belongs to the approved header, with a real
                 // Windows token reading rather than a static mockup label.
                 Rectangle {
-                    visible: island.width >= 650px;
-                    x: island.width - 183px; y: 8px;
-                    width: 76px; height: 24px;
+                    x: island.width - 126px; y: 7px;
+                    width: 40px; height: 20px;
                     background: #fe8254;
                     border-radius: 7px;
                     Rectangle {
-                        x: 7px; y: 9px;
-                        width: 7px; height: 7px;
+                        x: 4px; y: 7px;
+                        width: 6px; height: 6px;
                         border-radius: 4px;
                         background: (root.privilege-label == "USUARIO"
                           || root.privilege-label == "LIMITADO")
@@ -1009,9 +1008,9 @@ slint::slint! {
                         border-width: 1px; border-color: #1b2623;
                     }
                     Text {
-                        x: 18px; y: 0px; width: 55px; height: parent.height;
-                        text: root.privilege-label;
-                        font-family: "Oxanium"; font-size: 10px;
+                        x: 11px; y: 0px; width: 27px; height: parent.height;
+                        text: root.privilege-label == "USUARIO" ? "USR" : root.privilege-label == "ADMINISTRADOR" ? "ADM" : root.privilege-label == "ADMIN" ? "ADM" : "?";
+                        font-family: "Oxanium"; font-size: 9px;
                         font-weight: 800; color: #171717;
                         vertical-alignment: center;
                         horizontal-alignment: center;
@@ -1020,14 +1019,14 @@ slint::slint! {
                 }
 
                 Rectangle {
-                    x: island.width - 101px; y: 4px;
-                    width: 32px; height: 32px;
+                    x: island.width - 83px; y: 3px;
+                    width: 26px; height: 28px;
                     border-radius: 7px;
                     background: minimize-touch.pressed
                         ? rgb(79, 79, 63)
                         : minimize-touch.has-hover ? rgb(54, 64, 59) : transparent;
                     Path {
-                        x: 8px; y: 8px; width: 16px; height: 12px;
+                        x: 5px; y: 7px; width: 16px; height: 12px;
                         commands: root.maximized
                             ? "M 1 6 L 15 6"
                             : "M 1 1 L 8 9 L 15 1";
@@ -1043,14 +1042,14 @@ slint::slint! {
                     }
                 }
                 Rectangle {
-                    x: island.width - 68px; y: 4px;
-                    width: 32px; height: 32px;
+                    x: island.width - 56px; y: 3px;
+                    width: 26px; height: 28px;
                     border-radius: 7px;
                     background: maximize-touch.pressed
                         ? rgb(79, 79, 63)
                         : maximize-touch.has-hover ? rgb(54, 64, 59) : transparent;
                     Path {
-                        x: 8px; y: 8px; width: 16px; height: 12px;
+                        x: 5px; y: 7px; width: 16px; height: 12px;
                         commands: root.maximized
                             ? "M 1 1 L 8 9 L 15 1"
                             : "M 1 10 L 8 2 L 15 10";
@@ -1066,14 +1065,14 @@ slint::slint! {
                     }
                 }
                 Rectangle {
-                    x: island.width - 35px; y: 4px;
-                    width: 32px; height: 32px;
+                    x: island.width - 29px; y: 3px;
+                    width: 26px; height: 28px;
                     border-radius: 7px;
                     background: close-touch.pressed
                         ? rgb(100, 45, 38)
                         : close-touch.has-hover ? rgb(80, 40, 35) : transparent;
                     Path {
-                        x: 7px; y: 7px; width: 18px; height: 18px;
+                        x: 4px; y: 5px; width: 18px; height: 18px;
                         commands: "M 9 1 L 9 8 M 3.3 3.7 A 7 7 0 1 0 14.7 3.7";
                         stroke: close-touch.has-hover ? #fb4934 : #fe8019;
                         stroke-width: 2px; stroke-line-cap: round;
