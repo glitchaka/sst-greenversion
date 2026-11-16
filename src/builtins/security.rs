@@ -44,9 +44,6 @@ impl BuiltinCommand for TriageBuiltin {
         let machine = args.iter().any(|arg| matches!(
             arg.as_str(), "--plain" | "--stdout" | "--json" | "--csv"
         ));
-        if output.status == 0 && !informational && !machine && !output.stdout.trim().is_empty() {
-            tool_screen::record_triage_result(&output.stdout);
-        }
         let interactive = crate::adapters::terminal::io::output_sender().is_some();
         let view = args.iter().any(|arg| arg == "--view") || interactive;
         // A report is shown only when a real interactive console owns this
