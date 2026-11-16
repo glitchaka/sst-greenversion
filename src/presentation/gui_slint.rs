@@ -652,13 +652,13 @@ slint::slint! {
                 text: root.host-value + "   ·   " + root.uptime-value;
                 font-family: "Oxanium"; font-size: 11px;
                 color: #c8bfac; overflow: elide;
+            }
             Text {
                 visible: parent.height >= 172px;
                 x: 116px; y: 151px; width: max(0px, parent.width - 130px);
                 height: 17px; text: "PROCESOS    " + root.process-count;
                 font-family: "Oxanium"; font-size: 11px;
                 color: #e2dac2; overflow: elide;
-            }
             }
         }
         network-card := Rectangle {
