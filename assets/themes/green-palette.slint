@@ -1,6 +1,10 @@
 // SST Green visual theme. Change colors here, not in GUI components.
 // Defined as a Slint global to support runtime theme substitution.
 export global GreenPalette {
+    // Fonts are theme values; component source never chooses a font family.
+    in property <string> heading-font: "SST Industrial";
+    in property <string> interface-font: "Oxanium";
+    in property <string> background-fit: "cover";
     in property <color> heading-outline: rgb(168, 156, 136);
     in property <color> salmon: rgb(254, 130, 84);
     in property <color> section-bg: rgb(34, 36, 35);
