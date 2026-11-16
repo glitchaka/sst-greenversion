@@ -12,7 +12,6 @@ use std::{
 };
 
 use anyhow::{Context, Result};
-use libcaca::{Canvas, Color};
 
 use crate::adapters::terminal::io;
 
@@ -116,30 +115,30 @@ fn eta(seconds: f64) -> String {
 /// libcaca handles the terminal-mode progress composition. The SST GUI does
 /// not print this ASCII/Unicode bar: it presents genuine rounded Slint shapes.
 fn draw(label: &str, current: u64, expected: Option<u64>, rate: f64, columns: usize) -> String {
-    let columns = columns.max(35);
-    let width = if columns >= 105 { 22 } else if columns >= 85 { 15 } else { 10 };
-    let fraction = expected.filter(|v| *v > 0)
-        .map(|total| current.min(total) as f64 / total as f64);
-    let filled = fraction.map(|p| (p * width as f64).round() as usize).unwrap_or(0);
-    let bar = format!("{}{}", "█".repeat(filled.min(width)), "░".repeat(width.saturating_sub(filled)));
-
-    let label = label.chars().filter(|c| !c.is_control()).take(24).collect::<String>();
-    let display_label = (|| -> Option<String> {
-        let mut canvas = Canvas::new((label.chars().count() + 2) as i32, 1).ok()?;
-        canvas.set_color_ansi(Color::LightCyan, Color::Default).ok()?;
-        canvas.put_str(1, 0, &label);
-        String::from_utf8(canvas.export_to_memory("utf8").ok()?).ok()
-            .map(|s| s.trim_end_matches(['\r', '\n']).trim_end().to_owned())
-    })().unwrap_or_else(|| label.clone());
-
-    let snap = TransferSnapshot::new(&label, current, expected, rate);
-    if columns >= 90 {
-        format!("  {display_label}  \x1b[96m{bar}\x1b[0m  {}  {}  {}  ETA {}",
-            snap.percentage(), snap.amount(), snap.speed(), snap.remaining())
-    } else {
-        format!("  {display_label} \x1b[96m{bar}\x1b[0m {}  {}  ETA {}",
-            snap.percentage(), snap.speed(), snap.remaining())
+    // Build a single PTY row, never a floating UI element. Width is measured
+    // in terminal columns, not pixels, and no output may wrap into the next row.
+    let snapshot = TransferSnapshot::new(label, current, expected, rate);
+    let label = label.chars().filter(|c| !c.is_control()).take(18).collect::<String>();
+    let prefix = format!("[{label}] ");
+    let detail = format!(
+        "{}  {}  {}  ETA {}",
+        snapshot.percentage(), snapshot.amount(), snapshot.speed(), snapshot.remaining()
+    );
+    let width = columns.saturating_sub(1).max(1);
+    let progress_width = width.saturating_sub(prefix.chars().count() + detail.chars().count() + 3);
+    // Unicode block glyphs occupy one terminal cell each.
+    if progress_width >= 6 {
+        let filled = snapshot.expected.map(|_| {
+            (f64::from(snapshot.fraction()) * progress_width as f64).round() as usize
+        }).unwrap_or(0).min(progress_width);
+        let bar = format!("{}{}", "█".repeat(filled), "░".repeat(progress_width - filled));
+        return format!("{prefix}\x1b[96m{bar}\x1b[0m  {detail}");
     }
+    // A narrow PTY must still show live progress without wrapping.
+    let compact = format!("{} {}", snapshot.percentage(), snapshot.speed());
+    let available = width.saturating_sub(compact.chars().count() + 1);
+    let short_label: String = label.chars().take(available).collect();
+    format!("{short_label} {compact}")
 }
 
 /// Execute curl without a terminal child. SST's native GUI receives progress
@@ -173,7 +172,7 @@ pub fn run(
         if (embedded || cli_terminal) && last.elapsed() >= Duration::from_millis(120) {
             let current = fs::metadata(destination).map(|m| m.len()).unwrap_or(0);
             let rate = current as f64 / started.elapsed().as_secs_f64().max(0.001);
-            let line = draw(label, current, expected, rate, cols);
+            let line = draw(label, current, expected, rate, if embedded { io::size().map(|(c, _)| c as usize).unwrap_or(cols) } else { cols });
             let _ = io::write_raw(format!("\r\x1b[2K{line}").as_bytes());
             last = Instant::now();
         }
