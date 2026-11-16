@@ -635,7 +635,7 @@ slint::slint! {
                 visible: !root.tool-view-active;
                 x: 13px;
                 y: 41px;
-                width: root.width - 26px;
+                width: root.width >= 1050px ? root.width * 0.55 - 19px : root.width - 26px;
                 height: root.height - 54px;
                 wallpaper-image: root.background-image;
                 wallpaper-opacity: root.background-image-opacity;
@@ -1343,10 +1343,15 @@ impl TerminalModel {
         self.height = height.max(1);
         self.scale = scale;
         let (left_pad, top_pad, cell_width, cell_height) = self.geometry();
-        let cols = (((self.width as f32 - left_pad * 2.0) / cell_width).floor() as i32)
+        let console_width = if !native_layout && self.width as f32 / scale >= 1050.0 {
+            self.width as f32 * 0.55 - 19.0 * scale
+        } else {
+            self.width as f32 - 26.0 * scale
+        };
+        let cols = (((console_width - left_pad - 9.0 * scale) / cell_width).floor() as i32)
             .clamp(2, 500) as u16;
         let bottom_pad = (self.appearance.terminal_padding_y as f32 * scale)
-            .max(if native_layout { 10.0 } else { 26.0 } * scale)
+            .max(if native_layout { 10.0 } else { 17.0 } * scale)
             .round();
         let rows = (((self.height as f32 - top_pad - bottom_pad) / cell_height).floor() as i32)
             .clamp(2, 200) as u16;
