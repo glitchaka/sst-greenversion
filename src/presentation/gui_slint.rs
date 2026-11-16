@@ -660,8 +660,8 @@ slint::slint! {
                 color: #c8bfac; overflow: elide;
             }
             Text {
-                visible: parent.height >= 172px;
-                x: 116px; y: 151px; width: max(0px, parent.width - 130px);
+                visible: parent.height >= 160px;
+                x: 116px; y: 143px; width: max(0px, parent.width - 130px);
                 height: 17px; text: "PROCESOS    " + root.process-count;
                 font-family: "Oxanium"; font-size: 11px;
                 color: #e2dac2; overflow: elide;
@@ -795,15 +795,15 @@ slint::slint! {
                 background: #20201f;
             }
             Text {
-                x: 18px; y: 48px; width: parent.width - 36px;
-                height: 23px; text: root.package-status;
+                x: 18px; y: 44px; width: parent.width - 36px;
+                height: 20px; text: root.package-status;
                 font-family: "Oxanium"; font-size: 14px;
                 font-weight: 800; color: #e2dac2;
             }
-            Rectangle { x: 18px; y: 75px; width: parent.width - 36px; height: 1px; background: #6e665b; }
+            Rectangle { x: 18px; y: 67px; width: parent.width - 36px; height: 1px; background: #6e665b; }
             Text {
-                x: 18px; y: 83px; width: parent.width - 36px;
-                height: max(20px, parent.height - 95px);
+                x: 18px; y: 71px; width: parent.width - 36px;
+                height: max(16px, parent.height - 77px);
                 text: root.package-detail;
                 font-family: "Oxanium"; font-size: 12px;
                 color: #c8bfac; overflow: elide;
