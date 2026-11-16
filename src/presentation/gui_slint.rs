@@ -522,6 +522,276 @@ slint::slint! {
         Rectangle { x: root.host-width + root.uptime-width + root.arch-width + root.mem-width; width: 1px; height: parent.height; background: #958778; }
     }
 
+
+    // The dashboard sits BESIDE the PTY, never over terminal cells.
+    // Values are supplied by the running native host. Reports without a
+    // corresponding completed scan show a pending state, never sample data.
+    component GreenDashboard inherits Rectangle {
+        in property <string> cpu-value: "—";
+        in property <string> memory-value: "—";
+        in property <float> cpu-ratio: 0.0;
+        in property <float> memory-ratio: 0.0;
+        in property <string> host-value: "—";
+        in property <string> uptime-value: "—";
+        in property <string> network-interfaces: "—";
+        in property <string> network-received: "—";
+        in property <string> network-transmitted: "—";
+        background: transparent;
+        border-width: 0px;
+
+        system-card := Rectangle {
+            x: 0px; y: 0px; width: parent.width;
+            height: max(125px, parent.height * 0.29 - 5px);
+            border-radius: 11px;
+            border-width: 1px; border-color: #e2dac2;
+            background: #1b1b1a;
+            clip: true;
+            Rectangle {
+                x: 1px; y: 1px; width: parent.width - 2px; height: 29px;
+                background: #e2dac2; border-radius: 10px;
+            }
+            Text {
+                x: 12px; y: 2px; width: parent.width - 145px; height: 27px;
+                text: "SYSTEM STATUS";
+                font-family: "SST Industrial"; font-size: 18px;
+                color: #161716; overflow: elide;
+                vertical-alignment: center;
+            }
+            Rectangle {
+                x: parent.width - 118px; y: 5px; width: 105px; height: 21px;
+                border-radius: 7px;
+                background: root.memory-ratio >= 0.90 || root.cpu-ratio >= 0.95
+                    ? #ec4624 : root.memory-ratio >= 0.75 || root.cpu-ratio >= 0.80
+                    ? #f5b94f : #9acdb5;
+                Text {
+                    width: parent.width; height: parent.height;
+                    text: root.memory-ratio >= 0.90 || root.cpu-ratio >= 0.95
+                        ? "HEALTH: CRIT" : root.memory-ratio >= 0.75 || root.cpu-ratio >= 0.80
+                        ? "HEALTH: WARN" : "HEALTH: OK";
+                    font-family: "Oxanium"; font-size: 10px; font-weight: 800;
+                    color: #151615; horizontal-alignment: center;
+                    vertical-alignment: center;
+                }
+            }
+            Rectangle {
+                x: 4px; y: 34px; width: parent.width - 8px;
+                height: parent.height - 38px; border-radius: 9px;
+                background: #20201f;
+            }
+            Rectangle {
+                x: 18px; y: 49px; width: 78px; height: 78px;
+                border-radius: 40px; border-width: 9px;
+                border-color: #64645e; background: transparent;
+            }
+            Path {
+                x: 18px; y: 49px; width: 78px; height: 78px;
+                commands: "M 39 4 A 35 35 0 1 1 14 65";
+                stroke: #9bd2bb; stroke-width: 8px;
+                fill: transparent;
+            }
+            Text {
+                x: 24px; y: 61px; width: 65px; height: 47px;
+                text: root.memory-value;
+                font-family: "Oxanium"; font-size: 23px; font-weight: 800;
+                color: #e2dac2; horizontal-alignment: center;
+                vertical-alignment: center; overflow: elide;
+            }
+            Text {
+                x: 34px; y: 110px; width: 46px; height: 14px;
+                text: "MEM"; color: #e2dac2;
+                font-family: "Oxanium"; font-size: 11px;
+                horizontal-alignment: center;
+            }
+            Text {
+                x: 116px; y: 48px; width: 48px; height: 20px;
+                text: "CPU"; font-family: "Oxanium"; font-size: 14px;
+                font-weight: 800; color: #e2dac2;
+            }
+            Text {
+                x: parent.width - 95px; y: 48px; width: 72px; height: 20px;
+                text: root.cpu-value; font-family: "Oxanium"; font-size: 14px;
+                color: #e2dac2; horizontal-alignment: right;
+            }
+            Rectangle {
+                x: 116px; y: 70px; width: max(0px, parent.width - 139px);
+                height: 9px; background: #51514e; border-radius: 4px;
+                Rectangle {
+                    width: parent.width * root.cpu-ratio;
+                    height: parent.height; background: #9bd2bb;
+                    border-radius: 4px;
+                }
+            }
+            Text {
+                x: 116px; y: 86px; width: 48px; height: 18px;
+                text: "MEM"; font-family: "Oxanium"; font-size: 14px;
+                font-weight: 800; color: #e2dac2;
+            }
+            Text {
+                x: parent.width - 95px; y: 86px; width: 72px; height: 18px;
+                text: root.memory-value; font-family: "Oxanium"; font-size: 14px;
+                color: #e2dac2; horizontal-alignment: right;
+            }
+            Rectangle {
+                x: 116px; y: 107px; width: max(0px, parent.width - 139px);
+                height: 9px; background: #51514e; border-radius: 4px;
+                Rectangle {
+                    width: parent.width * root.memory-ratio;
+                    height: parent.height; background: #f5b94f;
+                    border-radius: 4px;
+                }
+            }
+            Text {
+                x: 116px; y: 124px; width: max(0px, parent.width - 130px);
+                height: max(15px, parent.height - 129px);
+                text: root.host-value + "   ·   " + root.uptime-value;
+                font-family: "Oxanium"; font-size: 11px;
+                color: #c8bfac; overflow: elide;
+            }
+        }
+        network-card := Rectangle {
+            x: 0px; y: parent.height * 0.29; width: parent.width;
+            height: max(120px, parent.height * 0.23 - 5px);
+            border-radius: 11px;
+            border-width: 1px; border-color: #e2dac2;
+            background: #1b1b1a;
+            clip: true;
+            Rectangle {
+                x: 1px; y: 1px; width: parent.width - 2px; height: 29px;
+                border-radius: 10px; background: #e2dac2;
+            }
+            Text {
+                x: 12px; y: 2px; width: parent.width - 104px; height: 27px;
+                text: "NET MONITOR"; font-family: "SST Industrial";
+                font-size: 18px; color: #161716; overflow: elide;
+                vertical-alignment: center;
+            }
+            Text {
+                x: parent.width - 92px; y: 4px; width: 79px; height: 22px;
+                text: "● LIVE"; font-family: "Oxanium"; font-size: 12px;
+                color: #399d54; font-weight: 800;
+                horizontal-alignment: right; vertical-alignment: center;
+            }
+            Rectangle {
+                x: 4px; y: 34px; width: parent.width - 8px;
+                height: parent.height - 38px; border-radius: 9px;
+                background: #20201f;
+            }
+            Text {
+                x: 18px; y: 45px; width: 120px; height: 16px;
+                text: "INTERFACES"; font-family: "Oxanium"; font-size: 11px;
+                font-weight: 800; color: #b6ad9e;
+            }
+            Text {
+                x: parent.width - 102px; y: 45px; width: 85px; height: 16px;
+                text: root.network-interfaces;
+                font-family: "Oxanium"; font-size: 12px;
+                color: #e2dac2; horizontal-alignment: right;
+            }
+            Rectangle { x: 18px; y: 66px; width: parent.width - 36px; height: 1px; background: #6e665b; }
+            Text {
+                x: 18px; y: 73px; width: 120px; height: 18px;
+                text: "RX / RECIBIDO"; font-family: "Oxanium";
+                font-size: 11px; color: #b6ad9e;
+            }
+            Text {
+                x: parent.width - 180px; y: 73px; width: 162px; height: 18px;
+                text: root.network-received; font-family: "Oxanium";
+                font-size: 12px; color: #9bd2bb;
+                horizontal-alignment: right;
+            }
+            Rectangle { x: 18px; y: 96px; width: parent.width - 36px; height: 1px; background: #6e665b; }
+            Text {
+                x: 18px; y: 101px; width: 120px; height: 18px;
+                text: "TX / ENVIADO"; font-family: "Oxanium";
+                font-size: 11px; color: #b6ad9e;
+            }
+            Text {
+                x: parent.width - 180px; y: 101px; width: 162px; height: 18px;
+                text: root.network-transmitted; font-family: "Oxanium";
+                font-size: 12px; color: #9bd2bb;
+                horizontal-alignment: right;
+            }
+        }
+        triage-card := Rectangle {
+            x: 0px; y: parent.height * 0.52; width: parent.width;
+            height: max(105px, parent.height * 0.20 - 5px);
+            border-radius: 11px; border-width: 1px;
+            border-color: #e2dac2; background: #1b1b1a;
+            clip: true;
+            Rectangle {
+                x: 1px; y: 1px; width: parent.width - 2px; height: 29px;
+                border-radius: 10px; background: #e2dac2;
+            }
+            Text {
+                x: 12px; y: 2px; width: parent.width - 150px; height: 27px;
+                text: "TRIAGE"; font-family: "SST Industrial";
+                font-size: 18px; color: #161716;
+                vertical-alignment: center;
+            }
+            Text {
+                x: parent.width - 155px; y: 4px; width: 140px; height: 22px;
+                text: "SIN ANÁLISIS"; font-family: "Oxanium";
+                font-size: 11px; font-weight: 800; color: #171716;
+                horizontal-alignment: right; vertical-alignment: center;
+            }
+            Rectangle {
+                x: 4px; y: 34px; width: parent.width - 8px;
+                height: parent.height - 38px; background: #20201f;
+                border-radius: 9px;
+            }
+            Text {
+                x: 18px; y: 44px; width: parent.width - 36px;
+                height: max(22px, parent.height - 53px);
+                text: "Sin un informe de triage activo";
+                font-family: "Oxanium"; font-size: 13px; color: #e2dac2;
+                vertical-alignment: center; horizontal-alignment: center;
+                overflow: elide;
+            }
+        }
+        packages-card := Rectangle {
+            x: 0px; y: parent.height * 0.72; width: parent.width;
+            height: max(95px, parent.height * 0.28);
+            border-radius: 11px; border-width: 1px;
+            border-color: #e2dac2; background: #1b1b1a;
+            clip: true;
+            Rectangle {
+                x: 1px; y: 1px; width: parent.width - 2px; height: 29px;
+                border-radius: 10px; background: #e2dac2;
+            }
+            Text {
+                x: 12px; y: 2px; width: parent.width - 130px; height: 27px;
+                text: "PACKAGES"; font-family: "SST Industrial";
+                font-size: 18px; color: #161716;
+                vertical-alignment: center;
+            }
+            Text {
+                x: parent.width - 133px; y: 4px; width: 120px; height: 22px;
+                text: "INSTP"; font-family: "Oxanium";
+                font-size: 11px; font-weight: 800; color: #161716;
+                horizontal-alignment: right; vertical-alignment: center;
+            }
+            Rectangle {
+                x: 4px; y: 34px; width: parent.width - 8px;
+                height: parent.height - 38px; border-radius: 9px;
+                background: #20201f;
+            }
+            Text {
+                x: 18px; y: 48px; width: parent.width - 36px;
+                height: 23px; text: "Inventario de paquetes";
+                font-family: "Oxanium"; font-size: 14px;
+                font-weight: 800; color: #e2dac2;
+            }
+            Rectangle { x: 18px; y: 75px; width: parent.width - 36px; height: 1px; background: #6e665b; }
+            Text {
+                x: 18px; y: 83px; width: parent.width - 36px;
+                height: max(20px, parent.height - 95px);
+                text: "Consulta el inventario mediante instp.";
+                font-family: "Oxanium"; font-size: 12px;
+                color: #c8bfac; overflow: elide;
+            }
+        }
+    }
+
     export component SstGreenWindow inherits Window {
         title: "Shell Shock Tool";
         preferred-width: 1340px;
@@ -596,6 +866,11 @@ slint::slint! {
         in property <string> header-cpu: "—";
         in property <string> header-version: "—";
         in property <string> header-arch: "—";
+        in property <float> dashboard-cpu-ratio: 0.0;
+        in property <float> dashboard-memory-ratio: 0.0;
+        in property <string> dashboard-network-interfaces: "—";
+        in property <string> dashboard-network-received: "—";
+        in property <string> dashboard-network-transmitted: "—";
         // Logical coordinates align the live transfer indicator to the command output.
         callback key-input(string, bool, bool, bool);
         callback pointer-down(float, float);
@@ -640,6 +915,22 @@ slint::slint! {
                 wallpaper-image: root.background-image;
                 wallpaper-opacity: root.background-image-opacity;
                 wallpaper-fit-mode: root.background-image-fit-mode;
+            }
+
+            GreenDashboard {
+                visible: !root.tool-view-active && root.width >= 1050px;
+                x: root.width * 0.55 + 3px; y: 41px;
+                width: max(0px, root.width * 0.45 - 16px);
+                height: root.height - 54px;
+                cpu-value: root.header-cpu;
+                memory-value: root.header-memory;
+                cpu-ratio: root.dashboard-cpu-ratio;
+                memory-ratio: root.dashboard-memory-ratio;
+                host-value: root.header-host;
+                uptime-value: root.header-uptime;
+                network-interfaces: root.dashboard-network-interfaces;
+                network-received: root.dashboard-network-received;
+                network-transmitted: root.dashboard-network-transmitted;
             }
 
             // A tool owns the entire content surface. Its high-contrast
