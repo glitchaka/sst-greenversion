@@ -536,6 +536,10 @@ slint::slint! {
         in property <string> network-interfaces: "—";
         in property <string> network-received: "—";
         in property <string> network-transmitted: "—";
+        in property <string> triage-status: "SIN ANÁLISIS";
+        in property <string> triage-detail: "Sin un informe de triage activo";
+        in property <string> package-status: "Inventario sin consultar";
+        in property <string> package-detail: "Ejecuta instp list para obtener los paquetes";
         background: transparent;
         border-width: 0px;
 
@@ -731,7 +735,7 @@ slint::slint! {
             }
             Text {
                 x: parent.width - 155px; y: 4px; width: 140px; height: 22px;
-                text: "SIN ANÁLISIS"; font-family: "Oxanium";
+                text: root.triage-status; font-family: "Oxanium";
                 font-size: 11px; font-weight: 800; color: #171716;
                 horizontal-alignment: right; vertical-alignment: center;
             }
@@ -743,7 +747,7 @@ slint::slint! {
             Text {
                 x: 18px; y: 44px; width: parent.width - 36px;
                 height: max(22px, parent.height - 53px);
-                text: "Sin un informe de triage activo";
+                text: root.triage-detail;
                 font-family: "Oxanium"; font-size: 13px; color: #e2dac2;
                 vertical-alignment: center; horizontal-alignment: center;
                 overflow: elide;
@@ -778,7 +782,7 @@ slint::slint! {
             }
             Text {
                 x: 18px; y: 48px; width: parent.width - 36px;
-                height: 23px; text: "Inventario de paquetes";
+                height: 23px; text: root.package-status;
                 font-family: "Oxanium"; font-size: 14px;
                 font-weight: 800; color: #e2dac2;
             }
@@ -786,7 +790,7 @@ slint::slint! {
             Text {
                 x: 18px; y: 83px; width: parent.width - 36px;
                 height: max(20px, parent.height - 95px);
-                text: "Consulta el inventario mediante instp.";
+                text: root.package-detail;
                 font-family: "Oxanium"; font-size: 12px;
                 color: #c8bfac; overflow: elide;
             }
@@ -872,6 +876,10 @@ slint::slint! {
         in property <string> dashboard-network-interfaces: "—";
         in property <string> dashboard-network-received: "—";
         in property <string> dashboard-network-transmitted: "—";
+        in property <string> dashboard-triage-status: "SIN ANÁLISIS";
+        in property <string> dashboard-triage-detail: "Sin un informe de triage activo";
+        in property <string> dashboard-package-status: "Inventario sin consultar";
+        in property <string> dashboard-package-detail: "Ejecuta instp list para obtener los paquetes";
         // Logical coordinates align the live transfer indicator to the command output.
         callback key-input(string, bool, bool, bool);
         callback pointer-down(float, float);
@@ -932,6 +940,10 @@ slint::slint! {
                 network-interfaces: root.dashboard-network-interfaces;
                 network-received: root.dashboard-network-received;
                 network-transmitted: root.dashboard-network-transmitted;
+                triage-status: root.dashboard-triage-status;
+                triage-detail: root.dashboard-triage-detail;
+                package-status: root.dashboard-package-status;
+                package-detail: root.dashboard-package-detail;
             }
 
             // A tool owns the entire content surface. Its high-contrast
@@ -3071,6 +3083,15 @@ pub fn run() -> Result<()> {
                 ui.set_dashboard_network_interfaces(network_state.iter().count().to_string().into());
                 ui.set_dashboard_network_received(format!("{:.1} KiB/s", rx as f64 / 2048.0).into());
                 ui.set_dashboard_network_transmitted(format!("{:.1} KiB/s", tx as f64 / 2048.0).into());
+                let reports = crate::presentation::tool_screen::dashboard_report_snapshot();
+                if !reports.triage_status.is_empty() {
+                    ui.set_dashboard_triage_status(reports.triage_status.into());
+                    ui.set_dashboard_triage_detail(reports.triage_detail.into());
+                }
+                if !reports.package_status.is_empty() {
+                    ui.set_dashboard_package_status(reports.package_status.into());
+                    ui.set_dashboard_package_detail(reports.package_detail.into());
+                }
                 ui.set_clock_text(now.format("%H:%M").to_string().into());
                 ui.set_date_text(now.format("%d %b").to_string().into());
                 *last_status.borrow_mut() = Instant::now();
