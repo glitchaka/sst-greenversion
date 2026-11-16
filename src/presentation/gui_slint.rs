@@ -533,6 +533,7 @@ slint::slint! {
         in property <float> memory-ratio: 0.0;
         in property <string> host-value: "—";
         in property <string> uptime-value: "—";
+        in property <string> process-count: "—";
         in property <string> network-interfaces: "—";
         in property <string> network-received: "—";
         in property <string> network-transmitted: "—";
@@ -647,10 +648,17 @@ slint::slint! {
             }
             Text {
                 x: 116px; y: 124px; width: max(0px, parent.width - 130px);
-                height: max(15px, parent.height - 129px);
+                height: 16px;
                 text: root.host-value + "   ·   " + root.uptime-value;
                 font-family: "Oxanium"; font-size: 11px;
                 color: #c8bfac; overflow: elide;
+            Text {
+                visible: parent.height >= 172px;
+                x: 116px; y: 151px; width: max(0px, parent.width - 130px);
+                height: 17px; text: "PROCESOS    " + root.process-count;
+                font-family: "Oxanium"; font-size: 11px;
+                color: #e2dac2; overflow: elide;
+            }
             }
         }
         network-card := Rectangle {
@@ -873,6 +881,7 @@ slint::slint! {
         in property <string> header-arch: "—";
         in property <float> dashboard-cpu-ratio: 0.0;
         in property <float> dashboard-memory-ratio: 0.0;
+        in property <string> dashboard-process-count: "—";
         in property <string> dashboard-network-interfaces: "—";
         in property <string> dashboard-network-received: "—";
         in property <string> dashboard-network-transmitted: "—";
@@ -937,6 +946,7 @@ slint::slint! {
                 memory-ratio: root.dashboard-memory-ratio;
                 host-value: root.header-host;
                 uptime-value: root.header-uptime;
+                process-count: root.dashboard-process-count;
                 network-interfaces: root.dashboard-network-interfaces;
                 network-received: root.dashboard-network-received;
                 network-transmitted: root.dashboard-network-transmitted;
@@ -3044,6 +3054,8 @@ pub fn run() -> Result<()> {
                 let mut system = metrics.borrow_mut();
                 system.refresh_cpu_usage();
                 system.refresh_memory();
+                system.refresh_processes(sysinfo::ProcessesToUpdate::All, true);
+                ui.set_dashboard_process_count(system.processes().len().to_string().into());
 
                 // Absence of a provider reading is not a 0% measurement.
                 // Both the island and the terminal status share this policy.
