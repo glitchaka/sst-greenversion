@@ -565,7 +565,8 @@ slint::slint! {
                     ? #f5b94f : #9acdb5;
                 Text {
                     width: parent.width; height: parent.height;
-                    text: root.memory-ratio >= 0.90 || root.cpu-ratio >= 0.95
+                    text: root.cpu-value == "—" || root.memory-value == "—"
+                        ? "HEALTH: —" : root.memory-ratio >= 0.90 || root.cpu-ratio >= 0.95
                         ? "HEALTH: CRIT" : root.memory-ratio >= 0.75 || root.cpu-ratio >= 0.80
                         ? "HEALTH: WARN" : "HEALTH: OK";
                     font-family: "Oxanium"; font-size: 10px; font-weight: 800;
@@ -667,7 +668,7 @@ slint::slint! {
             }
             Text {
                 x: parent.width - 92px; y: 4px; width: 79px; height: 22px;
-                text: "● LIVE"; font-family: "Oxanium"; font-size: 12px;
+                text: root.network-interfaces == "—" ? "○ OFF" : "● LIVE"; font-family: "Oxanium"; font-size: 12px;
                 color: #399d54; font-weight: 800;
                 horizontal-alignment: right; vertical-alignment: center;
             }
@@ -910,7 +911,7 @@ slint::slint! {
                 visible: !root.tool-view-active;
                 x: 13px;
                 y: 70px;
-                width: root.width >= 1050px ? root.width * 0.55 - 19px : root.width - 26px;
+                width: root.width >= 1050px && root.height >= 620px ? root.width * 0.55 - 19px : root.width - 26px;
                 height: root.height - 83px;
                 wallpaper-image: root.background-image;
                 wallpaper-opacity: root.background-image-opacity;
@@ -918,7 +919,7 @@ slint::slint! {
             }
 
             GreenDashboard {
-                visible: !root.tool-view-active && root.width >= 1050px;
+                visible: !root.tool-view-active && root.width >= 1050px && root.height >= 620px;
                 x: root.width * 0.55 + 3px; y: 70px;
                 width: max(0px, root.width * 0.45 - 16px);
                 height: root.height - 83px;
@@ -1224,7 +1225,7 @@ slint::slint! {
                     visible: island.width >= 540px && island.width < 1260px;
                     x: 196px; y: 14px;
                     width: max(0px, island.width -
-                        (island.width >= 880px ? 405px : 330px));
+                        (island.width >= 880px ? 412px : 340px));
                     height: 33px;
                     text: "HOST " + root.header-host + "   MEM " + root.header-memory + "   CPU " + root.header-cpu;
                     font-family: "Oxanium"; font-size: 11px; font-weight: 800;
@@ -1232,7 +1233,7 @@ slint::slint! {
                     overflow: elide;
                 }
                 Rectangle {
-                    x: island.width - (island.width >= 880px ? 211px : 128px);
+                    x: island.width - (island.width >= 880px ? 211px : 139px);
                     y: 17px;
                     width: island.width >= 880px ? 115px : 42px;
                     height: 27px; background: #fe8254;
@@ -1634,7 +1635,8 @@ impl TerminalModel {
         self.height = height.max(1);
         self.scale = scale;
         let (left_pad, top_pad, cell_width, cell_height) = self.geometry();
-        let console_width = if !native_layout && self.width as f32 / scale >= 1050.0 {
+        let console_width = if !native_layout && self.width as f32 / scale >= 1050.0
+            && self.height as f32 / scale >= 620.0 {
             self.width as f32 * 0.55 - 19.0 * scale
         } else {
             self.width as f32 - 26.0 * scale
