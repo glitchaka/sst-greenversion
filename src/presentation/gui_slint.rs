@@ -1346,6 +1346,240 @@ struct Rgb(u8, u8, u8);
 
 type TerminalAppearance = AppearanceConfig;
 
+
+/// Runtime-editable appearance, stored beside SST's existing sstrc.
+fn read_green_theme(paths: &AppPaths) -> Result<toml::Value> {
+    let path = paths.config_dir().join("green-theme.toml");
+    if !path.exists() {
+        std::fs::create_dir_all(paths.config_dir())?;
+        std::fs::write(&path, include_str!("../../assets/themes/green-theme.toml"))?;
+    }
+    let contents = std::fs::read_to_string(&path)
+        .with_context(|| format!("No se pudo leer {}", path.display()))?;
+    contents.parse::<toml::Value>()
+        .with_context(|| format!("Tema SST Green inválido: {}", path.display()))
+}
+
+fn apply_green_background(config: &mut AppearanceConfig, theme: &toml::Value) -> Result<()> {
+    let Some(bg) = theme.get("background").and_then(toml::Value::as_table) else {
+        return Ok(());
+    };
+    if let Some(mode) = bg.get("mode").and_then(toml::Value::as_str) {
+        if !matches!(mode, "off" | "fixed" | "carrousel" | "carousel") {
+            anyhow::bail!("green-theme.toml: background.mode inválido");
+        }
+        config.background_mode = if mode == "carousel" { "carrousel" } else { mode }.to_owned();
+    }
+    if let Some(image) = bg.get("image").and_then(toml::Value::as_str) {
+        config.background_image = image.to_owned();
+    }
+    if let Some(fit) = bg.get("fit").and_then(toml::Value::as_str) {
+        if !matches!(fit, "cover" | "contain" | "fill" | "preserve") {
+            anyhow::bail!("green-theme.toml: background.fit inválido");
+        }
+        config.background_image_fit = fit.to_owned();
+    }
+    if let Some(opacity) = bg.get("opacity").and_then(toml::Value::as_integer) {
+        if !(0..=100).contains(&opacity) {
+            anyhow::bail!("green-theme.toml: background.opacity debe estar entre 0 y 100");
+        }
+        config.background_image_opacity = opacity as u8;
+    }
+    if let Some(color) = bg.get("color").and_then(toml::Value::as_str) {
+        if color.len() != 7 || !color.starts_with('#') ||
+            !color[1..].chars().all(|c| c.is_ascii_hexdigit()) {
+            anyhow::bail!("green-theme.toml: background.color requiere #RRGGBB");
+        }
+        config.background_color = color.to_owned();
+    }
+    Ok(())
+}
+
+fn theme_color(value: &str) -> Result<slint::Color> {
+    let hex = value.trim().strip_prefix('#')
+        .with_context(|| format!("Color inválido en green-theme.toml: {value}"))?;
+    if !matches!(hex.len(), 6 | 8) || !hex.chars().all(|c| c.is_ascii_hexdigit()) {
+        anyhow::bail!("Color inválido en green-theme.toml: {value}");
+    }
+    let bytes = (0..hex.len()).step_by(2)
+        .map(|i| u8::from_str_radix(&hex[i..i + 2], 16))
+        .collect::<std::result::Result<Vec<_>, _>>()?;
+    Ok(slint::Color::from_argb_u8(
+        *bytes.get(3).unwrap_or(&255), bytes[0], bytes[1], bytes[2],
+    ))
+}
+
+fn apply_green_theme(ui: &SstGreenWindow, theme: &toml::Value) -> Result<()> {
+    let palette = ui.global::<GreenPalette>();
+    if let Some(colors) = theme.get("colors").and_then(toml::Value::as_table) {
+        if let Some(value) = colors.get("heading-outline").and_then(toml::Value::as_str) {
+            palette.set_heading_outline(theme_color(value)?);
+        }
+        if let Some(value) = colors.get("salmon").and_then(toml::Value::as_str) {
+            palette.set_salmon(theme_color(value)?);
+        }
+        if let Some(value) = colors.get("section-bg").and_then(toml::Value::as_str) {
+            palette.set_section_bg(theme_color(value)?);
+        }
+        if let Some(value) = colors.get("section-title-bg").and_then(toml::Value::as_str) {
+            palette.set_section_title_bg(theme_color(value)?);
+        }
+        if let Some(value) = colors.get("coral").and_then(toml::Value::as_str) {
+            palette.set_coral(theme_color(value)?);
+        }
+        if let Some(value) = colors.get("topline-amber").and_then(toml::Value::as_str) {
+            palette.set_topline_amber(theme_color(value)?);
+        }
+        if let Some(value) = colors.get("decorative-rule").and_then(toml::Value::as_str) {
+            palette.set_decorative_rule(theme_color(value)?);
+        }
+        if let Some(value) = colors.get("chassis-bg").and_then(toml::Value::as_str) {
+            palette.set_chassis_bg(theme_color(value)?);
+        }
+        if let Some(value) = colors.get("cream").and_then(toml::Value::as_str) {
+            palette.set_cream(theme_color(value)?);
+        }
+        if let Some(value) = colors.get("chrome-bg").and_then(toml::Value::as_str) {
+            palette.set_chrome_bg(theme_color(value)?);
+        }
+        if let Some(value) = colors.get("near-black").and_then(toml::Value::as_str) {
+            palette.set_near_black(theme_color(value)?);
+        }
+        if let Some(value) = colors.get("warning-orange").and_then(toml::Value::as_str) {
+            palette.set_warning_orange(theme_color(value)?);
+        }
+        if let Some(value) = colors.get("system-bg").and_then(toml::Value::as_str) {
+            palette.set_system_bg(theme_color(value)?);
+        }
+        if let Some(value) = colors.get("secondary-outline").and_then(toml::Value::as_str) {
+            palette.set_secondary_outline(theme_color(value)?);
+        }
+        if let Some(value) = colors.get("critical-red").and_then(toml::Value::as_str) {
+            palette.set_critical_red(theme_color(value)?);
+        }
+        if let Some(value) = colors.get("info-cyan").and_then(toml::Value::as_str) {
+            palette.set_info_cyan(theme_color(value)?);
+        }
+        if let Some(value) = colors.get("meter-track").and_then(toml::Value::as_str) {
+            palette.set_meter_track(theme_color(value)?);
+        }
+        if let Some(value) = colors.get("muted-mint").and_then(toml::Value::as_str) {
+            palette.set_muted_mint(theme_color(value)?);
+        }
+        if let Some(value) = colors.get("dashboard-rule").and_then(toml::Value::as_str) {
+            palette.set_dashboard_rule(theme_color(value)?);
+        }
+        if let Some(value) = colors.get("ivory").and_then(toml::Value::as_str) {
+            palette.set_ivory(theme_color(value)?);
+        }
+        if let Some(value) = colors.get("metric-rule").and_then(toml::Value::as_str) {
+            palette.set_metric_rule(theme_color(value)?);
+        }
+        if let Some(value) = colors.get("card-bg").and_then(toml::Value::as_str) {
+            palette.set_card_bg(theme_color(value)?);
+        }
+        if let Some(value) = colors.get("charcoal").and_then(toml::Value::as_str) {
+            palette.set_charcoal(theme_color(value)?);
+        }
+        if let Some(value) = colors.get("warning-yellow").and_then(toml::Value::as_str) {
+            palette.set_warning_yellow(theme_color(value)?);
+        }
+        if let Some(value) = colors.get("healthy-bg").and_then(toml::Value::as_str) {
+            palette.set_healthy_bg(theme_color(value)?);
+        }
+        if let Some(value) = colors.get("text-dark").and_then(toml::Value::as_str) {
+            palette.set_text_dark(theme_color(value)?);
+        }
+        if let Some(value) = colors.get("card-content").and_then(toml::Value::as_str) {
+            palette.set_card_content(theme_color(value)?);
+        }
+        if let Some(value) = colors.get("healthy-accent").and_then(toml::Value::as_str) {
+            palette.set_healthy_accent(theme_color(value)?);
+        }
+        if let Some(value) = colors.get("muted-text").and_then(toml::Value::as_str) {
+            palette.set_muted_text(theme_color(value)?);
+        }
+        if let Some(value) = colors.get("live-green").and_then(toml::Value::as_str) {
+            palette.set_live_green(theme_color(value)?);
+        }
+        if let Some(value) = colors.get("subtle-rule").and_then(toml::Value::as_str) {
+            palette.set_subtle_rule(theme_color(value)?);
+        }
+        if let Some(value) = colors.get("ink").and_then(toml::Value::as_str) {
+            palette.set_ink(theme_color(value)?);
+        }
+        if let Some(value) = colors.get("window-bg").and_then(toml::Value::as_str) {
+            palette.set_window_bg(theme_color(value)?);
+        }
+        if let Some(value) = colors.get("island-bg").and_then(toml::Value::as_str) {
+            palette.set_island_bg(theme_color(value)?);
+        }
+        if let Some(value) = colors.get("island-outline").and_then(toml::Value::as_str) {
+            palette.set_island_outline(theme_color(value)?);
+        }
+        if let Some(value) = colors.get("black-ink").and_then(toml::Value::as_str) {
+            palette.set_black_ink(theme_color(value)?);
+        }
+        if let Some(value) = colors.get("slant-blades").and_then(toml::Value::as_str) {
+            palette.set_slant_blades(theme_color(value)?);
+        }
+        if let Some(value) = colors.get("header-rule").and_then(toml::Value::as_str) {
+            palette.set_header_rule(theme_color(value)?);
+        }
+        if let Some(value) = colors.get("secondary-text").and_then(toml::Value::as_str) {
+            palette.set_secondary_text(theme_color(value)?);
+        }
+        if let Some(value) = colors.get("online-green").and_then(toml::Value::as_str) {
+            palette.set_online_green(theme_color(value)?);
+        }
+        if let Some(value) = colors.get("dark-outline").and_then(toml::Value::as_str) {
+            palette.set_dark_outline(theme_color(value)?);
+        }
+        if let Some(value) = colors.get("control-hover").and_then(toml::Value::as_str) {
+            palette.set_control_hover(theme_color(value)?);
+        }
+        if let Some(value) = colors.get("warm-text").and_then(toml::Value::as_str) {
+            palette.set_warm_text(theme_color(value)?);
+        }
+        if let Some(value) = colors.get("close-hover").and_then(toml::Value::as_str) {
+            palette.set_close_hover(theme_color(value)?);
+        }
+        if let Some(value) = colors.get("power-orange").and_then(toml::Value::as_str) {
+            palette.set_power_orange(theme_color(value)?);
+        }
+        if let Some(value) = colors.get("cream-border").and_then(toml::Value::as_str) {
+            palette.set_cream_border(theme_color(value)?);
+        }
+        if let Some(value) = colors.get("wallpaper-wash").and_then(toml::Value::as_str) {
+            palette.set_wallpaper_wash(theme_color(value)?);
+        }
+        if let Some(value) = colors.get("wallpaper-base").and_then(toml::Value::as_str) {
+            palette.set_wallpaper_base(theme_color(value)?);
+        }
+        if let Some(value) = colors.get("hover-grey").and_then(toml::Value::as_str) {
+            palette.set_hover_grey(theme_color(value)?);
+        }
+        if let Some(value) = colors.get("pressed-grey").and_then(toml::Value::as_str) {
+            palette.set_pressed_grey(theme_color(value)?);
+        }
+        if let Some(value) = colors.get("label-grey").and_then(toml::Value::as_str) {
+            palette.set_label_grey(theme_color(value)?);
+        }
+        if let Some(value) = colors.get("alternate-wash").and_then(toml::Value::as_str) {
+            palette.set_alternate_wash(theme_color(value)?);
+        }
+    }
+    if let Some(fonts) = theme.get("fonts").and_then(toml::Value::as_table) {
+        if let Some(value) = fonts.get("heading").and_then(toml::Value::as_str) {
+            palette.set_heading_font(value.into());
+        }
+        if let Some(value) = fonts.get("interface").and_then(toml::Value::as_str) {
+            palette.set_interface_font(value.into());
+        }
+    }
+    Ok(())
+}
+
 fn parse_rgb(value: &str) -> Result<Rgb> {
     let hex = value.trim().trim_start_matches('#');
     if hex.len() != 6 {
@@ -2641,7 +2875,9 @@ pub fn run() -> Result<()> {
 
     let paths = AppPaths::detect();
     paths.ensure_layout()?;
-    let appearance = paths.load_appearance()?;
+    let mut appearance = paths.load_appearance()?;
+    let green_theme = read_green_theme(&paths)?;
+    apply_green_background(&mut appearance, &green_theme)?;
     let initial_carousel = BackgroundCarousel::new(&paths, &appearance)?;
     let background_image = if appearance.background_mode == "carrousel" {
         initial_carousel
@@ -2658,6 +2894,7 @@ pub fn run() -> Result<()> {
     let metrics = Rc::new(RefCell::new(System::new()));
     let networks = Rc::new(RefCell::new(Networks::new_with_refreshed_list()));
     let ui = SstGreenWindow::new()?;
+    apply_green_theme(&ui, &green_theme)?;
 
     // The sudo command starts a NEW Windows process for each privilege
     // escalation. Its token is immutable during this GUI session. Query that
