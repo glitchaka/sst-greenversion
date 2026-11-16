@@ -2811,7 +2811,7 @@ unsafe fn apply_configured_backdrop(
             }
         };
 
-        let Rgb(r, g, b) = parse_rgb(&appearance.background_color).unwrap_or(BG);
+        let Rgb(r, g, b) = parse_rgb(&appearance.background_color).unwrap_or(terminal_palette().background);
         let tint_bgr = r as u32 | ((g as u32) << 8) | ((b as u32) << 16);
         let alpha = ((u32::from(opacity) * 255) / 100) << 24;
 
