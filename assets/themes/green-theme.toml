@@ -1,0 +1,67 @@
+# SST Green – appearance overrides. Editable without rebuilding SST.
+# Colors use #RRGGBB or #RRGGBBAA. All entries are semantic.
+[colors]
+"heading-outline" = "#a89c88"
+"salmon" = "#fe8254"
+"section-bg" = "#222423"
+"section-title-bg" = "#353331"
+"coral" = "#fa784f"
+"topline-amber" = "#e9a54d"
+"decorative-rule" = "#6e857b"
+"chassis-bg" = "#191d1b"
+"cream" = "#e2dac2"
+"chrome-bg" = "#292a27"
+"near-black" = "#171c1b"
+"warning-orange" = "#f39120"
+"system-bg" = "#222a2a"
+"secondary-outline" = "#827a6c"
+"critical-red" = "#ec4624"
+"info-cyan" = "#4fbbbc"
+"meter-track" = "#4a4a44"
+"muted-mint" = "#b9d5c5"
+"dashboard-rule" = "#928878"
+"ivory" = "#f5ead6"
+"metric-rule" = "#958778"
+"card-bg" = "#1b1b1a"
+"charcoal" = "#161716"
+"warning-yellow" = "#f5b94f"
+"healthy-bg" = "#9acdb5"
+"text-dark" = "#151615"
+"card-content" = "#20201f"
+"healthy-accent" = "#9bd2bb"
+"muted-text" = "#c8bfac"
+"live-green" = "#399d54"
+"subtle-rule" = "#6e665b"
+"ink" = "#171716"
+"window-bg" = "#1b2020"
+"island-bg" = "#191918"
+"island-outline" = "#514a40"
+"black-ink" = "#171717"
+"slant-blades" = "#a99f90"
+"header-rule" = "#918575"
+"secondary-text" = "#d8c9b1"
+"online-green" = "#52cd78"
+"dark-outline" = "#1b2623"
+"control-hover" = "#363e39"
+"warm-text" = "#d5c4a1"
+"close-hover" = "#502823"
+"power-orange" = "#fe8019"
+"cream-border" = "#e6d6be"
+"wallpaper-base" = "#1b1f1e"
+"hover-grey" = "#64645e"
+"pressed-grey" = "#51514e"
+"label-grey" = "#b6ad9e"
+"wallpaper-wash" = "#14181659"
+"alternate-wash" = "#16171694"
+
+[fonts]
+heading = "SST Industrial"
+interface = "Oxanium"
+
+[background]
+# Uncomment to override the existing sstrc settings:
+# mode = "fixed"       # off | fixed | carrousel
+# image = ""          # file path (absolute or within SST backgrounds directory)
+# fit = "cover"       # cover | contain | fill | preserve
+# opacity = 100       # 0..100
+# color = "#1B2020"
