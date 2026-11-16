@@ -299,8 +299,8 @@ slint::slint! {
         }
         Path {
             x: 1px; y: 1px;
-            width: 170px; height: 17px;
-            commands: "M 0 0 L 170 0 L 155 17 L 0 17 Z";
+            width: 255px; height: 17px;
+            commands: "M 9 0 L 255 0 L 241 2 L 227 17 L 0 17 L 0 9 Q 0 0 9 0 Z";
             fill: #fe8254;
         }
         Text {
@@ -314,11 +314,11 @@ slint::slint! {
             vertical-alignment: center;
         }
         Text {
-            x: 116px; y: 1px;
-            width: 34px; height: 17px;
-            text: "SST";
-            font-family: "SST Industrial";
-            font-size: 12px;
+            x: 124px; y: 1px;
+            width: 55px; height: 17px;
+            text: "/  SST";
+            font-family: "Oxanium";
+            font-size: 11px;
             color: #171c1b;
             horizontal-alignment: center;
             vertical-alignment: center;
@@ -481,9 +481,9 @@ slint::slint! {
         in property <string> arch-text;
         in property <string> memory-text;
         in property <string> cpu-text;
-        in property <length> host-width: root.width * 0.35;
-        in property <length> uptime-width: root.width * 0.17;
-        in property <length> arch-width: root.width * 0.17;
+        in property <length> host-width: root.width * 0.30;
+        in property <length> uptime-width: root.width * 0.22;
+        in property <length> arch-width: root.width * 0.18;
         in property <length> mem-width: root.width * 0.15;
         background: transparent;
         border-width: 1px;
@@ -838,14 +838,14 @@ slint::slint! {
         // Faithful, compact island: diagonal cream SST identity, three
         // window controls, and real metrics. No extra text or ornaments.
         island := Rectangle {
-            width: min(1120px, root.width - 16px);
+            width: max(464px, root.width - 16px);
             height: 34px;
             x: (root.width - self.width) / 2;
             y: 3px;
             border-radius: 10px;
             background: #191918;
             border-width: 1px;
-            border-color: #817568;
+            border-color: #514a40;
 
             WindowMoveArea {
                 width: parent.width;
@@ -856,7 +856,7 @@ slint::slint! {
                 Path {
                     x: 3px; y: 3px;
                     width: 108px; height: 28px;
-                    commands: "M 5 0 L 108 0 L 90 28 L 5 28 Q 0 28 0 23 L 0 5 Q 0 0 5 0 Z";
+                    commands: "M 8 0 L 108 0 L 108 25 L 94 25 L 90 28 L 8 28 Q 0 28 0 20 L 0 8 Q 0 0 8 0 Z";
                     fill: #e2dac2;
                 }
                 Text {
@@ -877,25 +877,51 @@ slint::slint! {
                     vertical-alignment: center;
                 }
 
+                // Independent title column, modeled on the supplied mockup.
+                // The metrics begin after it; neither can cover the other.
+                Rectangle {
+                    visible: island.width >= 1000px;
+                    x: 198px; y: 4px; width: 272px; height: 27px;
+                    background: transparent;
+                    Rectangle {
+                        x: 0px; y: 0px; width: 23px; height: 13px;
+                        background: #a99f90;
+                    }
+                    Text {
+                        x: 31px; y: 0px; width: 239px; height: 14px;
+                        text: "› ADVANCED SYSTEM CONSOLE";
+                        color: #e2dac2;
+                        font-family: "Oxanium"; font-size: 10px; font-weight: 800;
+                        overflow: elide;
+                    }
+                    Rectangle {
+                        x: 0px; y: 15px; width: 268px; height: 1px;
+                        background: #918575;
+                    }
+                    Text {
+                        x: 0px; y: 17px; width: 270px; height: 10px;
+                        text: root.header-version + "  |  " + root.header-arch + "  |  " + root.privilege-label;
+                        font-family: "Oxanium"; font-size: 8px;
+                        color: #e2dac2; overflow: elide;
+                    }
+                }
                 GreenTelemetryRail {
-                    visible: island.width >= 760px;
-                    x: 200px; y: 3px;
-                    width: island.width - 333px; height: 28px;
+                    visible: island.width >= 1000px;
+                    x: 478px; y: 3px;
+                    width: max(0px, island.width - 612px); height: 28px;
                     host-text: root.header-host;
                     uptime-text: root.header-uptime;
                     arch-text: root.header-arch;
                     memory-text: root.header-memory;
                     cpu-text: root.header-cpu;
                 }
-                // When the user narrows the window, keep the most actionable
-                // telemetry readable without overlapping the real title.
                 Text {
-                    visible: island.width >= 540px && island.width < 760px;
+                    visible: island.width >= 540px && island.width < 1000px;
                     x: 196px; y: 3px;
-                    width: max(0px, island.width - 320px);
+                    width: max(0px, island.width - 328px);
                     height: 28px;
-                    text: "MEM " + root.header-memory + "  CPU " + root.header-cpu;
-                    font-family: "Oxanium"; font-size: 11px; font-weight: 800;
+                    text: "HOST " + root.header-host + "  MEM " + root.header-memory + "  CPU " + root.header-cpu;
+                    font-family: "Oxanium"; font-size: 10px; font-weight: 800;
                     color: #e2dac2;
                     vertical-alignment: center;
                     overflow: elide;
