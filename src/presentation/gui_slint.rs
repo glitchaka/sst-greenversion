@@ -881,12 +881,12 @@ slint::slint! {
                 // Independent title column, modeled on the supplied mockup.
                 // The metrics begin after it; neither can cover the other.
                 Rectangle {
-                    visible: island.width >= 1110px;
+                    visible: island.width >= 1180px;
                     x: 198px; y: 4px; width: 272px; height: 27px;
                     background: transparent;
                     Path {
-                        x: 0px; y: 0px; width: 29px; height: 13px;
-                        commands: "M 5 0 L 11 0 L 6 13 L 0 13 Z M 14 0 L 20 0 L 15 13 L 9 13 Z M 23 0 L 29 0 L 24 13 L 18 13 Z";
+                        x: 0px; y: 0px; width: 34px; height: 13px;
+                        commands: "M 5 0 L 10 0 L 5 13 L 0 13 Z M 13 0 L 18 0 L 13 13 L 8 13 Z M 21 0 L 26 0 L 21 13 L 16 13 Z M 29 0 L 34 0 L 29 13 L 24 13 Z";
                         fill: #a99f90;
                     }
                     Text {
@@ -908,9 +908,9 @@ slint::slint! {
                     }
                 }
                 GreenTelemetryRail {
-                    visible: island.width >= 1110px;
+                    visible: island.width >= 1180px;
                     x: 478px; y: 3px;
-                    width: max(0px, island.width - 612px); height: 28px;
+                    width: max(0px, island.width - 665px); height: 28px;
                     host-text: root.header-host;
                     uptime-text: root.header-uptime;
                     arch-text: root.header-arch;
@@ -918,9 +918,9 @@ slint::slint! {
                     cpu-text: root.header-cpu;
                 }
                 Text {
-                    visible: island.width >= 540px && island.width < 1110px;
+                    visible: island.width >= 540px && island.width < 1180px;
                     x: 196px; y: 3px;
-                    width: max(0px, island.width - 328px);
+                    width: max(0px, island.width - (island.width >= 880px ? 380px : 328px));
                     height: 28px;
                     text: "HOST " + root.header-host + "  MEM " + root.header-memory + "  CPU " + root.header-cpu;
                     font-family: "Oxanium"; font-size: 10px; font-weight: 800;
@@ -932,8 +932,8 @@ slint::slint! {
                 // Privilege belongs to the approved header, with a real
                 // Windows token reading rather than a static mockup label.
                 Rectangle {
-                    x: island.width - 126px; y: 7px;
-                    width: 40px; height: 20px;
+                    x: island.width - (island.width >= 880px ? 176px : 126px); y: 7px;
+                    width: island.width >= 880px ? 90px : 40px; height: 20px;
                     background: #fe8254;
                     border-radius: 7px;
                     Rectangle {
@@ -946,8 +946,8 @@ slint::slint! {
                         border-width: 1px; border-color: #1b2623;
                     }
                     Text {
-                        x: 11px; y: 0px; width: 27px; height: parent.height;
-                        text: root.privilege-label == "USUARIO" ? "USR" : root.privilege-label == "ADMINISTRADOR" ? "ADM" : root.privilege-label == "ADMIN" ? "ADM" : "?";
+                        x: 11px; y: 0px; width: max(0px, parent.width - 13px); height: parent.height;
+                        text: island.width >= 880px ? root.privilege-label : root.privilege-label == "USUARIO" ? "USR" : root.privilege-label == "ADMINISTRADOR" ? "ADM" : root.privilege-label == "ADMIN" ? "ADM" : "?";
                         font-family: "Oxanium"; font-size: 9px;
                         font-weight: 800; color: #171717;
                         vertical-alignment: center;
