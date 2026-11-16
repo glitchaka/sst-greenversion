@@ -44,20 +44,38 @@ pub fn dashboard_report_snapshot() -> DashboardReportSummary {
 }
 
 pub fn record_triage_result(report: &str) {
-    let rows = report.lines().filter(|line| !line.trim().is_empty()).count();
+    let findings = report.lines().find_map(|line| {
+        line.trim().strip_prefix("Hallazgos que requieren revisión")
+            .and_then(|value| value.trim().parse::<usize>().ok())
+    });
     let mut state = dashboard_report().lock().unwrap_or_else(|poison| poison.into_inner());
-    state.triage_status = "INFORME DISPONIBLE".to_owned();
-    state.triage_detail = format!("{rows} líneas en el último informe");
+    match findings {
+        Some(0) => {
+            state.triage_status = "SIN HALLAZGOS".to_owned();
+            state.triage_detail = "No se detectaron hallazgos que requieran revisión.".to_owned();
+        }
+        Some(count) => {
+            state.triage_status = "REVISIÓN".to_owned();
+            state.triage_detail = format!("{count} hallazgos que requieren revisión.");
+        }
+        None => {
+            state.triage_status = "INFORME DISPONIBLE".to_owned();
+            state.triage_detail = "Consulta el resultado del análisis en la terminal.".to_owned();
+        }
+    }
 }
 
-pub fn record_package_inventory(count: usize, newest: Option<(&str, &str)>) {
+pub fn record_package_inventory(packages: &[(&str, &str)]) {
     let mut state = dashboard_report().lock().unwrap_or_else(|poison| poison.into_inner());
-    state.package_status = format!("{count} paquetes instalados");
-    state.package_detail = newest
-        .map(|(name, version)| format!("{name} · {version}"))
-        .unwrap_or_else(|| "Sin paquetes instalados".to_owned());
+    state.package_status = format!("{} INSTP", packages.len());
+    state.package_detail = if packages.is_empty() {
+        "Sin paquetes instalados".to_owned()
+    } else {
+        packages.iter().take(4).map(|(name, version)| {
+            format!("{name:<21} {version}")
+        }).collect::<Vec<_>>().join("\n")
+    };
 }
-
 
 fn tool_title_state() -> &'static Mutex<Option<String>> {
     ACTIVE_TOOL_TITLE.get_or_init(|| Mutex::new(None))
