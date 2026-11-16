@@ -9,6 +9,7 @@ use std::{
     ffi::c_void,
     mem::size_of,
     rc::Rc,
+    sync::OnceLock,
     time::{Duration, Instant},
 };
 
@@ -167,10 +168,7 @@ mod viewport_regression_tests {
     }
 }
 
-const FG: Rgb = Rgb(0xF3, 0xE6, 0xCA);
-const BG: Rgb = Rgb(0x1B, 0x20, 0x20);
-const CURSOR: Rgb = Rgb(0xFA, 0x78, 0x4F);
-const SELECTION: Rgb = Rgb(0x3F, 0x5A, 0x62);
+// Terminal palette is loaded from config/green-theme.toml (not hardcoded here).
 
 // Technical monospace face for all terminal cells. The original Nerd Font
 // remains embedded as a fallback for Powerline, Nerd icons and rare glyphs.
@@ -1344,6 +1342,80 @@ slint::slint! {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 struct Rgb(u8, u8, u8);
 
+
+#[derive(Clone, Copy)]
+struct TerminalPalette {
+    foreground: Rgb,
+    background: Rgb,
+    cursor: Rgb,
+    selection: Rgb,
+    critical: Rgb,
+    warning: Rgb,
+    good: Rgb,
+    optimal: Rgb,
+    information: Rgb,
+    muted: Rgb,
+    tool_background: Rgb,
+    ansi: [Rgb; 16],
+}
+
+impl TerminalPalette {
+    fn from_theme(theme: &toml::Value) -> Result<Self> {
+        let table = theme.get("terminal").and_then(toml::Value::as_table)
+            .context("green-theme.toml: falta [terminal]")?;
+        let color = |key: &str| -> Result<Rgb> {
+            let value = table.get(key).and_then(toml::Value::as_str)
+                .with_context(|| format!("green-theme.toml: falta terminal.{key}"))?;
+            parse_rgb(value)
+        };
+        let values = table.get("ansi").and_then(toml::Value::as_array)
+            .context("green-theme.toml: falta terminal.ansi")?;
+        if values.len() != 16 {
+            anyhow::bail!("green-theme.toml: terminal.ansi debe contener 16 colores");
+        }
+        let mut ansi = [Rgb(0, 0, 0); 16];
+        for (i, item) in values.iter().enumerate() {
+            let raw = item.as_str()
+                .with_context(|| format!("green-theme.toml: terminal.ansi[{i}] inválido"))?;
+            ansi[i] = parse_rgb(raw)?;
+        }
+        Ok(Self {
+            foreground: color("foreground")?,
+            background: color("background")?,
+            cursor: color("cursor")?,
+            selection: color("selection")?,
+            critical: color("critical")?,
+            warning: color("warning")?,
+            good: color("good")?,
+            optimal: color("optimal")?,
+            information: color("information")?,
+            muted: color("muted")?,
+            tool_background: color("tool-background")?,
+            ansi,
+        })
+    }
+}
+
+static TERMINAL_PALETTE: OnceLock<TerminalPalette> = OnceLock::new();
+
+fn terminal_palette() -> &'static TerminalPalette {
+    TERMINAL_PALETTE.get_or_init(|| {
+        let template = include_str!("../../assets/themes/green-theme.toml")
+            .parse::<toml::Value>()
+            .expect("plantilla green-theme.toml válida");
+        TerminalPalette::from_theme(&template).expect("paleta terminal por defecto válida")
+    })
+}
+
+fn set_terminal_palette(theme: &toml::Value) -> Result<()> {
+    let palette = TerminalPalette::from_theme(theme)?;
+    // Called before TerminalModel is constructed and terminal rendering begins.
+    TERMINAL_PALETTE.set(palette).map_err(|_| {
+        anyhow::anyhow!("La paleta de SST ya está inicializada")
+    })?;
+    Ok(())
+}
+
 type TerminalAppearance = AppearanceConfig;
 
 
@@ -2145,7 +2217,7 @@ impl TerminalModel {
             let (left_pad, top_pad, cell_width, cell_height) = self.geometry();
             let font_px = (self.appearance.font_size as f32 * self.scale).round().max(8.0);
             let font_key = font_px.round() as u16;
-            let default_fg = parse_rgb(&self.appearance.font_color).unwrap_or(FG);
+            let default_fg = parse_rgb(&self.appearance.font_color).unwrap_or(terminal_palette().foreground);
             let tool_mode = self.native_tool_view();
 
             for row in 0..rows {
@@ -2158,7 +2230,7 @@ impl TerminalModel {
                     }
 
                     let mut fg = terminal_color(cell.fgcolor(), default_fg);
-                    let mut bg = terminal_color(cell.bgcolor(), BG);
+                    let mut bg = terminal_color(cell.bgcolor(), terminal_palette().background);
                     let mut paint_background =
                         !matches!(cell.bgcolor(), vt100::Color::Default) || cell.inverse();
 
@@ -2177,14 +2249,14 @@ impl TerminalModel {
                     if selection
                         .is_some_and(|(a, b)| index >= a.min(b) && index < a.max(b))
                     {
-                        fg = FG;
-                        bg = SELECTION;
+                        fg = terminal_palette().foreground;
+                        bg = terminal_palette().selection;
                         paint_background = true;
                     }
 
                     if cursor_on && cursor == (row, col) {
-                        fg = BG;
-                        bg = CURSOR;
+                        fg = terminal_palette().background;
+                        bg = terminal_palette().cursor;
                         paint_background = true;
                     }
 
@@ -2254,23 +2326,24 @@ impl TerminalModel {
 // blue optimal, aqua informational, warm cream for text.
 fn industrial_terminal_color(color: Rgb) -> Rgb {
     let Rgb(r, g, b) = color;
+    let palette = terminal_palette();
     if r >= 195 && g < 125 && b < 125 {
-        return Rgb(0xEC, 0x46, 0x24);
+        return palette.critical;
     }
     if r >= 165 && g >= 110 && b < 125 {
-        return Rgb(0xF3, 0x91, 0x20);
+        return palette.warning;
     }
     if g >= 145 && g > r.saturating_add(35) && g > b.saturating_add(25) {
-        return Rgb(0xAD, 0xD7, 0x94);
+        return palette.good;
     }
     if b >= 175 && b > r.saturating_add(55) && b > g.saturating_add(25) {
-        return Rgb(0x79, 0xB8, 0xEA);
+        return palette.optimal;
     }
     if g >= 150 && b >= 150 && r < 165 {
-        return Rgb(0x4F, 0xBB, 0xBC);
+        return palette.information;
     }
     if b >= 165 && b > r.saturating_add(18) && b > g.saturating_add(7) {
-        return Rgb(0xE2, 0xDA, 0xC2);
+        return palette.muted;
     }
     color
 }
@@ -2278,36 +2351,19 @@ fn industrial_terminal_color(color: Rgb) -> Rgb {
 fn tool_background_color(color: Rgb) -> Rgb {
     let Rgb(r, g, b) = color;
     if r < 70 && b > r.saturating_add(7) && b > g.saturating_add(6) {
-        Rgb(0x23, 0x28, 0x25)
+        terminal_palette().tool_background
     } else {
         color
     }
 }
 
 fn terminal_color(value: vt100::Color, default: Rgb) -> Rgb {
-    const COLORS: [Rgb; 16] = [
-        Rgb(0x28, 0x28, 0x28),
-        Rgb(0xCC, 0x24, 0x1D),
-        Rgb(0x98, 0x97, 0x1A),
-        Rgb(0xD7, 0x99, 0x21),
-        Rgb(0x45, 0x85, 0x88),
-        Rgb(0xB1, 0x62, 0x86),
-        Rgb(0x68, 0x9D, 0x6A),
-        Rgb(0xA8, 0x99, 0x84),
-        Rgb(0x92, 0x83, 0x74),
-        Rgb(0xFB, 0x49, 0x34),
-        Rgb(0xB8, 0xBB, 0x26),
-        Rgb(0xFA, 0xBD, 0x2F),
-        Rgb(0x83, 0xA5, 0x98),
-        Rgb(0xD3, 0x86, 0x9B),
-        Rgb(0x8E, 0xC0, 0x7C),
-        Rgb(0xEB, 0xDB, 0xB2),
-    ];
+    let colors = &terminal_palette().ansi;
 
     match value {
         vt100::Color::Default => default,
         vt100::Color::Rgb(r, g, b) => Rgb(r, g, b),
-        vt100::Color::Idx(i) if i < 16 => COLORS[i as usize],
+        vt100::Color::Idx(i) if i < 16 => colors[i as usize],
         vt100::Color::Idx(i) if i >= 232 => {
             let v = 8 + (i - 232) * 10;
             Rgb(v, v, v)
@@ -2877,6 +2933,7 @@ pub fn run() -> Result<()> {
     paths.ensure_layout()?;
     let mut appearance = paths.load_appearance()?;
     let green_theme = read_green_theme(&paths)?;
+    set_terminal_palette(&green_theme)?;
     apply_green_background(&mut appearance, &green_theme)?;
     let initial_carousel = BackgroundCarousel::new(&paths, &appearance)?;
     let background_image = if appearance.background_mode == "carrousel" {
