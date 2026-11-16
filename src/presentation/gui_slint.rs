@@ -315,7 +315,7 @@ slint::slint! {
             x: 20px; y: 4px;
             width: 110px; height: 23px;
             text: "CONSOLE";
-            font-family: "Oxanium";
+            font-family: GreenPalette.interface-font;
             font-size: 14px;
             font-weight: 800;
             color: GreenPalette.near-black;
@@ -325,7 +325,7 @@ slint::slint! {
             x: 128px; y: 4px;
             width: 70px; height: 23px;
             text: "/  SST";
-            font-family: "Oxanium";
+            font-family: GreenPalette.interface-font;
             font-size: 13px;
             color: GreenPalette.near-black;
             horizontal-alignment: center;
@@ -366,14 +366,14 @@ slint::slint! {
                 x: 14px; y: 7px;
                 width: parent.width - 28px; height: 19px;
                 text: "MEMORIA / REAL";
-                font-family: "Oxanium"; font-size: 12px;
+                font-family: GreenPalette.interface-font; font-size: 12px;
                 font-weight: 800; color: GreenPalette.cream;
             }
             Text {
                 x: 14px; y: 26px;
                 width: parent.width - 28px; height: 48px;
                 text: root.memory-percent;
-                font-family: "Oxanium"; font-size: 40px;
+                font-family: GreenPalette.interface-font; font-size: 40px;
                 font-weight: 800;
                 color: root.memory-ratio >= 0.90 ? GreenPalette.critical-red
                     : root.memory-ratio >= 0.75 ? GreenPalette.warning-orange : GreenPalette.info-cyan;
@@ -407,7 +407,7 @@ slint::slint! {
                 width: parent.width; height: 22px;
                 text: "HOST    " + root.host-name;
                 color: GreenPalette.cream;
-                font-family: "Oxanium"; font-size: 17px;
+                font-family: GreenPalette.interface-font; font-size: 17px;
                 font-weight: 800; overflow: elide;
             }
             Text {
@@ -415,7 +415,7 @@ slint::slint! {
                 width: parent.width; height: 22px;
                 text: root.os-name;
                 color: GreenPalette.muted-mint;
-                font-family: "Oxanium"; font-size: 15px;
+                font-family: GreenPalette.interface-font; font-size: 15px;
                 overflow: elide;
             }
             Rectangle {
@@ -428,7 +428,7 @@ slint::slint! {
                 width: parent.width * 0.48; height: 31px;
                 text: "CPU LÓGICOS   " + root.cpu-count;
                 color: GreenPalette.warning-orange;
-                font-family: "Oxanium"; font-size: 15px;
+                font-family: GreenPalette.interface-font; font-size: 15px;
                 font-weight: 800; overflow: elide;
             }
             Text {
@@ -436,7 +436,7 @@ slint::slint! {
                 width: parent.width * 0.49; height: 31px;
                 text: "DISCOS   " + root.disk-count;
                 color: GreenPalette.info-cyan;
-                font-family: "Oxanium"; font-size: 15px;
+                font-family: GreenPalette.interface-font; font-size: 15px;
                 font-weight: 800; overflow: elide;
             }
             Text {
@@ -444,7 +444,7 @@ slint::slint! {
                 width: parent.width; height: 24px;
                 text: "RAM    " + root.memory-used + " / " + root.memory-total + " MiB";
                 color: GreenPalette.cream;
-                font-family: "Oxanium"; font-size: 14px;
+                font-family: GreenPalette.interface-font; font-size: 14px;
                 font-weight: 700; overflow: elide;
             }
         }
@@ -465,14 +465,14 @@ slint::slint! {
             x: 7px; y: 6px;
             width: max(0px, parent.width - 14px); height: 15px;
             text: root.label-text;
-            font-family: "Oxanium"; font-size: 9px; font-weight: 800;
+            font-family: GreenPalette.interface-font; font-size: 9px; font-weight: 800;
             color: GreenPalette.cream; overflow: elide;
         }
         Text {
             x: 7px; y: 22px;
             width: max(0px, parent.width - 14px); height: 20px;
             text: root.value-text;
-            font-family: "Oxanium";
+            font-family: GreenPalette.interface-font;
             font-size: root.label-text == "HOST" ? 13px : 14px;
             font-weight: 800;
             color: GreenPalette.ivory;
@@ -565,7 +565,7 @@ slint::slint! {
             Text {
                 x: 12px; y: 2px; width: parent.width - 145px; height: 27px;
                 text: "SYSTEM STATUS";
-                font-family: "SST Industrial"; font-size: 18px;
+                font-family: GreenPalette.heading-font; font-size: 18px;
                 color: GreenPalette.charcoal; overflow: elide;
                 vertical-alignment: center;
             }
@@ -581,7 +581,7 @@ slint::slint! {
                         ? "HEALTH: —" : root.memory-ratio >= 0.90 || root.cpu-ratio >= 0.95
                         ? "HEALTH: CRIT" : root.memory-ratio >= 0.75 || root.cpu-ratio >= 0.80
                         ? "HEALTH: WARN" : "HEALTH: OK";
-                    font-family: "Oxanium"; font-size: 10px; font-weight: 800;
+                    font-family: GreenPalette.interface-font; font-size: 10px; font-weight: 800;
                     color: GreenPalette.text-dark; horizontal-alignment: center;
                     vertical-alignment: center;
                 }
@@ -605,24 +605,24 @@ slint::slint! {
             Text {
                 x: 24px; y: 61px; width: 65px; height: 47px;
                 text: root.memory-value;
-                font-family: "Oxanium"; font-size: 23px; font-weight: 800;
+                font-family: GreenPalette.interface-font; font-size: 23px; font-weight: 800;
                 color: GreenPalette.cream; horizontal-alignment: center;
                 vertical-alignment: center; overflow: elide;
             }
             Text {
                 x: 34px; y: 110px; width: 46px; height: 14px;
                 text: "MEM"; color: GreenPalette.cream;
-                font-family: "Oxanium"; font-size: 11px;
+                font-family: GreenPalette.interface-font; font-size: 11px;
                 horizontal-alignment: center;
             }
             Text {
                 x: 116px; y: 48px; width: 48px; height: 20px;
-                text: "CPU"; font-family: "Oxanium"; font-size: 14px;
+                text: "CPU"; font-family: GreenPalette.interface-font; font-size: 14px;
                 font-weight: 800; color: GreenPalette.cream;
             }
             Text {
                 x: parent.width - 95px; y: 48px; width: 72px; height: 20px;
-                text: root.cpu-value; font-family: "Oxanium"; font-size: 14px;
+                text: root.cpu-value; font-family: GreenPalette.interface-font; font-size: 14px;
                 color: GreenPalette.cream; horizontal-alignment: right;
             }
             Rectangle {
@@ -636,12 +636,12 @@ slint::slint! {
             }
             Text {
                 x: 116px; y: 86px; width: 48px; height: 18px;
-                text: "MEM"; font-family: "Oxanium"; font-size: 14px;
+                text: "MEM"; font-family: GreenPalette.interface-font; font-size: 14px;
                 font-weight: 800; color: GreenPalette.cream;
             }
             Text {
                 x: parent.width - 95px; y: 86px; width: 72px; height: 18px;
-                text: root.memory-value; font-family: "Oxanium"; font-size: 14px;
+                text: root.memory-value; font-family: GreenPalette.interface-font; font-size: 14px;
                 color: GreenPalette.cream; horizontal-alignment: right;
             }
             Rectangle {
@@ -657,14 +657,14 @@ slint::slint! {
                 x: 116px; y: 124px; width: max(0px, parent.width - 130px);
                 height: 16px;
                 text: root.host-value + "   ·   " + root.uptime-value;
-                font-family: "Oxanium"; font-size: 11px;
+                font-family: GreenPalette.interface-font; font-size: 11px;
                 color: GreenPalette.muted-text; overflow: elide;
             }
             Text {
                 visible: parent.height >= 160px;
                 x: 116px; y: 143px; width: max(0px, parent.width - 130px);
                 height: 17px; text: "PROCESOS    " + root.process-count;
-                font-family: "Oxanium"; font-size: 11px;
+                font-family: GreenPalette.interface-font; font-size: 11px;
                 color: GreenPalette.cream; overflow: elide;
             }
         }
@@ -681,13 +681,13 @@ slint::slint! {
             }
             Text {
                 x: 12px; y: 2px; width: parent.width - 104px; height: 27px;
-                text: "NET MONITOR"; font-family: "SST Industrial";
+                text: "NET MONITOR"; font-family: GreenPalette.heading-font;
                 font-size: 18px; color: GreenPalette.charcoal; overflow: elide;
                 vertical-alignment: center;
             }
             Text {
                 x: parent.width - 92px; y: 4px; width: 79px; height: 22px;
-                text: root.network-interfaces == "—" ? "○ OFF" : "● LIVE"; font-family: "Oxanium"; font-size: 12px;
+                text: root.network-interfaces == "—" ? "○ OFF" : "● LIVE"; font-family: GreenPalette.interface-font; font-size: 12px;
                 color: GreenPalette.live-green; font-weight: 800;
                 horizontal-alignment: right; vertical-alignment: center;
             }
@@ -698,36 +698,36 @@ slint::slint! {
             }
             Text {
                 x: 18px; y: 45px; width: 120px; height: 16px;
-                text: "INTERFACES"; font-family: "Oxanium"; font-size: 11px;
+                text: "INTERFACES"; font-family: GreenPalette.interface-font; font-size: 11px;
                 font-weight: 800; color: GreenPalette.label-grey;
             }
             Text {
                 x: parent.width - 102px; y: 45px; width: 85px; height: 16px;
                 text: root.network-interfaces;
-                font-family: "Oxanium"; font-size: 12px;
+                font-family: GreenPalette.interface-font; font-size: 12px;
                 color: GreenPalette.cream; horizontal-alignment: right;
             }
             Rectangle { x: 18px; y: 66px; width: parent.width - 36px; height: 1px; background: GreenPalette.subtle-rule; }
             Text {
                 x: 18px; y: 73px; width: 120px; height: 18px;
-                text: "RX / RECIBIDO"; font-family: "Oxanium";
+                text: "RX / RECIBIDO"; font-family: GreenPalette.interface-font;
                 font-size: 11px; color: GreenPalette.label-grey;
             }
             Text {
                 x: parent.width - 180px; y: 73px; width: 162px; height: 18px;
-                text: root.network-received; font-family: "Oxanium";
+                text: root.network-received; font-family: GreenPalette.interface-font;
                 font-size: 12px; color: GreenPalette.healthy-accent;
                 horizontal-alignment: right;
             }
             Rectangle { x: 18px; y: 96px; width: parent.width - 36px; height: 1px; background: GreenPalette.subtle-rule; }
             Text {
                 x: 18px; y: 101px; width: 120px; height: 18px;
-                text: "TX / ENVIADO"; font-family: "Oxanium";
+                text: "TX / ENVIADO"; font-family: GreenPalette.interface-font;
                 font-size: 11px; color: GreenPalette.label-grey;
             }
             Text {
                 x: parent.width - 180px; y: 101px; width: 162px; height: 18px;
-                text: root.network-transmitted; font-family: "Oxanium";
+                text: root.network-transmitted; font-family: GreenPalette.interface-font;
                 font-size: 12px; color: GreenPalette.healthy-accent;
                 horizontal-alignment: right;
             }
@@ -744,13 +744,13 @@ slint::slint! {
             }
             Text {
                 x: 12px; y: 2px; width: parent.width - 150px; height: 27px;
-                text: "TRIAGE"; font-family: "SST Industrial";
+                text: "TRIAGE"; font-family: GreenPalette.heading-font;
                 font-size: 18px; color: GreenPalette.charcoal;
                 vertical-alignment: center;
             }
             Text {
                 x: parent.width - 155px; y: 4px; width: 140px; height: 22px;
-                text: root.triage-status; font-family: "Oxanium";
+                text: root.triage-status; font-family: GreenPalette.interface-font;
                 font-size: 11px; font-weight: 800; color: GreenPalette.ink;
                 horizontal-alignment: right; vertical-alignment: center;
             }
@@ -763,7 +763,7 @@ slint::slint! {
                 x: 18px; y: 44px; width: parent.width - 36px;
                 height: max(22px, parent.height - 53px);
                 text: root.triage-detail;
-                font-family: "Oxanium"; font-size: 13px; color: GreenPalette.cream;
+                font-family: GreenPalette.interface-font; font-size: 13px; color: GreenPalette.cream;
                 vertical-alignment: center; horizontal-alignment: center;
                 overflow: elide;
             }
@@ -780,14 +780,14 @@ slint::slint! {
             }
             Text {
                 x: 12px; y: 2px; width: parent.width - 130px; height: 27px;
-                text: "PACKAGES"; font-family: "SST Industrial";
+                text: "PACKAGES"; font-family: GreenPalette.heading-font;
                 font-size: 18px; color: GreenPalette.charcoal;
                 vertical-alignment: center;
             }
             Text {
                 x: parent.width - 133px; y: 4px; width: 120px; height: 22px;
                 text: root.package-status == "Inventario sin consultar" ? "INSTP" : root.package-status;
-                font-family: "Oxanium";
+                font-family: GreenPalette.interface-font;
                 font-size: 11px; font-weight: 800; color: GreenPalette.charcoal;
                 horizontal-alignment: right; vertical-alignment: center;
             }
@@ -800,7 +800,7 @@ slint::slint! {
                 x: 18px; y: 42px; width: parent.width - 36px;
                 height: max(20px, parent.height - 47px);
                 text: root.package-detail;
-                font-family: "Oxanium"; font-size: 12px;
+                font-family: GreenPalette.interface-font; font-size: 12px;
                 color: GreenPalette.muted-text; overflow: elide;
             }
         }
@@ -1183,7 +1183,7 @@ slint::slint! {
                     width: island.width >= 1260px ? 188px : 95px;
                     height: 55px; text: "SST";
                     color: GreenPalette.black-ink;
-                    font-family: "SST Industrial";
+                    font-family: GreenPalette.heading-font;
                     font-size: island.width >= 1260px ? 49px : 27px;
                     horizontal-alignment: center; vertical-alignment: center;
                     overflow: elide;
@@ -1196,7 +1196,7 @@ slint::slint! {
                     height: 52px;
                     text: "SHELL\nSHOCK\nTOOL";
                     color: GreenPalette.cream;
-                    font-family: "Oxanium";
+                    font-family: GreenPalette.interface-font;
                     font-size: island.width >= 1260px ? 14px : 10px;
                     font-weight: 800;
                     vertical-alignment: center;
@@ -1218,7 +1218,7 @@ slint::slint! {
                     Text {
                         x: 69px; y: 2px; width: 210px; height: 23px;
                         text: "› ADVANCED SYSTEM CONSOLE";
-                        color: GreenPalette.cream; font-family: "Oxanium";
+                        color: GreenPalette.cream; font-family: GreenPalette.interface-font;
                         font-size: 12px; font-weight: 800;
                         vertical-alignment: center; overflow: elide;
                     }
@@ -1229,7 +1229,7 @@ slint::slint! {
                     Text {
                         x: 0px; y: 31px; width: 280px; height: 13px;
                         text: "VERSION " + root.header-version + "   |   " + root.header-arch + "   |   " + root.privilege-label;
-                        font-family: "Oxanium"; font-size: 9px;
+                        font-family: GreenPalette.interface-font; font-size: 9px;
                         color: GreenPalette.secondary-text; overflow: elide;
                     }
                 }
@@ -1251,7 +1251,7 @@ slint::slint! {
                         (island.width >= 880px ? 412px : 340px));
                     height: 33px;
                     text: "HOST " + root.header-host + "   MEM " + root.header-memory + "   CPU " + root.header-cpu;
-                    font-family: "Oxanium"; font-size: 11px; font-weight: 800;
+                    font-family: GreenPalette.interface-font; font-size: 11px; font-weight: 800;
                     color: GreenPalette.cream; vertical-alignment: center;
                     overflow: elide;
                 }
@@ -1273,7 +1273,7 @@ slint::slint! {
                             : root.privilege-label == "USUARIO" ? "USR"
                             : root.privilege-label == "ADMINISTRADOR" ? "ADM"
                             : root.privilege-label == "ADMIN" ? "ADM" : "?";
-                        font-family: "Oxanium"; font-size: 11px;
+                        font-family: GreenPalette.interface-font; font-size: 11px;
                         font-weight: 800; color: GreenPalette.black-ink;
                         horizontal-alignment: center;
                         vertical-alignment: center; overflow: elide;
