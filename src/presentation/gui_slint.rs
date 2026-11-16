@@ -461,15 +461,15 @@ slint::slint! {
         background: transparent;
         border-width: 0px;
         Text {
-            x: 7px; y: 6px;
-            width: max(0px, parent.width - 14px); height: 15px;
+            x: 7px; y: 2px;
+            width: max(0px, parent.width - 14px); height: 12px;
             text: root.label-text;
             font-family: GreenPalette.interface-font; font-size: 9px; font-weight: 800;
             color: GreenPalette.cream; overflow: elide;
         }
         Text {
-            x: 7px; y: 22px;
-            width: max(0px, parent.width - 14px); height: 20px;
+            x: 7px; y: 14px;
+            width: max(0px, parent.width - 14px); height: 17px;
             text: root.value-text;
             font-family: GreenPalette.interface-font;
             font-size: root.label-text == "HOST" ? 13px : 14px;
@@ -913,7 +913,7 @@ slint::slint! {
                     x: 249px; y: 5px; width: 229px; height: 30px;
                     background: transparent;
                     Path {
-                        x: 0px; y: 1px; width: 37px; height: 16px;
+                        x: 0px; y: 1px; width: 43px; height: 16px;
                         commands: "M 7 0 L 13 0 L 7 16 L 1 16 Z M 17 0 L 23 0 L 17 16 L 11 16 Z M 27 0 L 33 0 L 27 16 L 21 16 Z M 37 0 L 43 0 L 37 16 L 31 16 Z";
                         fill: GreenPalette.slant-blades;
                     }
