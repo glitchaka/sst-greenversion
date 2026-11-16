@@ -298,10 +298,16 @@ slint::slint! {
             height: 29px;
             background: #292a27;
         }
+        // Curved, stepped fascia with the thin upper rail from the reference.
+        Rectangle {
+            x: 254px; y: 1px;
+            width: max(0px, parent.width - 263px);
+            height: 2px; background: #fe8254;
+        }
         Path {
             x: 1px; y: 1px;
-            width: 255px; height: 30px;
-            commands: "M 10 0 L 255 0 Q 243 0 238 7 L 226 24 Q 221 30 210 30 L 0 30 L 0 10 Q 0 0 10 0 Z";
+            width: 275px; height: 30px;
+            commands: "M 10 0 L 275 0 Q 263 0 253 8 L 237 25 Q 232 30 216 30 L 0 30 L 0 10 Q 0 0 10 0 Z";
             fill: #fe8254;
         }
         Text {
@@ -546,7 +552,7 @@ slint::slint! {
 
         system-card := Rectangle {
             x: 0px; y: 0px; width: parent.width;
-            height: max(125px, parent.height * 0.29 - 5px);
+            height: 164px;
             border-radius: 11px;
             border-width: 1px; border-color: #e2dac2;
             background: #1b1b1a;
@@ -662,8 +668,8 @@ slint::slint! {
             }
         }
         network-card := Rectangle {
-            x: 0px; y: parent.height * 0.29; width: parent.width;
-            height: max(120px, parent.height * 0.23 - 5px);
+            x: 0px; y: system-card.y + system-card.height + 7px; width: parent.width;
+            height: 125px;
             border-radius: 11px;
             border-width: 1px; border-color: #e2dac2;
             background: #1b1b1a;
@@ -726,8 +732,8 @@ slint::slint! {
             }
         }
         triage-card := Rectangle {
-            x: 0px; y: parent.height * 0.52; width: parent.width;
-            height: max(105px, parent.height * 0.20 - 5px);
+            x: 0px; y: network-card.y + network-card.height + 7px; width: parent.width;
+            height: root.triage-status == "SIN ANÁLISIS" ? 94px : 112px;
             border-radius: 11px; border-width: 1px;
             border-color: #e2dac2; background: #1b1b1a;
             clip: true;
@@ -762,8 +768,8 @@ slint::slint! {
             }
         }
         packages-card := Rectangle {
-            x: 0px; y: parent.height * 0.72; width: parent.width;
-            height: max(95px, parent.height * 0.28);
+            x: 0px; y: triage-card.y + triage-card.height + 7px; width: parent.width;
+            height: root.package-status == "Inventario sin consultar" ? 92px : 108px;
             border-radius: 11px; border-width: 1px;
             border-color: #e2dac2; background: #1b1b1a;
             clip: true;
@@ -808,7 +814,7 @@ slint::slint! {
     export component SstGreenWindow inherits Window {
         title: "Shell Shock Tool";
         preferred-width: 1340px;
-        preferred-height: 760px;
+        preferred-height: 630px;
         min-width: 480px;
         min-height: 300px;
         no-frame: true;
