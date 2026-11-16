@@ -179,8 +179,8 @@ const NERD_FONT_BYTES: &[u8] = include_bytes!(concat!(
     "/JetBrainsMonoNerdFontMono-Regular.ttf"
 ));
 
+#[allow(deprecated)]
 slint::slint! {
-    #[edition = "1.19"]
     import { GreenPalette } from "../../assets/themes/green-palette.slint";
     export { GreenPalette };
     // Display face for the angular, extended industrial typography of the mockup.
