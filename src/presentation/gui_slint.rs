@@ -214,7 +214,7 @@ slint::slint! {
     component TerminalSectionFrame inherits Rectangle {
         background: GreenPalette.section-bg;
         border-width: 1px;
-        border-color: GreenPalette.legacy-230-214-190;
+        border-color: GreenPalette.cream-border;
         border-radius: 12px;
 
         Rectangle {
@@ -361,7 +361,7 @@ slint::slint! {
             border-width: 1px;
             border-color: GreenPalette.secondary-outline;
             border-radius: 10px;
-            background: GreenPalette.legacy-27-31-30;
+            background: GreenPalette.wallpaper-base;
             Text {
                 x: 14px; y: 7px;
                 width: parent.width - 28px; height: 19px;
@@ -594,7 +594,7 @@ slint::slint! {
             Rectangle {
                 x: 18px; y: 49px; width: 78px; height: 78px;
                 border-radius: 40px; border-width: 9px;
-                border-color: GreenPalette.legacy-100-100-94; background: transparent;
+                border-color: GreenPalette.hover-grey; background: transparent;
             }
             Path {
                 x: 18px; y: 49px; width: 78px; height: 78px;
@@ -627,7 +627,7 @@ slint::slint! {
             }
             Rectangle {
                 x: 116px; y: 70px; width: max(0px, parent.width - 139px);
-                height: 9px; background: GreenPalette.legacy-81-81-78; border-radius: 4px;
+                height: 9px; background: GreenPalette.pressed-grey; border-radius: 4px;
                 Rectangle {
                     width: parent.width * root.cpu-ratio;
                     height: parent.height; background: GreenPalette.healthy-accent;
@@ -646,7 +646,7 @@ slint::slint! {
             }
             Rectangle {
                 x: 116px; y: 107px; width: max(0px, parent.width - 139px);
-                height: 9px; background: GreenPalette.legacy-81-81-78; border-radius: 4px;
+                height: 9px; background: GreenPalette.pressed-grey; border-radius: 4px;
                 Rectangle {
                     width: parent.width * root.memory-ratio;
                     height: parent.height; background: GreenPalette.warning-yellow;
@@ -699,7 +699,7 @@ slint::slint! {
             Text {
                 x: 18px; y: 45px; width: 120px; height: 16px;
                 text: "INTERFACES"; font-family: "Oxanium"; font-size: 11px;
-                font-weight: 800; color: GreenPalette.legacy-182-173-158;
+                font-weight: 800; color: GreenPalette.label-grey;
             }
             Text {
                 x: parent.width - 102px; y: 45px; width: 85px; height: 16px;
@@ -711,7 +711,7 @@ slint::slint! {
             Text {
                 x: 18px; y: 73px; width: 120px; height: 18px;
                 text: "RX / RECIBIDO"; font-family: "Oxanium";
-                font-size: 11px; color: GreenPalette.legacy-182-173-158;
+                font-size: 11px; color: GreenPalette.label-grey;
             }
             Text {
                 x: parent.width - 180px; y: 73px; width: 162px; height: 18px;
@@ -723,7 +723,7 @@ slint::slint! {
             Text {
                 x: 18px; y: 101px; width: 120px; height: 18px;
                 text: "TX / ENVIADO"; font-family: "Oxanium";
-                font-size: 11px; color: GreenPalette.legacy-182-173-158;
+                font-size: 11px; color: GreenPalette.label-grey;
             }
             Text {
                 x: parent.width - 180px; y: 101px; width: 162px; height: 18px;
