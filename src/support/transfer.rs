@@ -106,8 +106,9 @@ fn draw(label: &str, current: u64, expected: Option<u64>, rate: f64, columns: us
         let filled = snapshot.expected.map(|_| {
             (f64::from(snapshot.fraction()) * progress_width as f64).round() as usize
         }).unwrap_or(0).min(progress_width);
-        let bar = format!("{}{}", "█".repeat(filled), "░".repeat(progress_width - filled));
-        return format!("{prefix}\x1b[96m{bar}\x1b[0m  {detail}");
+        let bar = format!("\x1b[38;2;245;185;79m{}\x1b[38;2;93;91;87m{}\x1b[0m",
+            "▮".repeat(filled), "▯".repeat(progress_width - filled));
+        return format!("{prefix}{bar}  {detail}");
     }
     // A narrow PTY must still show live progress without wrapping.
     let compact = format!("{} {}", snapshot.percentage(), snapshot.speed());
@@ -159,9 +160,11 @@ pub fn run(
     if embedded || cli_terminal {
         let current = fs::metadata(destination).map(|m| m.len()).unwrap_or(0);
         let rate = current as f64 / started.elapsed().as_secs_f64().max(0.001);
-        let line = draw(label, current, expected, rate, cols);
-        let suffix = if output.status.success() { "\x1b[92m✓\x1b[0m" } else { "\x1b[91m✕\x1b[0m" };
-        let _ = io::write_raw(format!("\r\x1b[2K{line} {suffix}\r\n\x1b[?25h").as_bytes());
+        let line = draw(label, current, expected, rate,
+            if embedded { io::size().map(|(c, _)| c as usize).unwrap_or(cols) } else { cols });
+        // The completed row is exactly the PTY width. Appending even one
+        // extra status glyph here can wrap the line and displace output.
+        let _ = io::write_raw(format!("\r\x1b[2K{line}\r\n\x1b[?25h").as_bytes());
     }
     Ok(output)
 }
