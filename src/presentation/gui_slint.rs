@@ -24,7 +24,7 @@ use slint::{
     BackendSelector, ComponentHandle, Image, Rgba8Pixel, SharedPixelBuffer, SharedString, Timer,
     TimerMode,
 };
-use sysinfo::System;
+use sysinfo::{Networks, System};
 use windows_sys::Win32::{
     Foundation::HWND,
     Graphics::Dwm::*,
@@ -2631,6 +2631,7 @@ pub fn run() -> Result<()> {
     let appearance_state = Rc::new(RefCell::new(appearance.clone()));
     let model = Rc::new(RefCell::new(TerminalModel::new(appearance.clone())?));
     let metrics = Rc::new(RefCell::new(System::new()));
+    let networks = Rc::new(RefCell::new(Networks::new_with_refreshed_list()));
     let ui = SstGreenWindow::new()?;
 
     // The sudo command starts a NEW Windows process for each privilege
@@ -2742,6 +2743,7 @@ pub fn run() -> Result<()> {
     {
         let model = model.clone();
         let metrics = metrics.clone();
+        let networks = networks.clone();
         let last_status = last_status.clone();
         let last_focus = last_focus.clone();
         let last_minimized = last_minimized.clone();
@@ -3051,10 +3053,22 @@ pub fn run() -> Result<()> {
                     format!("{:.0}%", system.used_memory() as f64 * 100.0 / total_memory as f64)
                 };
                 let uptime = System::uptime();
+                ui.set_dashboard_cpu_ratio(cpu.map(|value| value / 100.0).unwrap_or(0.0));
+                ui.set_dashboard_memory_ratio(if total_memory > 0 {
+                    (system.used_memory() as f64 / total_memory as f64) as f32
+                } else { 0.0 });
                 ui.set_header_cpu(cpu.map(|value| format!("{value:.0}%"))
                     .unwrap_or_else(|| "—".to_owned()).into());
                 ui.set_header_memory(memory_percent.into());
                 ui.set_header_uptime(format!("{}d {:02}h", uptime / 86_400, (uptime / 3_600) % 24).into());
+                let mut network_state = networks.borrow_mut();
+                network_state.refresh(true);
+                let (rx, tx) = network_state.iter().fold((0u64, 0u64), |(rx, tx), (_, nic)| {
+                    (rx.saturating_add(nic.received()), tx.saturating_add(nic.transmitted()))
+                });
+                ui.set_dashboard_network_interfaces(network_state.iter().count().to_string().into());
+                ui.set_dashboard_network_received(format!("{:.1} KiB/s", rx as f64 / 2048.0).into());
+                ui.set_dashboard_network_transmitted(format!("{:.1} KiB/s", tx as f64 / 2048.0).into());
                 ui.set_clock_text(now.format("%H:%M").to_string().into());
                 ui.set_date_text(now.format("%d %b").to_string().into());
                 *last_status.borrow_mut() = Instant::now();
