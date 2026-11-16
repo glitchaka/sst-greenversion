@@ -186,73 +186,49 @@ slint::slint! {
     // Display face for the angular, extended industrial typography of the mockup.
     // Embedded in the executable; no host font installation is required.
     import "../../assets/fonts/Oxanium-ExtraBold.ttf";
-    import "../../assets/fonts/SSTIndustrial-Regular.ttf";
     // Rendered vector outlines, never made of VT100/ASCII characters.
     // Transparent interiors preserve the user's terminal artwork and logo.
     // Text-report section headings are individual native vector outlines,
     // derived from semantic RGB markers in the VT100 viewport. No fake lines.
+    // Section headings live in the PTY rows. The cream shapes are
+    // background geometry only: their glyphs come from the terminal font.
     component ReportHeadingBand inherits Rectangle {
-        // Restrained semantic outline: no cyan wash, no opaque overlay.
         background: transparent;
-        border-width: 1px;
-        border-color: GreenPalette.heading-outline;
-        border-radius: 6px;
-
+        border-width: 0px;
+        clip: true;
         Rectangle {
-            x: 1px;
-            y: 3px;
-            width: 3px;
-            height: max(4px, parent.height - 6px);
-            border-radius: 2px;
+            x: 0px; y: 1px;
+            width: parent.width;
+            height: max(0px, parent.height - 2px);
+            border-radius: 7px;
+            background: GreenPalette.cream;
+        }
+        Rectangle {
+            x: 0px; y: 0px;
+            width: parent.width;
+            height: 1px;
             background: GreenPalette.salmon;
         }
     }
 
-    // Full-window industrial views: real Slint geometry behind the VT100
-    // text surface. These are not terminal text borders or side widgets.
+    // Tool-scoped panels use the same cream header and dark body as the mockup.
+    // No letters are drawn with paths: the PTY supplies the actual text.
     component TerminalSectionFrame inherits Rectangle {
-        background: GreenPalette.section-bg;
+        background: GreenPalette.card-bg;
         border-width: 1px;
-        border-color: GreenPalette.cream-border;
-        border-radius: 12px;
-
+        border-color: GreenPalette.cream;
+        border-radius: 9px;
+        clip: true;
         Rectangle {
-            x: 1px;
-            y: 1px;
-            width: parent.width - 2px;
-            height: min(37px, parent.height - 2px);
-            background: GreenPalette.section-title-bg;
-            border-radius: 11px;
+            x: 0px; y: 0px;
+            width: parent.width;
+            height: min(24px, parent.height);
+            border-radius: 7px;
+            background: GreenPalette.cream;
         }
         Rectangle {
-            x: 1px;
-            y: 9px;
-            width: 5px;
-            height: min(25px, parent.height - 18px);
-            border-radius: 2px;
-            background: GreenPalette.coral;
-        }
-        Rectangle {
-            x: 19px;
-            y: 0px;
-            width: min(74px, parent.width - 39px);
-            height: 3px;
-            border-radius: 2px;
-            background: GreenPalette.topline-amber;
-        }
-        Rectangle {
-            x: parent.width - 42px;
-            y: 12px;
-            width: 16px;
-            height: 2px;
-            background: GreenPalette.decorative-rule;
-        }
-        Rectangle {
-            x: parent.width - 22px;
-            y: 12px;
-            width: 9px;
-            height: 2px;
-            background: GreenPalette.decorative-rule;
+            x: 0px; y: 0px; width: parent.width; height: 1px;
+            background: GreenPalette.salmon;
         }
     }
 
