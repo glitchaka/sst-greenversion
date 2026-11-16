@@ -181,7 +181,7 @@ const NERD_FONT_BYTES: &[u8] = include_bytes!(concat!(
 
 slint::slint! {
     #[edition = "1.19"]
-    import { GreenPalette } from "../../assets/themes/green-palette.slint";
+    export { GreenPalette } from "../../assets/themes/green-palette.slint";
     // Display face for the angular, extended industrial typography of the mockup.
     // Embedded in the executable; no host font installation is required.
     import "../../assets/fonts/Oxanium-ExtraBold.ttf";
