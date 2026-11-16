@@ -301,7 +301,7 @@ slint::slint! {
         Path {
             x: 1px; y: 1px;
             width: 255px; height: 17px;
-            commands: "M 9 0 L 255 0 L 241 2 L 227 17 L 0 17 L 0 9 Q 0 0 9 0 Z";
+            commands: "M 9 0 L 255 0 L 245 3 L 229 16 L 216 17 L 0 17 L 0 9 Q 0 0 9 0 Z";
             fill: #fe8254;
         }
         Text {
@@ -839,7 +839,7 @@ slint::slint! {
         // Faithful, compact island: diagonal cream SST identity, three
         // window controls, and real metrics. No extra text or ornaments.
         island := Rectangle {
-            width: max(464px, root.width - 16px);
+            width: max(0px, root.width - 16px);
             height: 34px;
             x: (root.width - self.width) / 2;
             y: 3px;
@@ -857,7 +857,7 @@ slint::slint! {
                 Path {
                     x: 3px; y: 3px;
                     width: 108px; height: 28px;
-                    commands: "M 8 0 L 108 0 L 108 25 L 94 25 L 90 28 L 8 28 Q 0 28 0 20 L 0 8 Q 0 0 8 0 Z";
+                    commands: "M 8 0 L 108 0 L 108 28 L 8 28 Q 0 28 0 20 L 0 8 Q 0 0 8 0 Z";
                     fill: #e2dac2;
                 }
                 Text {
@@ -881,15 +881,16 @@ slint::slint! {
                 // Independent title column, modeled on the supplied mockup.
                 // The metrics begin after it; neither can cover the other.
                 Rectangle {
-                    visible: island.width >= 1000px;
+                    visible: island.width >= 1110px;
                     x: 198px; y: 4px; width: 272px; height: 27px;
                     background: transparent;
-                    Rectangle {
-                        x: 0px; y: 0px; width: 23px; height: 13px;
-                        background: #a99f90;
+                    Path {
+                        x: 0px; y: 0px; width: 29px; height: 13px;
+                        commands: "M 5 0 L 11 0 L 6 13 L 0 13 Z M 14 0 L 20 0 L 15 13 L 9 13 Z M 23 0 L 29 0 L 24 13 L 18 13 Z";
+                        fill: #a99f90;
                     }
                     Text {
-                        x: 31px; y: 0px; width: 239px; height: 14px;
+                        x: 36px; y: 0px; width: 234px; height: 14px;
                         text: "› ADVANCED SYSTEM CONSOLE";
                         color: #e2dac2;
                         font-family: "Oxanium"; font-size: 10px; font-weight: 800;
@@ -907,7 +908,7 @@ slint::slint! {
                     }
                 }
                 GreenTelemetryRail {
-                    visible: island.width >= 1000px;
+                    visible: island.width >= 1110px;
                     x: 478px; y: 3px;
                     width: max(0px, island.width - 612px); height: 28px;
                     host-text: root.header-host;
@@ -917,7 +918,7 @@ slint::slint! {
                     cpu-text: root.header-cpu;
                 }
                 Text {
-                    visible: island.width >= 540px && island.width < 1000px;
+                    visible: island.width >= 540px && island.width < 1110px;
                     x: 196px; y: 3px;
                     width: max(0px, island.width - 328px);
                     height: 28px;
