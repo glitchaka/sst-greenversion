@@ -464,10 +464,12 @@ slint::slint! {
         in property <string> arch-text;
         in property <string> memory-text;
         in property <string> cpu-text;
-        in property <length> host-width: root.width * 0.36;
-        in property <length> uptime-width: root.width * 0.19;
-        in property <length> arch-width: root.width * 0.16;
-        in property <length> mem-width: root.width * 0.14;
+        // Each metric has a content-driven width instead of a share of the window.
+        in property <length> host-width: root.host-cell-width;
+        in property <length> uptime-width: 84px;
+        in property <length> arch-width: 76px;
+        in property <length> mem-width: 63px;
+        in property <length> cpu-width: 63px;
         background: transparent;
         border-width: 1px;
         border-color: GreenPalette.cream;
@@ -495,7 +497,7 @@ slint::slint! {
         GreenHeaderMetric {
             x: root.host-width + root.uptime-width + root.arch-width + root.mem-width;
             y: 0px;
-            width: parent.width - self.x - 2px; height: parent.height;
+            width: root.cpu-width; height: parent.height;
             label-text: "CPU"; value-text: root.cpu-text;
         }
         Rectangle { x: root.host-width; width: 1px; height: parent.height; background: GreenPalette.metric-rule; }
@@ -578,6 +580,7 @@ slint::slint! {
         in property <string> clock-text: "--:--";
         in property <string> date-text: "00 ---";
         in property <string> header-host: "—";
+        in property <float> header-host-cell-width: 145.0;
         in property <string> header-uptime: "—";
         in property <string> header-memory: "—";
         in property <string> header-cpu: "—";
@@ -908,9 +911,11 @@ slint::slint! {
                 GreenTelemetryRail {
                     visible: island.width >= 1150px;
                     x: 483px; y: 4px;
-                    width: max(0px, island.width - 678px);
+                    width: min(max(0px, island.width - 678px),
+                        root.header-host-cell-width * 1px + 286px);
                     height: 32px;
                     host-text: root.header-host;
+                    host-width: root.header-host-cell-width * 1px;
                     uptime-text: root.header-uptime;
                     arch-text: root.header-arch;
                     memory-text: root.header-memory;
@@ -2648,7 +2653,15 @@ pub fn run() -> Result<()> {
         }
     };
     ui.set_privilege_label(privilege_label.clone().into());
-    ui.set_header_host(System::host_name().unwrap_or_else(|| "—".to_owned()).into());
+    let host = System::host_name().unwrap_or_else(|| "—".to_owned());
+    // Measure the visible hostname with the same bundled interface font.
+    let face = Font::from_bytes(
+        include_bytes!("../../assets/fonts/Oxanium-ExtraBold.ttf"),
+        FontSettings::default(),
+    ).context("No se pudo cargar Oxanium para dimensionar HOST")?;
+    let text_width: f32 = host.chars().map(|ch| face.metrics(ch, 13.0).advance_width).sum();
+    ui.set_header_host_cell_width((text_width + 16.0).clamp(88.0, 320.0));
+    ui.set_header_host(host.into());
     ui.set_header_version(crate::application::update::display_version().into());
     ui.set_header_arch(std::env::consts::ARCH.to_uppercase().into());
 
