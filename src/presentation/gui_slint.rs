@@ -2656,9 +2656,9 @@ pub fn run() -> Result<()> {
     let host = System::host_name().unwrap_or_else(|| "—".to_owned());
     // Measure the visible hostname with the same bundled interface font.
     let face = Font::from_bytes(
-        include_bytes!("../../assets/fonts/Oxanium-ExtraBold.ttf"),
+        &include_bytes!("../../assets/fonts/Oxanium-ExtraBold.ttf")[..],
         FontSettings::default(),
-    ).context("No se pudo cargar Oxanium para dimensionar HOST")?;
+    ).map_err(|error| anyhow::anyhow!("No se pudo cargar Oxanium para dimensionar HOST: {error}"))?;
     let text_width: f32 = host.chars().map(|ch| face.metrics(ch, 13.0).advance_width).sum();
     ui.set_header_host_cell_width((text_width + 16.0).clamp(88.0, 320.0));
     ui.set_header_host(host.into());
