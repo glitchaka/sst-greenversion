@@ -3016,7 +3016,7 @@ pub fn run() -> Result<()> {
                                 }
                             }
                         }
-                        let width_cols = right.saturating_add(3).clamp(12, cols);
+                        let width_cols = right.saturating_add(3).clamp(2, cols.max(2));
                         (
                             f32::from(first),
                             f32::from(panel.rows),
