@@ -465,7 +465,7 @@ slint::slint! {
         in property <string> memory-text;
         in property <string> cpu-text;
         // Each metric has a content-driven width instead of a share of the window.
-        in property <length> host-width: root.host-cell-width;
+        in property <length> host-width: 145px;
         in property <length> uptime-width: 84px;
         in property <length> arch-width: 76px;
         in property <length> mem-width: 63px;
