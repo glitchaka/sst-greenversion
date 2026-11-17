@@ -559,12 +559,16 @@ slint::slint! {
         in property <float> monitor-line-height: 18.0;
         in property <float> monitor-a-row: 0.0;
         in property <float> monitor-a-rows: 0.0;
+        in property <float> monitor-a-width: 0.0;
         in property <float> monitor-b-row: 0.0;
         in property <float> monitor-b-rows: 0.0;
+        in property <float> monitor-b-width: 0.0;
         in property <float> monitor-c-row: 0.0;
         in property <float> monitor-c-rows: 0.0;
+        in property <float> monitor-c-width: 0.0;
         in property <float> monitor-d-row: 0.0;
         in property <float> monitor-d-rows: 0.0;
+        in property <float> monitor-d-width: 0.0;
         in property <image> background-image;
         in property <float> background-image-opacity: 0.0;
         in property <string> background-image-fit-mode: "cover";
@@ -644,7 +648,7 @@ slint::slint! {
                 visible: root.monitor-panel-count > 0;
                 x: root.monitor-grid-left * 1px;
                 y: (root.monitor-grid-top + root.monitor-a-row * root.monitor-line-height) * 1px;
-                width: root.monitor-grid-width * 1px;
+                width: root.monitor-a-width * 1px;
                 height: (root.monitor-a-rows * root.monitor-line-height) * 1px;
             }
 
@@ -652,7 +656,7 @@ slint::slint! {
                 visible: root.monitor-panel-count > 1;
                 x: root.monitor-grid-left * 1px;
                 y: (root.monitor-grid-top + root.monitor-b-row * root.monitor-line-height) * 1px;
-                width: root.monitor-grid-width * 1px;
+                width: root.monitor-b-width * 1px;
                 height: (root.monitor-b-rows * root.monitor-line-height) * 1px;
             }
 
@@ -660,7 +664,7 @@ slint::slint! {
                 visible: root.monitor-panel-count > 2;
                 x: root.monitor-grid-left * 1px;
                 y: (root.monitor-grid-top + root.monitor-c-row * root.monitor-line-height) * 1px;
-                width: root.monitor-grid-width * 1px;
+                width: root.monitor-c-width * 1px;
                 height: (root.monitor-c-rows * root.monitor-line-height) * 1px;
             }
 
@@ -668,7 +672,7 @@ slint::slint! {
                 visible: root.monitor-panel-count > 3;
                 x: root.monitor-grid-left * 1px;
                 y: (root.monitor-grid-top + root.monitor-d-row * root.monitor-line-height) * 1px;
-                width: root.monitor-grid-width * 1px;
+                width: root.monitor-d-width * 1px;
                 height: (root.monitor-d-rows * root.monitor-line-height) * 1px;
             }
 
@@ -2995,21 +2999,48 @@ pub fn run() -> Result<()> {
                         (cols.saturating_sub(1) as f32 * cell_width) / factor,
                     );
                     ui.set_monitor_line_height(cell_height / factor);
+                    // Measure each tool panel from actual nonblank PTY cells.
+                    // The full viewport remains available for long tables, but
+                    // short reports never stretch their frame to the right edge.
+                    let screen = model.parser.screen();
+                    let measure = |panel: &crate::core::ports::TerminalPanel| -> (f32, f32, f32) {
+                        let first = panel.start_row;
+                        let last = first.saturating_add(panel.rows).min(screen.size().0);
+                        let mut right: u16 = 0;
+                        for row in first..last {
+                            for col in 0..cols {
+                                if screen.cell(row, col).is_some_and(|cell| {
+                                    !cell.contents().trim().is_empty()
+                                }) {
+                                    right = right.max(col.saturating_add(1));
+                                }
+                            }
+                        }
+                        let width_cols = right.saturating_add(3).clamp(12, cols);
+                        (
+                            f32::from(first),
+                            f32::from(panel.rows),
+                            f32::from(width_cols) * cell_width / factor,
+                        )
+                    };
                     let mut iter = panels.iter();
-                    let mut next = || iter.next().map(|p| (f32::from(p.start_row), f32::from(p.rows)))
-                        .unwrap_or((0.0, 0.0));
-                    let (row, rows) = next();
+                    let mut next = || iter.next().map(&measure).unwrap_or((0.0, 0.0, 0.0));
+                    let (row, rows, width) = next();
                     ui.set_monitor_a_row(row);
                     ui.set_monitor_a_rows(rows);
-                    let (row, rows) = next();
+                    ui.set_monitor_a_width(width);
+                    let (row, rows, width) = next();
                     ui.set_monitor_b_row(row);
                     ui.set_monitor_b_rows(rows);
-                    let (row, rows) = next();
+                    ui.set_monitor_b_width(width);
+                    let (row, rows, width) = next();
                     ui.set_monitor_c_row(row);
                     ui.set_monitor_c_rows(rows);
-                    let (row, rows) = next();
+                    ui.set_monitor_c_width(width);
+                    let (row, rows, width) = next();
                     ui.set_monitor_d_row(row);
                     ui.set_monitor_d_rows(rows);
+                    ui.set_monitor_d_width(width);
                 }
 
                 if drawable && model.dirty {
