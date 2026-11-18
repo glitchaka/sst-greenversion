@@ -680,31 +680,6 @@ slint::slint! {
             }
 
 
-            Image {
-                x: 0;
-                y: 0;
-                width: 100%;
-                height: 100%;
-                source: root.terminal-image;
-                image-fit: fill;
-            }
-            // Actual Windows figures projected by the sys service.
-            // No demo percentages, fake CPU load or permanent sidebar.
-            GreenSystemOverview {
-                visible: root.system-overview-visible;
-                x: root.system-overview-left * 1px;
-                y: root.system-overview-top * 1px;
-                width: root.system-overview-width * 1px;
-                height: root.system-overview-height * 1px;
-                host-name: root.system-host;
-                os-name: root.system-os;
-                cpu-count: root.system-cpu-count;
-                memory-used: root.system-memory-used;
-                memory-total: root.system-memory-total;
-                memory-ratio: root.system-memory-ratio;
-                memory-percent: root.system-memory-percent;
-                disk-count: root.system-disk-count;
-            }
             // Ordinary SST help and reports receive the same genuine native
             // section accents. No box characters enter the command stream.
             ReportHeadingBand {
@@ -755,6 +730,32 @@ slint::slint! {
                 height: root.report-line-height * 1px;
             }
 
+
+            Image {
+                x: 0;
+                y: 0;
+                width: 100%;
+                height: 100%;
+                source: root.terminal-image;
+                image-fit: fill;
+            }
+            // Actual Windows figures projected by the sys service.
+            // No demo percentages, fake CPU load or permanent sidebar.
+            GreenSystemOverview {
+                visible: root.system-overview-visible;
+                x: root.system-overview-left * 1px;
+                y: root.system-overview-top * 1px;
+                width: root.system-overview-width * 1px;
+                height: root.system-overview-height * 1px;
+                host-name: root.system-host;
+                os-name: root.system-os;
+                cpu-count: root.system-cpu-count;
+                memory-used: root.system-memory-used;
+                memory-total: root.system-memory-total;
+                memory-ratio: root.system-memory-ratio;
+                memory-percent: root.system-memory-percent;
+                disk-count: root.system-disk-count;
+            }
         terminal-focus := FocusScope {
             x: 0;
             y: 0;
@@ -1903,7 +1904,7 @@ impl TerminalModel {
                 let heading_row = !tool_mode
                     && (0..cols.min(12)).any(|col| {
                         screen.cell(row, col).is_some_and(|cell| {
-                            matches!(cell.fgcolor(), vt100::Color::Rgb(213, 196, 161))
+                            matches!(cell.fgcolor(), vt100::Color::Rgb(226, 218, 194))
                                 && cell.contents().chars().any(char::is_alphabetic)
                         })
                     });
@@ -1927,7 +1928,10 @@ impl TerminalModel {
                     // The same policy applies to existing and future commands,
                     // without command-specific styling or fake diagnostics.
                     fg = industrial_terminal_color(fg);
-                    if heading_row && !cell.contents().is_empty() {
+                    if heading_row && matches!(
+                        cell.fgcolor(), vt100::Color::Rgb(226, 218, 194)
+                    ) && !cell.contents().is_empty() {
+                        // Typography is rendered from font glyphs, not painted shapes.
                         fg = terminal_palette().ansi[0];
                     }
                     if tool_mode && paint_background {
@@ -2923,7 +2927,7 @@ pub fn run() -> Result<()> {
                         let mut last_col: Option<u16> = None;
                         for col in 0..cols {
                             if screen.cell(row, col).is_some_and(|cell| {
-                                matches!(cell.fgcolor(), vt100::Color::Rgb(213, 196, 161))
+                                matches!(cell.fgcolor(), vt100::Color::Rgb(226, 218, 194))
                                     && !cell.contents().is_empty()
                             }) {
                                 last_col = Some(col);
@@ -2934,7 +2938,7 @@ pub fn run() -> Result<()> {
                         // around unrelated cyan status values.
                         let is_heading = (0..cols.min(12)).any(|col| {
                             screen.cell(row, col).is_some_and(|cell| {
-                                matches!(cell.fgcolor(), vt100::Color::Rgb(213, 196, 161))
+                                matches!(cell.fgcolor(), vt100::Color::Rgb(226, 218, 194))
                                     && cell.contents().chars().any(char::is_alphabetic)
                             })
                         });
