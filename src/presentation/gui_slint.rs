@@ -864,12 +864,38 @@ slint::slint! {
                     vertical-alignment: center;
                     overflow: elide;
                 }
-                for word[i] in ["SHELL", "SHOCK", "TOOL"] : Text {
+                Text {
                     x: island.width >= 900px ? 161px : 118px;
-                    y: (4 + i * 10) * 1px;
+                    y: 4px;
                     width: island.width >= 900px ? 70px : 53px;
                     height: 10px;
-                    text: word;
+                    text: "SHELL";
+                    color: GreenPalette.black-ink;
+                    font-family: GreenPalette.interface-font;
+                    font-size: island.width >= 900px ? 10px : 8px;
+                    font-weight: 800;
+                    vertical-alignment: center;
+                    overflow: elide;
+                }
+                Text {
+                    x: island.width >= 900px ? 161px : 118px;
+                    y: 14px;
+                    width: island.width >= 900px ? 70px : 53px;
+                    height: 10px;
+                    text: "SHOCK";
+                    color: GreenPalette.black-ink;
+                    font-family: GreenPalette.interface-font;
+                    font-size: island.width >= 900px ? 10px : 8px;
+                    font-weight: 800;
+                    vertical-alignment: center;
+                    overflow: elide;
+                }
+                Text {
+                    x: island.width >= 900px ? 161px : 118px;
+                    y: 24px;
+                    width: island.width >= 900px ? 70px : 53px;
+                    height: 10px;
+                    text: "TOOL";
                     color: GreenPalette.black-ink;
                     font-family: GreenPalette.interface-font;
                     font-size: island.width >= 900px ? 10px : 8px;
