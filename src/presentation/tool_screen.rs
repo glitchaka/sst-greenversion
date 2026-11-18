@@ -191,6 +191,14 @@ fn color_line(line: &ReportLine) -> String {
     if is_tabular_heading(text) && text.chars().any(char::is_alphabetic) {
         return format!("{}{}{}", theme::LABEL, line.text, theme::RESET);
     }
+    // Display the actual classification emitted by the triage engine.
+    // Do not infer a severity from filenames or unknown evidence.
+    if text.starts_with("ALERT ") || text.starts_with("SUSPICIOUS ") {
+        return format!("{}{}{}", theme::BAD, line.text, theme::RESET);
+    }
+    if text.starts_with("ATTENTION ") || text.starts_with("PERFORMANCE ") {
+        return format!("{}{}{}", theme::WARN, line.text, theme::RESET);
+    }
     // A warning in evidence is shown as a warning, not a false positive badge
     // inferred from a filename or a passing occurrence of the word "error".
     if text.starts_with("CRÍTICO ") || text.starts_with("CRITICO ")
@@ -521,6 +529,14 @@ mod tests {
 
         let text_only = wrapped_lines("mensaje corriente\nhostname: TEST", 80);
         assert!(section_panels(&text_only, 5, 24).is_empty());
+    }
+
+    #[test]
+    fn triage_classifications_keep_their_actual_severity() {
+        let attention = ReportLine { text: "ATTENTION Spotify.exe ×2".into(), heading: false };
+        let suspicious = ReportLine { text: "SUSPICIOUS example.exe ×1".into(), heading: false };
+        assert!(color_line(&attention).starts_with(theme::WARN));
+        assert!(color_line(&suspicious).starts_with(theme::BAD));
     }
 
     #[test]
