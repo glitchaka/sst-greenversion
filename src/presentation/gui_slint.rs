@@ -1196,8 +1196,21 @@ fn read_green_theme(paths: &AppPaths) -> Result<toml::Value> {
     }
     let contents = std::fs::read_to_string(&path)
         .with_context(|| format!("No se pudo leer {}", path.display()))?;
-    contents.parse::<toml::Value>()
-        .with_context(|| format!("Tema SST Green inválido: {}", path.display()))
+    // Migrate only exact legacy defaults. Keep user-defined colors and
+    // all comments and other theme settings intact.
+    let migrated = contents
+        .replace("information = \"#4FBBBC\"", "information = \"#D6C5A4\"")
+        .replace("selection = \"#3F5A62\"", "selection = \"#65513C\"")
+        .replace("\"info-cyan\" = \"#4fbbbc\"", "\"info-cyan\" = \"#d6c5a4\"")
+        .replace("\"#458588\", \"#B16286\"", "\"#A89984\", \"#B16286\"")
+        .replace("\"#83A598\", \"#D3869B\"", "\"#D6C5A4\", \"#D3869B\"");
+    let parsed = migrated.parse::<toml::Value>()
+        .with_context(|| format!("Tema SST Green inválido: {}", path.display()))?;
+    if migrated != contents {
+        std::fs::write(&path, &migrated)
+            .with_context(|| format!("No se pudo actualizar {}", path.display()))?;
+    }
+    Ok(parsed)
 }
 
 fn apply_green_background(config: &mut AppearanceConfig, theme: &toml::Value) -> Result<()> {
