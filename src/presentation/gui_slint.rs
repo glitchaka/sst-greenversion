@@ -155,6 +155,20 @@ mod viewport_regression_tests {
     use super::{RestoreViewportGuard, valid_terminal_viewport};
 
     #[test]
+    fn session_counts_only_key_events_and_rolling_one_second_rate() {
+        use std::time::{Duration, Instant};
+        let mut counter = super::SessionKeyMetrics::new();
+        let first = Instant::now();
+        counter.started = first;
+        counter.key_pressed(first);
+        counter.key_pressed(first + Duration::from_millis(250));
+        let (session, count, rate) = counter.labels(first + Duration::from_millis(500));
+        assert_eq!((session.as_str(), count.as_str(), rate.as_str()), ("00:00", "2", "2"));
+        let (session, count, rate) = counter.labels(first + Duration::from_millis(1250));
+        assert_eq!((session.as_str(), count.as_str(), rate.as_str()), ("00:01", "2", "0"));
+    }
+
+    #[test]
     fn industrial_palette_preserves_the_distinct_operational_states() {
         assert_eq!(super::industrial_terminal_color(super::Rgb(251, 73, 52)),
             super::Rgb(0xEC, 0x46, 0x24)); // critical
