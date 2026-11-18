@@ -520,6 +520,17 @@ mod tests {
     }
 
     #[test]
+    fn status_and_regular_text_never_get_section_bands() {
+        for candidate in ["OK", "ERROR", "WARN", "CRITICAL", "INSTALLED", "NOMBRE  VALOR"] {
+            assert!(!is_heading(candidate), "{candidate}");
+        }
+        assert!(is_heading("SISTEMA"));
+        assert!(is_heading("SEGURIDAD"));
+        assert!(!style_plain_output("Procesos actuales 11\n").contains(theme::SECTION));
+        assert!(style_plain_output("SEGURIDAD\n").contains(theme::SECTION));
+    }
+
+    #[test]
     fn central_formatter_preserves_csv_like_data_and_original_newlines() {
         let input = "NOMBRE  VALOR\r\ncmd.exe  42\r\n";
         let result = style_plain_output(input);
