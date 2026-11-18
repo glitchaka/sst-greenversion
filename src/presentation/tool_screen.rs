@@ -181,7 +181,9 @@ fn color_line(line: &ReportLine) -> String {
     if line.text.contains('\x1b') { return line.text.clone(); }
     let text = line.text.trim_start();
     if line.heading {
-        return format!("{}{}{}", theme::ACCENT, line.text, theme::RESET);
+        // TITLE is the same semantic color the native compositor recognizes
+        // for real, selectable text over a rounded cream heading band.
+        return format!("{}{}{}", theme::TITLE, line.text, theme::RESET);
     }
     if is_tabular_heading(text) && text.chars().any(char::is_alphabetic) {
         return format!("{}{}{}", theme::LABEL, line.text, theme::RESET);
@@ -219,6 +221,25 @@ fn color_line(line: &ReportLine) -> String {
         );
     }
     format!("{}{}{}", theme::TEXT, line.text, theme::RESET)
+}
+
+/// Render measured tool output in the existing terminal stream.
+/// No alternate screen, floating card, or dummy telemetry is created.
+pub fn inline_report(content: &str) -> String {
+    let mut out = String::with_capacity(content.len() + 96);
+    for line in content.lines() {
+        let plain = line.trim_end_matches('\r');
+        if is_rule(plain) {
+            continue;
+        }
+        let report_line = ReportLine {
+            text: plain.to_owned(),
+            heading: is_heading(plain),
+        };
+        out.push_str(&color_line(&report_line));
+        out.push('\n');
+    }
+    out
 }
 
 fn truncate_chrome(text: &str, available: usize) -> String {
@@ -467,6 +488,17 @@ mod tests {
 
         let text_only = wrapped_lines("mensaje corriente\nhostname: TEST", 80);
         assert!(section_panels(&text_only, 5, 24).is_empty());
+    }
+
+    #[test]
+    fn inline_report_preserves_actual_data_and_marks_only_headings() {
+        let output = inline_report(
+            "SST TRIAGE — ANÁLISIS ACTIVO\n=====\nProcesos actuales 11\n\nSEGURIDAD\nCRITICAL prueba [23]\n"
+        );
+        assert!(output.contains(&format!("{}SEGURIDAD{}", theme::TITLE, theme::RESET)));
+        assert!(output.contains("Procesos actuales 11"));
+        assert!(output.contains(&format!("{}CRITICAL prueba [23]", theme::BAD)));
+        assert!(!output.contains("====="));
     }
 
     #[test]
