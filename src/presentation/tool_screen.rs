@@ -223,6 +223,33 @@ fn color_line(line: &ReportLine) -> String {
     format!("{}{}{}", theme::TEXT, line.text, theme::RESET)
 }
 
+/// Add semantic terminal typography without changing command data or line endings.
+/// This is applied centrally to ordinary interactive builtin output. Machine
+/// modes, pipelines and pre-styled ANSI output bypass this layer.
+pub fn style_plain_output(content: &str) -> String {
+    if content.is_empty() || content.contains('\x1b') {
+        return content.to_owned();
+    }
+    let mut result = String::with_capacity(content.len() + 64);
+    for raw in content.split_inclusive('\n') {
+        let (text, ending) = if let Some(t) = raw.strip_suffix("\r\n") {
+            (t, "\r\n")
+        } else if let Some(t) = raw.strip_suffix('\n') {
+            (t, "\n")
+        } else {
+            (raw, "")
+        };
+        if !text.is_empty() && !is_rule(text) {
+            let row = ReportLine { text: text.to_owned(), heading: is_heading(text) };
+            result.push_str(&color_line(&row));
+        } else {
+            result.push_str(text);
+        }
+        result.push_str(ending);
+    }
+    result
+}
+
 /// Render measured tool output in the existing terminal stream.
 /// No alternate screen, floating card, or dummy telemetry is created.
 pub fn inline_report(content: &str) -> String {
@@ -488,6 +515,15 @@ mod tests {
 
         let text_only = wrapped_lines("mensaje corriente\nhostname: TEST", 80);
         assert!(section_panels(&text_only, 5, 24).is_empty());
+    }
+
+    #[test]
+    fn central_formatter_preserves_csv_like_data_and_original_newlines() {
+        let input = "NOMBRE  VALOR\r\ncmd.exe  42\r\n";
+        let result = style_plain_output(input);
+        assert!(result.contains("cmd.exe  42\r\n"));
+        assert_eq!(result.matches("\r\n").count(), 2);
+        assert_eq!(style_plain_output("\x1b[31mraw\x1b[0m"), "\x1b[31mraw\x1b[0m");
     }
 
     #[test]
