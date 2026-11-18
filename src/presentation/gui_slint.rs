@@ -251,9 +251,9 @@ slint::slint! {
         border-radius: 10px;
         clip: true;
         Image {
-            x: 3px; y: 31px;
+            x: 3px; y: 3px;
             width: max(0px, parent.width - 6px);
-            height: max(0px, parent.height - 34px);
+            height: max(0px, parent.height - 6px);
             source: root.wallpaper-image;
             image-fit: root.wallpaper-fit-mode == "contain"
                 ? contain : root.wallpaper-fit-mode == "fill"
@@ -262,28 +262,28 @@ slint::slint! {
             opacity: root.wallpaper-opacity;
         }
         Rectangle {
-            x: 3px; y: 31px;
+            x: 3px; y: 3px;
             width: max(0px, parent.width - 6px);
-            height: max(0px, parent.height - 34px);
+            height: max(0px, parent.height - 6px);
             background: GreenPalette.wallpaper-wash;
             visible: root.wallpaper-opacity > 0.0;
         }
+        // The full-width surface is the actual console, not a gray header bar.
+        // Only the selected tab and its thin upper rail are orange.
+
+        // Mockup contour: flat top with an extended orange hairline,
+        // convex shoulder, long diagonal, then concave rounded bottom step.
+        // The unselected area exposes the wallpaper-backed console.
         Rectangle {
-            x: 1px; y: 1px;
-            width: max(0px, parent.width - 2px);
-            height: 29px;
-            background: GreenPalette.chrome-bg;
-        }
-        // Curved, stepped fascia with the thin upper rail from the reference.
-        Rectangle {
-            x: 254px; y: 1px;
-            width: max(0px, parent.width - 263px);
-            height: 2px; background: GreenPalette.salmon;
+            x: 273px; y: 1px;
+            width: max(0px, parent.width - 274px);
+            height: 2px;
+            background: GreenPalette.salmon;
         }
         Path {
             x: 1px; y: 1px;
-            width: 275px; height: 30px;
-            commands: "M 10 0 L 275 0 Q 263 0 253 8 L 237 25 Q 232 30 216 30 L 0 30 L 0 10 Q 0 0 10 0 Z";
+            width: 287px; height: 32px;
+            commands: "M 12 0 L 287 0 C 270 0 266 2 258 11 L 242 27 C 237 31 233 32 223 32 L 0 32 L 0 12 Q 0 0 12 0 Z";
             fill: GreenPalette.salmon;
         }
         Text {
@@ -306,11 +306,8 @@ slint::slint! {
             horizontal-alignment: center;
             vertical-alignment: center;
         }
-        Rectangle {
-            x: 1px; y: 30px;
-            width: max(0px, parent.width - 2px); height: 1px;
-            background: GreenPalette.warning-orange;
-        }
+        // No horizontal strip across the non-orange console.
+
     }
 
     component GreenSystemOverview inherits Rectangle {
