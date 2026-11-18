@@ -45,14 +45,19 @@ impl BuiltinCommand for TriageBuiltin {
             arg.as_str(), "--plain" | "--stdout" | "--json" | "--csv"
         ));
         let interactive = crate::adapters::terminal::io::output_sender().is_some();
-        let view = args.iter().any(|arg| arg == "--view") || interactive;
-        // A report is shown only when a real interactive console owns this
-        // command. Piped/scripted text and machine-readable output stay raw.
-        if view && !machine && !informational && context.stdin.is_none()
+        let fullscreen = args.iter().any(|arg| arg == "--view");
+        // The normal command ALWAYS stays in the existing console stream.
+        // Fullscreen/alternate-screen is reserved for an explicit --view.
+        if fullscreen && !machine && !informational && context.stdin.is_none()
             && output.status == 0 && !output.stdout.trim().is_empty()
         {
             tool_screen::show_report(self.terminal.as_ref(), "TRIAGE", "triage", &output.stdout)?;
             return Ok(CommandOutput::ok(""));
+        }
+        if interactive && !machine && !informational && context.stdin.is_none()
+            && output.status == 0 && !output.stdout.trim().is_empty()
+        {
+            return Ok(CommandOutput::ok(tool_screen::inline_report(&output.stdout)));
         }
         Ok(output)
     }
