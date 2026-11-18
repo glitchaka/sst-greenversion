@@ -48,8 +48,6 @@ impl BuiltinCommand for SystemBuiltin {
         if invoked_name == "sys"
             && (args.is_empty() || (args.len() == 1 && args[0] == "--view"))
             && context.stdin.is_none()
-            && (crate::adapters::terminal::io::output_sender().is_some()
-                || args.iter().any(|arg| arg == "--view"))
         {
             // No made-up telemetry: use the same system service as sys info,
             // sys memory and sys disks, then display it in one native view.
@@ -59,8 +57,13 @@ impl BuiltinCommand for SystemBuiltin {
             report.push_str(&self.service.execute(&["memory".to_owned()])?.stdout);
             report.push_str("\nDISCOS\n");
             report.push_str(&self.service.execute(&["disks".to_owned()])?.stdout);
-            tool_screen::show_report(self.terminal.as_ref(), "ESTADO DEL SISTEMA", "sys", &report)?;
-            return Ok(CommandOutput::ok(""));
+            if args.iter().any(|arg| arg == "--view") {
+                tool_screen::show_report(self.terminal.as_ref(), "ESTADO DEL SISTEMA", "sys", &report)?;
+                return Ok(CommandOutput::ok(""));
+            }
+            // sys with no arguments is a normal, scrollable terminal report.
+            // The explicitly requested --view retains the alternate-screen TUI.
+            return Ok(CommandOutput::ok(tool_screen::inline_report(&report)));
         }
         if invoked_name == "sys" {
             if args.first().is_some_and(|arg| arg.eq_ignore_ascii_case("hostname"))
