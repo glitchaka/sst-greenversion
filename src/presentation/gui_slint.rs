@@ -312,19 +312,21 @@ slint::slint! {
         // Compact session instrument, using live key events and monotonic time.
         // The tab is shaped; everything beyond it is the terminal, not a strip.
         Rectangle {
-            x: 313px; y: 1px;
-            width: max(0px, parent.width - 314px);
+            x: 279px; y: 3px;
+            width: max(0px, parent.width - 283px);
             height: 1px;
             background: GreenPalette.salmon;
         }
+        // Inset left edge follows the rounded chassis. The right shoulder
+        // falls into the actual console, leaving no full-width orange banner.
         Path {
-            x: 1px; y: 1px;
-            width: 324px; height: 32px;
-            commands: "M 12 0 L 324 0 C 309 0 299 5 290 17 C 280 29 275 32 263 32 L 0 32 L 0 12 Q 0 0 12 0 Z";
+            x: 4px; y: 4px;
+            width: 290px; height: 28px;
+            commands: "M 10 0 L 290 0 C 274 0 269 4 261 14 C 252 25 247 28 232 28 L 0 28 L 0 10 Q 0 0 10 0 Z";
             fill: GreenPalette.salmon;
         }
         Text {
-            x: 16px; y: 5px; width: 92px; height: 22px;
+            x: 15px; y: 6px; width: 88px; height: 22px;
             text: "SES " + root.session-time-text;
             font-family: GreenPalette.interface-font;
             font-size: 11px; font-weight: 800;
@@ -332,7 +334,7 @@ slint::slint! {
             vertical-alignment: center;
         }
         Text {
-            x: 111px; y: 5px; width: 104px; height: 22px;
+            x: 105px; y: 6px; width: 102px; height: 22px;
             text: "TECLAS " + root.key-count-text;
             font-family: GreenPalette.interface-font;
             font-size: 11px; font-weight: 800;
@@ -341,7 +343,7 @@ slint::slint! {
             overflow: elide;
         }
         Text {
-            x: 218px; y: 5px; width: 56px; height: 22px;
+            x: 210px; y: 6px; width: 56px; height: 22px;
             text: "TPS " + root.key-rate-text;
             font-family: GreenPalette.interface-font;
             font-size: 11px; font-weight: 800;
@@ -901,19 +903,17 @@ slint::slint! {
                 // The logo is live typography: three distinct Slint text
                 // elements for the stacked name, and a fourth for SST.
                 // The only Path is the cream backing plate, never letters.
-                Path {
-                    x: 3px; y: 3px;
-                    width: island.width >= 900px ? 186px : 175px;
-                    height: 34px;
-                    commands: island.width >= 900px
-                        ? "M 10 0 L 186 0 L 186 34 L 0 34 L 0 10 Q 0 0 10 0 Z"
-                        : "M 9 0 L 175 0 L 175 34 L 0 34 L 0 9 Q 0 0 9 0 Z";
-                    fill: GreenPalette.cream;
+                Rectangle {
+                    x: 4px; y: 4px;
+                    width: island.width >= 900px ? 161px : 159px;
+                    height: 32px;
+                    border-radius: 8px;
+                    background: GreenPalette.cream;
                 }
                 Text {
                     x: island.width >= 900px ? 9px : 6px;
                     y: 2px;
-                    width: island.width >= 900px ? 106px : 100px;
+                    width: island.width >= 900px ? 93px : 91px;
                     height: 35px;
                     text: "SST";
                     color: GreenPalette.black-ink;
@@ -925,9 +925,9 @@ slint::slint! {
                     overflow: elide;
                 }
                 Text {
-                    x: island.width >= 900px ? 117px : 112px;
+                    x: island.width >= 900px ? 103px : 101px;
                     y: 4px;
-                    width: island.width >= 900px ? 62px : 57px;
+                    width: island.width >= 900px ? 59px : 57px;
                     height: 10px;
                     text: "SHELL";
                     color: GreenPalette.black-ink;
@@ -938,9 +938,9 @@ slint::slint! {
                     overflow: elide;
                 }
                 Text {
-                    x: island.width >= 900px ? 117px : 112px;
+                    x: island.width >= 900px ? 103px : 101px;
                     y: 14px;
-                    width: island.width >= 900px ? 62px : 57px;
+                    width: island.width >= 900px ? 59px : 57px;
                     height: 10px;
                     text: "SHOCK";
                     color: GreenPalette.black-ink;
@@ -951,9 +951,9 @@ slint::slint! {
                     overflow: elide;
                 }
                 Text {
-                    x: island.width >= 900px ? 117px : 112px;
+                    x: island.width >= 900px ? 103px : 101px;
                     y: 24px;
-                    width: island.width >= 900px ? 62px : 57px;
+                    width: island.width >= 900px ? 59px : 57px;
                     height: 10px;
                     text: "TOOL";
                     color: GreenPalette.black-ink;
@@ -965,12 +965,12 @@ slint::slint! {
                 }
                 Rectangle {
                     visible: island.width >= 900px;
-                    x: 196px; y: 7px; width: 1px; height: 27px;
+                    x: 174px; y: 7px; width: 1px; height: 27px;
                     background: GreenPalette.cream;
                 }
                 Rectangle {
                     visible: island.width >= 900px;
-                    x: 205px; y: 5px; width: 196px; height: 30px;
+                    x: 183px; y: 5px; width: 196px; height: 30px;
                     background: transparent;
                     Path {
                         x: 0px; y: 1px; width: 42px; height: 16px;
@@ -1000,8 +1000,8 @@ slint::slint! {
                 }
                 GreenTelemetryRail {
                     visible: island.width >= 900px;
-                    x: 410px; y: 4px;
-                    width: min(max(0px, island.width - 606px),
+                    x: 390px; y: 4px;
+                    width: min(max(0px, island.width - 586px),
                         root.header-host-cell-width * 1px + 234px);
                     height: 32px;
                     host-text: root.header-host;
@@ -1013,7 +1013,7 @@ slint::slint! {
                 }
                 Text {
                     visible: island.width >= 540px && island.width < 900px;
-                    x: 185px; y: 5px;
+                    x: 169px; y: 5px;
                     width: max(0px, island.width - 315px);
                     height: 30px;
                     text: "HOST " + root.header-host + "   MEM " + root.header-memory + "   CPU " + root.header-cpu;
