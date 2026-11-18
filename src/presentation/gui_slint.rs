@@ -312,15 +312,15 @@ slint::slint! {
         // Compact session instrument, using live key events and monotonic time.
         // The tab is shaped; everything beyond it is the terminal, not a strip.
         Rectangle {
-            x: 262px; y: 1px;
-            width: max(0px, parent.width - 263px);
+            x: 313px; y: 1px;
+            width: max(0px, parent.width - 314px);
             height: 1px;
             background: GreenPalette.salmon;
         }
         Path {
             x: 1px; y: 1px;
-            width: 276px; height: 32px;
-            commands: "M 12 0 L 276 0 C 264 0 258 5 248 17 C 239 29 233 32 221 32 L 0 32 L 0 12 Q 0 0 12 0 Z";
+            width: 324px; height: 32px;
+            commands: "M 12 0 L 324 0 C 309 0 299 5 290 17 C 280 29 275 32 263 32 L 0 32 L 0 12 Q 0 0 12 0 Z";
             fill: GreenPalette.salmon;
         }
         Text {
@@ -332,8 +332,8 @@ slint::slint! {
             vertical-alignment: center;
         }
         Text {
-            x: 112px; y: 5px; width: 79px; height: 22px;
-            text: "KEY " + root.key-count-text;
+            x: 111px; y: 5px; width: 104px; height: 22px;
+            text: "TECLAS " + root.key-count-text;
             font-family: GreenPalette.interface-font;
             font-size: 11px; font-weight: 800;
             color: GreenPalette.near-black;
@@ -341,8 +341,8 @@ slint::slint! {
             overflow: elide;
         }
         Text {
-            x: 194px; y: 5px; width: 49px; height: 22px;
-            text: root.key-rate-text + "/s";
+            x: 218px; y: 5px; width: 56px; height: 22px;
+            text: "TPS " + root.key-rate-text;
             font-family: GreenPalette.interface-font;
             font-size: 11px; font-weight: 800;
             color: GreenPalette.near-black;
