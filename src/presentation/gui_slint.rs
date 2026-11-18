@@ -1907,7 +1907,7 @@ impl TerminalModel {
                 let heading_row = !tool_mode
                     && (0..cols.min(12)).any(|col| {
                         screen.cell(row, col).is_some_and(|cell| {
-                            matches!(cell.fgcolor(), vt100::Color::Rgb(226, 218, 194))
+                            matches!(cell.fgcolor(), vt100::Color::Rgb(213, 196, 161))
                                 && cell.contents().chars().any(char::is_alphabetic)
                         })
                     });
@@ -1932,7 +1932,7 @@ impl TerminalModel {
                     // without command-specific styling or fake diagnostics.
                     fg = industrial_terminal_color(fg);
                     if heading_row && matches!(
-                        cell.fgcolor(), vt100::Color::Rgb(226, 218, 194)
+                        cell.fgcolor(), vt100::Color::Rgb(213, 196, 161)
                     ) && !cell.contents().is_empty() {
                         // Typography is rendered from font glyphs, not painted shapes.
                         fg = terminal_palette().ansi[0];
@@ -2930,7 +2930,7 @@ pub fn run() -> Result<()> {
                         let mut last_col: Option<u16> = None;
                         for col in 0..cols {
                             if screen.cell(row, col).is_some_and(|cell| {
-                                matches!(cell.fgcolor(), vt100::Color::Rgb(226, 218, 194))
+                                matches!(cell.fgcolor(), vt100::Color::Rgb(213, 196, 161))
                                     && !cell.contents().is_empty()
                             }) {
                                 last_col = Some(col);
@@ -2941,7 +2941,7 @@ pub fn run() -> Result<()> {
                         // around unrelated cyan status values.
                         let is_heading = (0..cols.min(12)).any(|col| {
                             screen.cell(row, col).is_some_and(|cell| {
-                                matches!(cell.fgcolor(), vt100::Color::Rgb(226, 218, 194))
+                                matches!(cell.fgcolor(), vt100::Color::Rgb(213, 196, 161))
                                     && cell.contents().chars().any(char::is_alphabetic)
                             })
                         });
