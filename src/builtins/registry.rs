@@ -65,19 +65,11 @@ impl CommandRegistry {
         let mut output = command.execute(name, args, context)?;
         // This presentation layer is shared by every builtin. It is never
         // applied to pipelines, scripts or machine-readable protocols.
-        let machine_output = args.iter().any(|arg| matches!(
-            arg.as_str(),
-            "--csv" | "--json" | "--xml" | "--plain" | "--raw"
-                | "--stdout" | "--quiet" | "-q" | "--no-color"
-        ));
-        let interactive = crate::adapters::terminal::io::output_sender().is_some();
-        let native_interactive_app = matches!(
-            name, "guide" | "helix" | "sigsour" | "nwash" | "vim"
-        );
-        if interactive && context.stdin.is_none() && !machine_output
-            && !native_interactive_app && output.status == 0
-            && !output.stdout.is_empty() && output.stdout.len() <= 256 * 1024
-        {
+        if should_style_stdout(
+            name, args, context.stdin.is_some(),
+            crate::adapters::terminal::io::output_sender().is_some(),
+            output.status, output.stdout.len(),
+        ) {
             output.stdout = crate::presentation::tool_screen::style_plain_output(&output.stdout);
         }
         Ok(output)
@@ -118,6 +110,44 @@ impl CommandRegistry {
 
         self.commands.insert(name.to_owned(), command);
         Ok(())
+    }
+}
+
+// Pure policy protects machine-readable formats and scripted input from
+// terminal escape codes. Applied once, at the shared builtin dispatch boundary.
+fn should_style_stdout(
+    name: &str,
+    args: &[String],
+    piped_input: bool,
+    interactive: bool,
+    status: i32,
+    output_len: usize,
+) -> bool {
+    interactive && !piped_input && status == 0
+        && (1..=256 * 1024).contains(&output_len)
+        && !matches!(name, "guide" | "helix" | "sigsour" | "nwash" | "vim")
+        && !args.iter().any(|arg| matches!(
+            arg.as_str(),
+            "--csv" | "--json" | "--xml" | "--plain" | "--raw"
+                | "--stdout" | "--quiet" | "-q" | "--no-color"
+        ))
+}
+
+#[cfg(test)]
+mod green_output_policy_tests {
+    use super::should_style_stdout;
+
+    #[test]
+    fn cli_data_and_automations_are_never_colorized() {
+        let text = |words: &[&str]| words.iter().map(|s| (*s).to_owned()).collect::<Vec<_>>();
+        assert!(should_style_stdout("notsh", &text(&["interfaces"]), false, true, 0, 220));
+        assert!(should_style_stdout("sys", &[], false, true, 0, 80));
+        assert!(!should_style_stdout("notsh", &text(&["interfaces", "--csv"]), false, true, 0, 200));
+        assert!(!should_style_stdout("triage", &text(&["--json"]), false, true, 0, 200));
+        assert!(!should_style_stdout("sys", &[], true, true, 0, 200));
+        assert!(!should_style_stdout("sys", &[], false, false, 0, 200));
+        assert!(!should_style_stdout("guide", &[], false, true, 0, 200));
+        assert!(!should_style_stdout("instp", &[], false, true, 1, 200));
     }
 }
 
