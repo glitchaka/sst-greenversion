@@ -512,7 +512,7 @@ slint::slint! {
 
     export component SstGreenWindow inherits Window {
         title: "Shell Shock Tool";
-        preferred-width: 1340px;
+        preferred-width: 1000px;
         preferred-height: 630px;
         min-width: 480px;
         min-height: 300px;
@@ -913,10 +913,13 @@ slint::slint! {
                     }
                 }
                 GreenTelemetryRail {
-                    visible: island.width >= 1150px;
-                    x: 483px; y: 4px;
-                    width: min(max(0px, island.width - 678px),
-                        root.header-host-cell-width * 1px + 286px);
+                    visible: island.width >= 900px;
+                    x: island.width >= 1150px ? 483px : 260px;
+                    y: 4px;
+                    width: min(
+                        max(0px, island.width - (island.width >= 1150px ? 678px : 468px)),
+                        root.header-host-cell-width * 1px + 286px
+                    );
                     height: 32px;
                     host-text: root.header-host;
                     requested-host-width: root.header-host-cell-width * 1px;
@@ -926,7 +929,7 @@ slint::slint! {
                     cpu-text: root.header-cpu;
                 }
                 Text {
-                    visible: island.width >= 540px && island.width < 1150px;
+                    visible: island.width >= 540px && island.width < 900px;
                     x: 164px; y: 5px;
                     width: max(0px, island.width -
                         (island.width >= 880px ? 370px : 295px));
