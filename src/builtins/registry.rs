@@ -62,7 +62,25 @@ impl CommandRegistry {
             ));
         };
 
-        command.execute(name, args, context)
+        let mut output = command.execute(name, args, context)?;
+        // This presentation layer is shared by every builtin. It is never
+        // applied to pipelines, scripts or machine-readable protocols.
+        let machine_output = args.iter().any(|arg| matches!(
+            arg.as_str(),
+            "--csv" | "--json" | "--xml" | "--plain" | "--raw"
+                | "--stdout" | "--quiet" | "-q" | "--no-color"
+        ));
+        let interactive = crate::adapters::terminal::io::output_sender().is_some();
+        let native_interactive_app = matches!(
+            name, "guide" | "helix" | "sigsour" | "nwash" | "vim"
+        );
+        if interactive && context.stdin.is_none() && !machine_output
+            && !native_interactive_app && output.status == 0
+            && !output.stdout.is_empty() && output.stdout.len() <= 256 * 1024
+        {
+            output.stdout = crate::presentation::tool_screen::style_plain_output(&output.stdout);
+        }
+        Ok(output)
     }
 
     pub fn help(&self, topic: Option<&str>) -> CommandOutput {
