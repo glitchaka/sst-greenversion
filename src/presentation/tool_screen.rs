@@ -111,7 +111,9 @@ fn is_tabular_heading(text: &str) -> bool {
 fn is_heading(text: &str) -> bool {
     let text = text.trim();
     !text.is_empty()
-        && text.chars().count() <= 68
+        && (4..=68).contains(&text.chars().count())
+        && !matches!(text, "WARN" | "ERROR" | "HIGH" | "INFO" | "CRITICAL"
+            | "OK" | "LOW" | "INSTALLED" | "PENDING" | "WARNING")
         && text.chars().any(char::is_alphabetic)
         && text.chars().filter(|ch| ch.is_alphabetic()).all(|ch| !ch.is_lowercase())
         && !text.contains(": ")
@@ -183,7 +185,7 @@ fn color_line(line: &ReportLine) -> String {
     if line.heading {
         // TITLE is the same semantic color the native compositor recognizes
         // for real, selectable text over a rounded cream heading band.
-        return format!("{}{}{}", theme::TITLE, line.text, theme::RESET);
+        return format!("{}{}{}", theme::SECTION, line.text, theme::RESET);
     }
     if is_tabular_heading(text) && text.chars().any(char::is_alphabetic) {
         return format!("{}{}{}", theme::LABEL, line.text, theme::RESET);
@@ -531,7 +533,7 @@ mod tests {
         let output = inline_report(
             "SST TRIAGE — ANÁLISIS ACTIVO\n=====\nProcesos actuales 11\n\nSEGURIDAD\nCRITICAL prueba [23]\n"
         );
-        assert!(output.contains(&format!("{}SEGURIDAD{}", theme::TITLE, theme::RESET)));
+        assert!(output.contains(&format!("{}SEGURIDAD{}", theme::SECTION, theme::RESET)));
         assert!(output.contains("Procesos actuales 11"));
         assert!(output.contains(&format!("{}CRITICAL prueba [23]", theme::BAD)));
         assert!(!output.contains("====="));
