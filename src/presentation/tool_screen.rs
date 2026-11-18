@@ -558,7 +558,7 @@ mod tests {
         assert_eq!(frames.len(), 1);
         assert!(native.contains("\x1b[30mSISTEMA\x1b[0m"));
         let (plain, _) = render_page("SYS", "sys", "", &rows, 0, 80, 25, false, false);
-        assert!(plain.contains(&format!("{}SISTEMA", theme::ACCENT)));
+        assert!(plain.contains(&format!("{}SISTEMA", theme::SECTION)));
     }
     #[test]
     fn dashboard_only_uses_actual_system_report_fields() {
