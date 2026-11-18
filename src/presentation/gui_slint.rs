@@ -179,7 +179,7 @@ mod viewport_regression_tests {
         assert_eq!(super::industrial_terminal_color(super::Rgb(70, 90, 235)),
             super::Rgb(0x79, 0xB8, 0xEA)); // optimal
         assert_eq!(super::industrial_terminal_color(super::Rgb(69, 209, 241)),
-            super::Rgb(0x4F, 0xBB, 0xBC)); // information
+            super::Rgb(0xD6, 0xC5, 0xA4)); // information, warm neutral
     }
 
     #[test]
