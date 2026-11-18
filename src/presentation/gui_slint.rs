@@ -838,8 +838,9 @@ slint::slint! {
                 width: parent.width;
                 height: parent.height;
 
-                // One continuous cream logo face. SST and SHELL SHOCK TOOL
-                // are real TTF text, never painted lettering.
+                // The logo is live typography: three distinct Slint text
+                // elements for the stacked name, and a fourth for SST.
+                // The only Path is the cream backing plate, never letters.
                 Path {
                     x: 3px; y: 3px;
                     width: island.width >= 900px ? 235px : 175px;
@@ -850,29 +851,31 @@ slint::slint! {
                     fill: GreenPalette.cream;
                 }
                 Text {
-                    x: 8px; y: 2px;
-                    width: island.width >= 900px ? 145px : 105px;
+                    x: island.width >= 900px ? 9px : 6px;
+                    y: 2px;
+                    width: island.width >= 900px ? 146px : 109px;
                     height: 35px;
                     text: "SST";
                     color: GreenPalette.black-ink;
                     font-family: GreenPalette.heading-font;
-                    font-size: island.width >= 900px ? 33px : 26px;
+                    font-size: island.width >= 900px ? 35px : 27px;
                     font-weight: 800;
                     horizontal-alignment: center;
                     vertical-alignment: center;
                     overflow: elide;
                 }
-                Text {
-                    x: island.width >= 900px ? 158px : 117px;
-                    y: 2px;
-                    width: island.width >= 900px ? 72px : 56px;
-                    height: 35px;
-                    text: "SHELL\nSHOCK\nTOOL";
+                for word[i] in ["SHELL", "SHOCK", "TOOL"] : Text {
+                    x: island.width >= 900px ? 161px : 118px;
+                    y: (4 + i * 10) * 1px;
+                    width: island.width >= 900px ? 70px : 53px;
+                    height: 10px;
+                    text: word;
                     color: GreenPalette.black-ink;
                     font-family: GreenPalette.interface-font;
                     font-size: island.width >= 900px ? 10px : 8px;
                     font-weight: 800;
                     vertical-alignment: center;
+                    overflow: elide;
                 }
                 Rectangle {
                     visible: island.width >= 900px;
