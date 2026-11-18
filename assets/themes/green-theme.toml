@@ -70,17 +70,17 @@ interface = "Oxanium"
 foreground = "#F3E6CA"
 background = "#1B2020"
 cursor = "#FA784F"
-selection = "#3F5A62"
+selection = "#65513C"
 critical = "#EC4624"
 warning = "#F39120"
 good = "#ADD794"
 optimal = "#79B8EA"
-information = "#4FBBBC"
+information = "#D6C5A4"
 muted = "#E2DAC2"
 tool-background = "#232825"
 ansi = [
   "#282828", "#CC241D", "#98971A", "#D79921",
-  "#458588", "#B16286", "#689D6A", "#A89984",
+  "#A89984", "#B16286", "#689D6A", "#A89984",
   "#928374", "#FB4934", "#B8BB26", "#FABD2F",
-  "#83A598", "#D3869B", "#8EC07C", "#EBDBB2",
+  "#D6C5A4", "#D3869B", "#8EC07C", "#EBDBB2",
 ]
