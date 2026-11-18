@@ -192,22 +192,19 @@ slint::slint! {
     // derived from semantic RGB markers in the VT100 viewport. No fake lines.
     // Section headings live in the PTY rows. The cream shapes are
     // background geometry only: their glyphs come from the terminal font.
+    // Report sections frame real PTY rows. Text always stays in the terminal.
     component ReportHeadingBand inherits Rectangle {
-        background: transparent;
-        border-width: 0px;
+        background: GreenPalette.card-bg;
+        border-width: 1px;
+        border-color: GreenPalette.cream;
+        border-radius: 9px;
         clip: true;
         Rectangle {
-            x: 0px; y: 1px;
-            width: parent.width;
-            height: max(0px, parent.height - 2px);
-            border-radius: 7px;
+            x: 1px; y: 1px;
+            width: max(0px, parent.width - 2px);
+            height: min(24px, parent.height - 2px);
+            border-radius: 8px;
             background: GreenPalette.cream;
-        }
-        Rectangle {
-            x: 0px; y: 0px;
-            width: parent.width;
-            height: 1px;
-            background: GreenPalette.salmon;
         }
     }
 
@@ -543,16 +540,22 @@ slint::slint! {
         in property <float> report-line-height: 18.0;
         in property <float> report-a-row: 0.0;
         in property <float> report-a-width: 0.0;
+        in property <float> report-a-height: 0.0;
         in property <float> report-b-row: 0.0;
         in property <float> report-b-width: 0.0;
+        in property <float> report-b-height: 0.0;
         in property <float> report-c-row: 0.0;
         in property <float> report-c-width: 0.0;
+        in property <float> report-c-height: 0.0;
         in property <float> report-d-row: 0.0;
         in property <float> report-d-width: 0.0;
+        in property <float> report-d-height: 0.0;
         in property <float> report-e-row: 0.0;
         in property <float> report-e-width: 0.0;
+        in property <float> report-e-height: 0.0;
         in property <float> report-f-row: 0.0;
         in property <float> report-f-width: 0.0;
+        in property <float> report-f-height: 0.0;
 
         in property <int> monitor-panel-count: 0;
         in property <float> monitor-grid-left: 0.0;
@@ -687,7 +690,7 @@ slint::slint! {
                 x: root.report-grid-left * 1px;
                 y: (root.report-grid-top + root.report-a-row * root.report-line-height) * 1px;
                 width: root.report-a-width * 1px;
-                height: root.report-line-height * 1px;
+                height: root.report-a-height * 1px;
             }
 
             ReportHeadingBand {
@@ -695,7 +698,7 @@ slint::slint! {
                 x: root.report-grid-left * 1px;
                 y: (root.report-grid-top + root.report-b-row * root.report-line-height) * 1px;
                 width: root.report-b-width * 1px;
-                height: root.report-line-height * 1px;
+                height: root.report-b-height * 1px;
             }
 
             ReportHeadingBand {
@@ -703,7 +706,7 @@ slint::slint! {
                 x: root.report-grid-left * 1px;
                 y: (root.report-grid-top + root.report-c-row * root.report-line-height) * 1px;
                 width: root.report-c-width * 1px;
-                height: root.report-line-height * 1px;
+                height: root.report-c-height * 1px;
             }
 
             ReportHeadingBand {
@@ -711,7 +714,7 @@ slint::slint! {
                 x: root.report-grid-left * 1px;
                 y: (root.report-grid-top + root.report-d-row * root.report-line-height) * 1px;
                 width: root.report-d-width * 1px;
-                height: root.report-line-height * 1px;
+                height: root.report-d-height * 1px;
             }
 
             ReportHeadingBand {
@@ -719,7 +722,7 @@ slint::slint! {
                 x: root.report-grid-left * 1px;
                 y: (root.report-grid-top + root.report-e-row * root.report-line-height) * 1px;
                 width: root.report-e-width * 1px;
-                height: root.report-line-height * 1px;
+                height: root.report-e-height * 1px;
             }
 
             ReportHeadingBand {
@@ -727,7 +730,7 @@ slint::slint! {
                 x: root.report-grid-left * 1px;
                 y: (root.report-grid-top + root.report-f-row * root.report-line-height) * 1px;
                 width: root.report-f-width * 1px;
-                height: root.report-line-height * 1px;
+                height: root.report-f-height * 1px;
             }
 
 
@@ -2922,23 +2925,12 @@ pub fn run() -> Result<()> {
                 let panels = model.session.panels_snapshot();
                 // Only ordinary SST reports use semantic inline heading bands;
                 // alternate-screen monitors have their own section geometry.
-                let mut headings = Vec::<(f32, f32)>::new();
+                let mut headings = Vec::<(f32, f32, f32)>::new();
                 if panels.is_empty() {
                     let screen = model.parser.screen();
                     let (rows, cols) = screen.size();
+                    let mut sections: Vec<(u16, u16)> = Vec::new();
                     for row in 0..rows {
-                        let mut last_col: Option<u16> = None;
-                        for col in 0..cols {
-                            if screen.cell(row, col).is_some_and(|cell| {
-                                matches!(cell.fgcolor(), vt100::Color::Rgb(213, 196, 161))
-                                    && !cell.contents().is_empty()
-                            }) {
-                                last_col = Some(col);
-                            }
-                        }
-                        // A real heading must start near the left margin and
-                        // contain visible text. This avoids drawing borders
-                        // around unrelated cyan status values.
                         let is_heading = (0..cols.min(12)).any(|col| {
                             screen.cell(row, col).is_some_and(|cell| {
                                 matches!(cell.fgcolor(), vt100::Color::Rgb(213, 196, 161))
@@ -2946,42 +2938,72 @@ pub fn run() -> Result<()> {
                             })
                         });
                         if is_heading {
-                            let title_columns = last_col.unwrap_or(0).saturating_add(3).min(cols);
-                            headings.push((f32::from(row), f32::from(title_columns)));
-                            if headings.len() == 6 { break; }
+                            sections.push((row, 0));
+                            if sections.len() == 6 { break; }
                         }
+                    }
+                    for index in 0..sections.len() {
+                        let first = sections[index].0;
+                        let last = sections.get(index + 1).map(|section| section.0)
+                            .unwrap_or(rows);
+                        // Use the width of the actual section's rendered cells,
+                        // not the heading's few characters or the full window.
+                        let mut right: u16 = 0;
+                        let mut final_row = first;
+                        for row in first..last {
+                            let mut nonempty = false;
+                            for col in 0..cols {
+                                if screen.cell(row, col).is_some_and(|cell| {
+                                    !cell.contents().trim().is_empty()
+                                }) {
+                                    right = right.max(col.saturating_add(1));
+                                    nonempty = true;
+                                }
+                            }
+                            if nonempty { final_row = row; }
+                        }
+                        let height_rows = final_row.saturating_sub(first).saturating_add(2)
+                            .min(rows.saturating_sub(first));
+                        let width_cols = right.saturating_add(3).min(cols);
+                        headings.push((
+                            f32::from(first),
+                            f32::from(width_cols),
+                            f32::from(height_rows),
+                        ));
                     }
                 }
                 ui.set_report_heading_count(headings.len() as i32);
                 if !headings.is_empty() {
                     let (left, top, cell_width, cell_height) = model.geometry();
                     let factor = model.scale.max(0.5);
-                    let (_, cols) = model.parser.screen().size();
                     ui.set_report_grid_left(left / factor);
                     ui.set_report_grid_top(top / factor);
-                    ui.set_report_grid_width(
-                        (cols.saturating_sub(1) as f32 * cell_width) / factor
-                    );
                     ui.set_report_line_height(cell_height / factor);
                     let mut items = headings.into_iter();
-                    let (row, cols) = items.next().unwrap_or_default();
+                    let (row, cols, rows) = items.next().unwrap_or_default();
                     ui.set_report_a_row(row);
                     ui.set_report_a_width((cols * cell_width / factor).max(0.0));
-                    let (row, cols) = items.next().unwrap_or_default();
+                    ui.set_report_a_height((rows * cell_height / factor).max(0.0));
+                    let (row, cols, rows) = items.next().unwrap_or_default();
                     ui.set_report_b_row(row);
                     ui.set_report_b_width((cols * cell_width / factor).max(0.0));
-                    let (row, cols) = items.next().unwrap_or_default();
+                    ui.set_report_b_height((rows * cell_height / factor).max(0.0));
+                    let (row, cols, rows) = items.next().unwrap_or_default();
                     ui.set_report_c_row(row);
                     ui.set_report_c_width((cols * cell_width / factor).max(0.0));
-                    let (row, cols) = items.next().unwrap_or_default();
+                    ui.set_report_c_height((rows * cell_height / factor).max(0.0));
+                    let (row, cols, rows) = items.next().unwrap_or_default();
                     ui.set_report_d_row(row);
                     ui.set_report_d_width((cols * cell_width / factor).max(0.0));
-                    let (row, cols) = items.next().unwrap_or_default();
+                    ui.set_report_d_height((rows * cell_height / factor).max(0.0));
+                    let (row, cols, rows) = items.next().unwrap_or_default();
                     ui.set_report_e_row(row);
                     ui.set_report_e_width((cols * cell_width / factor).max(0.0));
-                    let (row, cols) = items.next().unwrap_or_default();
+                    ui.set_report_e_height((rows * cell_height / factor).max(0.0));
+                    let (row, cols, rows) = items.next().unwrap_or_default();
                     ui.set_report_f_row(row);
                     ui.set_report_f_width((cols * cell_width / factor).max(0.0));
+                    ui.set_report_f_height((rows * cell_height / factor).max(0.0));
                 }
                 let tool_active = model.native_tool_view();
                 ui.set_tool_view_active(tool_active);
