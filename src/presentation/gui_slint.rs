@@ -263,6 +263,9 @@ slint::slint! {
         in property <image> wallpaper-image;
         in property <float> wallpaper-opacity;
         in property <string> wallpaper-fit-mode;
+        in property <string> session-time-text: "00:00";
+        in property <string> key-count-text: "0";
+        in property <string> key-rate-text: "0";
         background: GreenPalette.chassis-bg;
         border-width: 1px;
         border-color: GreenPalette.cream;
@@ -664,6 +667,9 @@ slint::slint! {
                 wallpaper-image: root.background-image;
                 wallpaper-opacity: root.background-image-opacity;
                 wallpaper-fit-mode: root.background-image-fit-mode;
+                session-time-text: root.session-time-text;
+                key-count-text: root.key-count-text;
+                key-rate-text: root.key-rate-text;
             }
 
             // A tool owns the entire content surface. Its high-contrast
