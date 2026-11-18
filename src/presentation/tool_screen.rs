@@ -243,7 +243,10 @@ pub fn style_plain_output(content: &str) -> String {
             (raw, "")
         };
         if !text.is_empty() && !is_rule(text) {
-            let row = ReportLine { text: text.to_owned(), heading: is_heading(text) };
+            // A normal command keeps its real text and semantic colors.
+            // Section frames are reserved for an explicit tool report through
+            // inline_report(), not generated for arbitrary uppercase output.
+            let row = ReportLine { text: text.to_owned(), heading: false };
             result.push_str(&color_line(&row));
         } else {
             result.push_str(text);
@@ -528,7 +531,8 @@ mod tests {
         assert!(is_heading("SISTEMA"));
         assert!(is_heading("SEGURIDAD"));
         assert!(!style_plain_output("Procesos actuales 11\n").contains(theme::SECTION));
-        assert!(style_plain_output("SEGURIDAD\n").contains(theme::SECTION));
+        assert!(!style_plain_output("SEGURIDAD\n").contains(theme::SECTION));
+        assert!(inline_report("SEGURIDAD\n").contains(theme::SECTION));
     }
 
     #[test]
