@@ -6,7 +6,7 @@
 
 use std::{
     cell::{Cell, RefCell},
-    collections::HashMap,
+    collections::{HashMap, VecDeque},
     ffi::c_void,
     mem::size_of,
     rc::Rc,
@@ -259,39 +259,43 @@ slint::slint! {
         // Mockup contour: flat top with an extended orange hairline,
         // convex shoulder, long diagonal, then concave rounded bottom step.
         // The unselected area exposes the wallpaper-backed console.
+        // Compact session instrument, using live key events and monotonic time.
+        // The tab is shaped; everything beyond it is the terminal, not a strip.
         Rectangle {
-            x: 300px; y: 1px;
-            width: max(0px, parent.width - 301px);
-            height: 2px;
+            x: 262px; y: 1px;
+            width: max(0px, parent.width - 263px);
+            height: 1px;
             background: GreenPalette.salmon;
         }
         Path {
             x: 1px; y: 1px;
-            width: 312px; height: 32px;
-            // An upper lip, a rounded drop, a curved diagonal and
-            // a horizontal lower landing, matching the approved tab silhouette.
-            // Geometry only: lettering below is genuine Slint Text.
-            commands: "M 12 0 L 312 0 C 295 0 289 2 282 10 C 269 25 264 31 245 32 L 0 32 L 0 12 Q 0 0 12 0 Z";
+            width: 276px; height: 32px;
+            commands: "M 12 0 L 276 0 C 264 0 258 5 248 17 C 239 29 233 32 221 32 L 0 32 L 0 12 Q 0 0 12 0 Z";
             fill: GreenPalette.salmon;
         }
         Text {
-            x: 20px; y: 4px;
-            width: 110px; height: 23px;
-            text: "CONSOLE";
+            x: 16px; y: 5px; width: 92px; height: 22px;
+            text: "SES " + root.session-time-text;
             font-family: GreenPalette.interface-font;
-            font-size: 14px;
-            font-weight: 800;
+            font-size: 11px; font-weight: 800;
             color: GreenPalette.near-black;
             vertical-alignment: center;
         }
         Text {
-            x: 128px; y: 4px;
-            width: 70px; height: 23px;
-            text: "/  SST";
+            x: 112px; y: 5px; width: 79px; height: 22px;
+            text: "KEY " + root.key-count-text;
             font-family: GreenPalette.interface-font;
-            font-size: 13px;
+            font-size: 11px; font-weight: 800;
             color: GreenPalette.near-black;
-            horizontal-alignment: center;
+            vertical-alignment: center;
+            overflow: elide;
+        }
+        Text {
+            x: 194px; y: 5px; width: 49px; height: 22px;
+            text: root.key-rate-text + "/s";
+            font-family: GreenPalette.interface-font;
+            font-size: 11px; font-weight: 800;
+            color: GreenPalette.near-black;
             vertical-alignment: center;
         }
         // No horizontal strip across the non-orange console.
@@ -508,6 +512,9 @@ slint::slint! {
         background: GreenPalette.window-bg;
 
         in property <image> terminal-image;
+        in property <string> session-time-text: "00:00";
+        in property <string> key-count-text: "0";
+        in property <string> key-rate-text: "0";
         in property <bool> tool-view-active: false;
         in property <bool> system-overview-visible: false;
         in property <float> system-overview-left: 16.0;
@@ -843,31 +850,31 @@ slint::slint! {
                 // The only Path is the cream backing plate, never letters.
                 Path {
                     x: 3px; y: 3px;
-                    width: island.width >= 900px ? 235px : 175px;
+                    width: island.width >= 900px ? 186px : 175px;
                     height: 34px;
                     commands: island.width >= 900px
-                        ? "M 10 0 L 235 0 L 235 34 L 0 34 L 0 10 Q 0 0 10 0 Z"
+                        ? "M 10 0 L 186 0 L 186 34 L 0 34 L 0 10 Q 0 0 10 0 Z"
                         : "M 9 0 L 175 0 L 175 34 L 0 34 L 0 9 Q 0 0 9 0 Z";
                     fill: GreenPalette.cream;
                 }
                 Text {
                     x: island.width >= 900px ? 9px : 6px;
                     y: 2px;
-                    width: island.width >= 900px ? 146px : 109px;
+                    width: island.width >= 900px ? 106px : 100px;
                     height: 35px;
                     text: "SST";
                     color: GreenPalette.black-ink;
                     font-family: GreenPalette.heading-font;
-                    font-size: island.width >= 900px ? 35px : 27px;
+                    font-size: island.width >= 900px ? 32px : 27px;
                     font-weight: 800;
                     horizontal-alignment: center;
                     vertical-alignment: center;
                     overflow: elide;
                 }
                 Text {
-                    x: island.width >= 900px ? 161px : 118px;
+                    x: island.width >= 900px ? 117px : 112px;
                     y: 4px;
-                    width: island.width >= 900px ? 70px : 53px;
+                    width: island.width >= 900px ? 62px : 57px;
                     height: 10px;
                     text: "SHELL";
                     color: GreenPalette.black-ink;
@@ -878,9 +885,9 @@ slint::slint! {
                     overflow: elide;
                 }
                 Text {
-                    x: island.width >= 900px ? 161px : 118px;
+                    x: island.width >= 900px ? 117px : 112px;
                     y: 14px;
-                    width: island.width >= 900px ? 70px : 53px;
+                    width: island.width >= 900px ? 62px : 57px;
                     height: 10px;
                     text: "SHOCK";
                     color: GreenPalette.black-ink;
@@ -891,9 +898,9 @@ slint::slint! {
                     overflow: elide;
                 }
                 Text {
-                    x: island.width >= 900px ? 161px : 118px;
+                    x: island.width >= 900px ? 117px : 112px;
                     y: 24px;
-                    width: island.width >= 900px ? 70px : 53px;
+                    width: island.width >= 900px ? 62px : 57px;
                     height: 10px;
                     text: "TOOL";
                     color: GreenPalette.black-ink;
@@ -905,12 +912,12 @@ slint::slint! {
                 }
                 Rectangle {
                     visible: island.width >= 900px;
-                    x: 245px; y: 7px; width: 1px; height: 27px;
+                    x: 196px; y: 7px; width: 1px; height: 27px;
                     background: GreenPalette.cream;
                 }
                 Rectangle {
                     visible: island.width >= 900px;
-                    x: 254px; y: 5px; width: 166px; height: 30px;
+                    x: 205px; y: 5px; width: 196px; height: 30px;
                     background: transparent;
                     Path {
                         x: 0px; y: 1px; width: 42px; height: 16px;
@@ -918,7 +925,7 @@ slint::slint! {
                         fill: GreenPalette.slant-blades;
                     }
                     Text {
-                        x: 43px; y: 0px; width: 123px; height: 16px;
+                        x: 43px; y: 0px; width: 153px; height: 16px;
                         text: "› ADVANCED SYSTEM CONSOLE";
                         color: GreenPalette.cream;
                         font-family: GreenPalette.interface-font;
@@ -927,11 +934,11 @@ slint::slint! {
                         overflow: elide;
                     }
                     Rectangle {
-                        x: 0px; y: 18px; width: 166px; height: 1px;
+                        x: 0px; y: 18px; width: 196px; height: 1px;
                         background: GreenPalette.header-rule;
                     }
                     Text {
-                        x: 0px; y: 19px; width: 166px; height: 11px;
+                        x: 0px; y: 19px; width: 196px; height: 11px;
                         text: "VERSION " + root.header-version + " | " + root.header-arch;
                         font-family: GreenPalette.interface-font;
                         font-size: 8px; color: GreenPalette.secondary-text;
@@ -940,8 +947,8 @@ slint::slint! {
                 }
                 GreenTelemetryRail {
                     visible: island.width >= 900px;
-                    x: 426px; y: 4px;
-                    width: min(max(0px, island.width - 622px),
+                    x: 410px; y: 4px;
+                    width: min(max(0px, island.width - 606px),
                         root.header-host-cell-width * 1px + 234px);
                     height: 32px;
                     host-text: root.header-host;
