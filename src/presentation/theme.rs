@@ -2,6 +2,7 @@
 //! Text and diagnostics use measured states; colors never imply a fake status.
 pub const RESET: &str = "\x1b[0m";
 pub const TITLE: &str = "\x1b[1;38;2;226;218;194m"; // architectural cream
+pub const SECTION: &str = "\x1b[1;38;2;213;196;161m"; // semantic marker: native report heading
 pub const ACCENT: &str = "\x1b[1;38;2;243;145;32m"; // heat marker
 pub const TEXT: &str = "\x1b[38;2;226;218;194m"; // architectural cream
 pub const LABEL: &str = "\x1b[1;38;2;79;187;188m"; // industrial aqua
