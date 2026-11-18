@@ -893,7 +893,7 @@ slint::slint! {
                     x: 254px; y: 5px; width: 166px; height: 30px;
                     background: transparent;
                     Path {
-                        x: 0px; y: 1px; width: 36px; height: 16px;
+                        x: 0px; y: 1px; width: 42px; height: 16px;
                         commands: "M 6 0 L 12 0 L 6 16 L 0 16 Z M 16 0 L 22 0 L 16 16 L 10 16 Z M 26 0 L 32 0 L 26 16 L 20 16 Z M 36 0 L 42 0 L 36 16 L 30 16 Z";
                         fill: GreenPalette.slant-blades;
                     }
