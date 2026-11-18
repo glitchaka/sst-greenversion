@@ -1203,7 +1203,8 @@ fn read_green_theme(paths: &AppPaths) -> Result<toml::Value> {
         .replace("selection = \"#3F5A62\"", "selection = \"#65513C\"")
         .replace("\"info-cyan\" = \"#4fbbbc\"", "\"info-cyan\" = \"#d6c5a4\"")
         .replace("\"#458588\", \"#B16286\"", "\"#A89984\", \"#B16286\"")
-        .replace("\"#83A598\", \"#D3869B\"", "\"#D6C5A4\", \"#D3869B\"");
+        .replace("\"#83A598\", \"#D3869B\"", "\"#79B8EA\", \"#D3869B\"")
+        .replace("\"#D6C5A4\", \"#D3869B\"", "\"#79B8EA\", \"#D3869B\"");
     let parsed = migrated.parse::<toml::Value>()
         .with_context(|| format!("Tema SST Green inválido: {}", path.display()))?;
     if migrated != contents {
