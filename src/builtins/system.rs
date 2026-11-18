@@ -61,9 +61,14 @@ impl BuiltinCommand for SystemBuiltin {
                 tool_screen::show_report(self.terminal.as_ref(), "ESTADO DEL SISTEMA", "sys", &report)?;
                 return Ok(CommandOutput::ok(""));
             }
-            // sys with no arguments is a normal, scrollable terminal report.
-            // The explicitly requested --view retains the alternate-screen TUI.
-            return Ok(CommandOutput::ok(tool_screen::inline_report(&report)));
+            // Ordinary SST is an inline, scrollable report. External callers
+            // and scripts receive unmodified text rather than forced ANSI.
+            let interactive = crate::adapters::terminal::io::output_sender().is_some();
+            return Ok(CommandOutput::ok(if interactive {
+                tool_screen::inline_report(&report)
+            } else {
+                report
+            }));
         }
         if invoked_name == "sys" {
             if args.first().is_some_and(|arg| arg.eq_ignore_ascii_case("hostname"))
