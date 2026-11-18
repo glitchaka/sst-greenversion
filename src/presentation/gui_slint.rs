@@ -193,39 +193,27 @@ slint::slint! {
     // Section headings live in the PTY rows. The cream shapes are
     // background geometry only: their glyphs come from the terminal font.
     // Report sections frame real PTY rows. Text always stays in the terminal.
+    // Native section accents are flush with the terminal flow, not cards.
+    // The actual text is rendered by the PTY from its configured font.
     component ReportHeadingBand inherits Rectangle {
-        background: GreenPalette.card-bg;
-        border-width: 1px;
-        border-color: GreenPalette.cream;
-        border-radius: 9px;
-        clip: true;
-        Rectangle {
-            x: 1px; y: 1px;
-            width: max(0px, parent.width - 2px);
-            height: min(24px, parent.height - 2px);
-            border-radius: 8px;
-            background: GreenPalette.cream;
-        }
+        background: GreenPalette.cream;
+        border-width: 0px;
+        border-radius: 0px;
+        clip: false;
     }
 
-    // Tool-scoped panels use the same cream header and dark body as the mockup.
-    // No letters are drawn with paths: the PTY supplies the actual text.
+    // Explicit alternate-screen tools also keep their content inside the PTY.
+    // No black body rectangle or floating rounded outline.
     component TerminalSectionFrame inherits Rectangle {
-        background: GreenPalette.card-bg;
-        border-width: 1px;
-        border-color: GreenPalette.cream;
-        border-radius: 9px;
-        clip: true;
+        background: transparent;
+        border-width: 0px;
+        border-radius: 0px;
+        clip: false;
         Rectangle {
             x: 0px; y: 0px;
             width: parent.width;
-            height: min(24px, parent.height);
-            border-radius: 7px;
+            height: min(18px, parent.height);
             background: GreenPalette.cream;
-        }
-        Rectangle {
-            x: 0px; y: 0px; width: parent.width; height: 1px;
-            background: GreenPalette.salmon;
         }
     }
 
@@ -2931,47 +2919,28 @@ pub fn run() -> Result<()> {
                 if panels.is_empty() {
                     let screen = model.parser.screen();
                     let (rows, cols) = screen.size();
-                    let mut sections: Vec<(u16, u16)> = Vec::new();
                     for row in 0..rows {
-                        let is_heading = (0..cols.min(12)).any(|col| {
-                            screen.cell(row, col).is_some_and(|cell| {
+                        let mut last_col: u16 = 0;
+                        let mut marker = false;
+                        for col in 0..cols {
+                            if screen.cell(row, col).is_some_and(|cell| {
                                 matches!(cell.fgcolor(), vt100::Color::Rgb(213, 196, 161))
-                                    && cell.contents().chars().any(char::is_alphabetic)
-                            })
-                        });
-                        if is_heading {
-                            sections.push((row, 0));
-                            if sections.len() == 6 { break; }
-                        }
-                    }
-                    for index in 0..sections.len() {
-                        let first = sections[index].0;
-                        let last = sections.get(index + 1).map(|section| section.0)
-                            .unwrap_or(rows);
-                        // Use the width of the actual section's rendered cells,
-                        // not the heading's few characters or the full window.
-                        let mut right: u16 = 0;
-                        let mut final_row = first;
-                        for row in first..last {
-                            let mut nonempty = false;
-                            for col in 0..cols {
-                                if screen.cell(row, col).is_some_and(|cell| {
-                                    !cell.contents().trim().is_empty()
-                                }) {
-                                    right = right.max(col.saturating_add(1));
-                                    nonempty = true;
-                                }
+                                    && !cell.contents().is_empty()
+                            }) {
+                                marker = true;
+                                last_col = col.saturating_add(1);
                             }
-                            if nonempty { final_row = row; }
                         }
-                        let height_rows = final_row.saturating_sub(first).saturating_add(2)
-                            .min(rows.saturating_sub(first));
-                        let width_cols = right.saturating_add(3).min(cols);
-                        headings.push((
-                            f32::from(first),
-                            f32::from(width_cols),
-                            f32::from(height_rows),
-                        ));
+                        if marker {
+                            // Color the actual heading row only; report bodies,
+                            // wallpaper and the next prompt are never boxed in.
+                            headings.push((
+                                f32::from(row),
+                                f32::from(last_col.saturating_add(2).min(cols)),
+                                1.0,
+                            ));
+                            if headings.len() == 6 { break; }
+                        }
                     }
                 }
                 ui.set_report_heading_count(headings.len() as i32);
