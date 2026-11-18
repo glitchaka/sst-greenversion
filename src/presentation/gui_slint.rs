@@ -260,15 +260,18 @@ slint::slint! {
         // convex shoulder, long diagonal, then concave rounded bottom step.
         // The unselected area exposes the wallpaper-backed console.
         Rectangle {
-            x: 273px; y: 1px;
-            width: max(0px, parent.width - 274px);
+            x: 300px; y: 1px;
+            width: max(0px, parent.width - 301px);
             height: 2px;
             background: GreenPalette.salmon;
         }
         Path {
             x: 1px; y: 1px;
-            width: 287px; height: 32px;
-            commands: "M 12 0 L 287 0 C 270 0 266 2 258 11 L 242 27 C 237 31 233 32 223 32 L 0 32 L 0 12 Q 0 0 12 0 Z";
+            width: 312px; height: 32px;
+            // An upper lip, a rounded drop, a curved diagonal and
+            // a horizontal lower landing, matching the approved tab silhouette.
+            // Geometry only: lettering below is genuine Slint Text.
+            commands: "M 12 0 L 312 0 C 295 0 289 2 282 10 C 269 25 264 31 245 32 L 0 32 L 0 12 Q 0 0 12 0 Z";
             fill: GreenPalette.salmon;
         }
         Text {
