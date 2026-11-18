@@ -168,6 +168,7 @@ fn wrapped_lines(input: &str, max_width: usize) -> Vec<ReportLine> {
 
 fn tone_for_verified_status(value: &str) -> Option<&'static str> {
     match value.trim().trim_end_matches(['.', ';']).to_uppercase().as_str() {
+        "ÓPTIMO" | "OPTIMO" | "PERFECTO" | "EXCELENTE" | "EXCELLENT" => Some(theme::OPTIMAL),
         "CRÍTICO" | "CRITICO" | "ERROR" | "FALLO"
         | "DESCONECTADO" | "BLOQUEADO" | "DOWN" | "OFFLINE" => Some(theme::BAD),
         "ADVERTENCIA" | "ATENCIÓN" | "ATENCION" | "DEGRADADO"
