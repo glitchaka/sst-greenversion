@@ -403,6 +403,15 @@ impl SecurityTriageService {
             }
         }
 
+        // The default command is an actionable synopsis, not a raw dump of
+        // every process, deferred collector and parent path. --deep preserves
+        // the full forensic report and --memory the detailed RAM breakdown.
+        if !deep && !memory_only {
+            return Ok(CommandOutput::ok(compact_triage_report(
+                &system, &snapshots, &findings, &performance, new_count,
+            )));
+        }
+
         let mut out = String::from(
             "SST TRIAGE — ANÁLISIS ACTIVO\n============================================================\n",
         );
@@ -1571,6 +1580,115 @@ fn assess_process_with_extra(
     }
     evidence.extend_from_slice(extra);
     correlate(&evidence)
+}
+
+/// Default overview of a live scan. Group related findings and keep the
+/// evidence accessible through 'triage PID --deep' instead of printing dozens
+/// of repeated paths, unavailable collectors and executable names.
+fn compact_triage_report(
+    system: &System,
+    snapshots: &[ProcessSnapshot],
+    findings: &[Finding],
+    performance: &[Finding],
+    new_count: usize,
+) -> String {
+    struct Group<'a> {
+        name: &'a str,
+        level: AttentionLevel,
+        pids: Vec<u32>,
+        reasons: Vec<&'a str>,
+    }
+
+    let mut groups = Vec::<Group<'_>>::new();
+    let mut limited = 0usize;
+    for finding in findings {
+        if !finding.limitations.is_empty() {
+            limited += 1;
+        }
+        let index = groups.iter().position(|g| {
+            g.name.eq_ignore_ascii_case(&finding.name) && g.level == finding.level
+        });
+        let group = if let Some(i) = index {
+            &mut groups[i]
+        } else {
+            groups.push(Group {
+                name: &finding.name,
+                level: finding.level,
+                pids: Vec::new(),
+                reasons: Vec::new(),
+            });
+            groups.last_mut().expect("inserted group")
+        };
+        group.pids.push(finding.pid);
+        for reason in &finding.reasons {
+            if !group.reasons.iter().any(|existing| existing == &reason.as_str()) {
+                group.reasons.push(reason);
+            }
+        }
+    }
+
+    let total = system.total_memory();
+    let used = system.used_memory();
+    let percent = if total == 0 { None } else {
+        Some(used as f64 * 100.0 / total as f64)
+    };
+    let mut out = format!(
+        "TRIAGE — RESUMEN\nProcesos: {}  |  Revisar: {}  |  Nuevos: {}\n",
+        snapshots.len(), findings.len(), new_count,
+    );
+    if let Some(usage) = percent {
+        let state = if usage >= 85.0 { "PRESIÓN ALTA" }
+            else if usage >= 75.0 { "ELEVADA" } else { "NORMAL" };
+        out.push_str(&format!(
+            "RAM: {:.1}% ({:.2} / {:.2} GiB) · {}\n",
+            usage, used as f64 / 1_073_741_824.0,
+            total as f64 / 1_073_741_824.0, state,
+        ));
+    } else {
+        out.push_str("RAM: no disponible\n");
+    }
+
+    out.push_str("\nSEGURIDAD\n");
+    if findings.is_empty() {
+        out.push_str("Sin hallazgos según las reglas actuales (no equivale a seguridad garantizada).\n");
+    } else {
+        for group in groups.iter().take(5) {
+            let example = group.pids[0];
+            out.push_str(&format!(
+                "{}  {}  ×{}  [PID {}]\n",
+                group.level.label(), group.name, group.pids.len(), example,
+            ));
+            if !group.reasons.is_empty() {
+                out.push_str("  Señales: ");
+                out.push_str(&group.reasons.iter().take(2).copied().collect::<Vec<_>>().join("; "));
+                if group.reasons.len() > 2 { out.push_str("; …"); }
+                out.push('\n');
+            }
+            out.push_str(&format!("  Investigar: triage {example} --deep\n"));
+        }
+        if groups.len() > 5 {
+            out.push_str(&format!("Otros {} grupos: consulta triage --deep\n", groups.len() - 5));
+        }
+    }
+    if limited > 0 {
+        out.push_str(&format!(
+            "Cobertura parcial en {} hallazgo(s); detalles: triage --status / --deep\n",
+            limited,
+        ));
+    }
+
+    if percent.is_some_and(|usage| usage >= 75.0) && !performance.is_empty() {
+        out.push_str("\nRECURSOS\n");
+        for finding in performance.iter().take(3) {
+            out.push_str(&format!(
+                "{} [PID {}]  {}\n",
+                finding.name, finding.pid, finding.reasons.join(" · "),
+            ));
+        }
+    }
+
+    out.push_str("\nDetalle: triage --deep | RAM: triage --memory | Proceso: triage PID\n");
+    out
 }
 
 fn triage_memory_report(system: &System, snapshots: &[ProcessSnapshot]) -> String {
