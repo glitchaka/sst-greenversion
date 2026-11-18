@@ -52,6 +52,39 @@ use crate::adapters::{
     terminal::embedded::EmbeddedSession,
 };
 
+// Per-window statistics: only actual key-pressed callbacks count as events.
+// The rate is the number of such events in the latest rolling second.
+struct SessionKeyMetrics {
+    started: Instant,
+    pressed: u64,
+    recent: VecDeque<Instant>,
+}
+
+impl SessionKeyMetrics {
+    fn new() -> Self {
+        Self { started: Instant::now(), pressed: 0, recent: VecDeque::new() }
+    }
+
+    fn key_pressed(&mut self, now: Instant) {
+        self.pressed = self.pressed.saturating_add(1);
+        self.recent.push_back(now);
+        self.trim(now);
+    }
+
+    fn trim(&mut self, now: Instant) {
+        while self.recent.front().is_some_and(|t| now.saturating_duration_since(*t) >= Duration::from_secs(1)) {
+            self.recent.pop_front();
+        }
+    }
+
+    fn labels(&mut self, now: Instant) -> (String, String, String) {
+        self.trim(now);
+        let elapsed = now.saturating_duration_since(self.started).as_secs();
+        (format!("{:02}:{:02}", elapsed / 60, elapsed % 60),
+         self.pressed.to_string(), self.recent.len().to_string())
+    }
+}
+
 const INITIAL_COLS: u16 = 112;
 const INITIAL_ROWS: u16 = 31;
 // Shared geometry with the actual Slint island and console chassis.
@@ -2677,6 +2710,7 @@ pub fn run() -> Result<()> {
     let appearance_state = Rc::new(RefCell::new(appearance.clone()));
     let model = Rc::new(RefCell::new(TerminalModel::new(appearance.clone())?));
     let metrics = Rc::new(RefCell::new(System::new()));
+    let key_metrics = Rc::new(RefCell::new(SessionKeyMetrics::new()));
     let ui = SstGreenWindow::new()?;
     apply_green_theme(&ui, &green_theme)?;
 
@@ -2712,7 +2746,9 @@ pub fn run() -> Result<()> {
 
     {
         let model = model.clone();
+        let key_metrics = key_metrics.clone();
         ui.on_key_input(move |text, ctrl, alt, shift| {
+            key_metrics.borrow_mut().key_pressed(Instant::now());
             handle_key(&mut model.borrow_mut(), text.as_str(), ctrl, alt, shift);
         });
     }
@@ -2797,6 +2833,8 @@ pub fn run() -> Result<()> {
     {
         let model = model.clone();
         let metrics = metrics.clone();
+        let key_metrics = key_metrics.clone();
+        let last_key_display = Rc::new(Cell::new(Instant::now()));
         let last_status = last_status.clone();
         let last_focus = last_focus.clone();
         let last_minimized = last_minimized.clone();
@@ -2811,6 +2849,14 @@ pub fn run() -> Result<()> {
             let Some(ui) = weak.upgrade() else {
                 return;
             };
+
+            if last_key_display.get().elapsed() >= Duration::from_millis(250) {
+                last_key_display.set(Instant::now());
+                let (session, presses, rate) = key_metrics.borrow_mut().labels(Instant::now());
+                ui.set_session_time_text(session.into());
+                ui.set_key_count_text(presses.into());
+                ui.set_key_rate_text(rate.into());
+            }
 
             let size = ui.window().size();
             let scale = ui.window().scale_factor();
