@@ -2554,6 +2554,36 @@ mod correlation_tests {
         }
     }
     #[test]
+    fn default_triage_groups_repeated_findings_without_collector_spam() {
+        let rows = vec![
+            process(1596, 1, "Spotify.exe", r"C:\\Users\\x\\Spotify.exe", "spotify"),
+            process(6904, 1, "Spotify.exe", r"C:\\Users\\x\\Spotify.exe", "spotify"),
+        ];
+        let findings = vec![1596, 6904].into_iter().map(|pid| Finding {
+            pid,
+            name: "Spotify.exe".to_owned(),
+            level: AttentionLevel::Attention,
+            reasons: vec!["ruta modificable por usuario".to_owned()],
+            limitations: vec!["Network (collector not connected): UNAVAILABLE".to_owned()],
+        }).collect::<Vec<_>>();
+        let output = compact_triage_report(&System::new(), &rows, &findings, &[], 0);
+        assert_eq!(output.matches("Spotify.exe").count(), 1);
+        assert!(output.contains("×2"));
+        assert!(output.contains("triage 1596 --deep"));
+        assert!(output.contains("Cobertura parcial en 2 hallazgo(s)"));
+        assert!(!output.contains("collector not connected"));
+        assert!(!output.contains("p.ruta:"));
+    }
+
+    #[test]
+    fn clean_summary_does_not_claim_verified_safety() {
+        let output = compact_triage_report(&System::new(), &[], &[], &[], 0);
+        assert!(output.contains("Sin hallazgos"));
+        assert!(output.contains("no equivale a seguridad garantizada"));
+        assert!(!output.contains("SEGURIDAD\\n\\nSEGURIDAD"));
+    }
+
+    #[test]
     fn path_or_interpreter_alone_is_not_suspicious() {
         let rows = [
             process(1, 0, "pwsh.exe", r"C:\Windows\pwsh.exe", "pwsh.exe"),
