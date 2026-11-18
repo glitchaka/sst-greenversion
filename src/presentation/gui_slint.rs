@@ -463,10 +463,10 @@ slint::slint! {
         in property <length> host-width: min(root.requested-host-width,
             max(65px, root.width - root.uptime-width - root.arch-width
                 - root.mem-width - root.cpu-width - 2px));
-        in property <length> uptime-width: 84px;
-        in property <length> arch-width: 76px;
-        in property <length> mem-width: 63px;
-        in property <length> cpu-width: 63px;
+        in property <length> uptime-width: 69px;
+        in property <length> arch-width: 61px;
+        in property <length> mem-width: 52px;
+        in property <length> cpu-width: 52px;
         background: transparent;
         border-width: 1px;
         border-color: GreenPalette.cream;
@@ -847,79 +847,82 @@ slint::slint! {
                 width: parent.width;
                 height: parent.height;
 
+                // One continuous cream logo face. SST and SHELL SHOCK TOOL
+                // are real TTF text, never painted lettering.
                 Path {
                     x: 3px; y: 3px;
-                    width: island.width >= 1150px ? 154px : 88px;
+                    width: island.width >= 900px ? 235px : 175px;
                     height: 34px;
-                    commands: island.width >= 1260px
-                        ? "M 10 0 L 154 0 L 154 34 L 0 34 L 0 10 Q 0 0 10 0 Z"
-                        : "M 8 0 L 88 0 L 88 34 L 0 34 L 0 8 Q 0 0 8 0 Z";
+                    commands: island.width >= 900px
+                        ? "M 10 0 L 235 0 L 235 34 L 0 34 L 0 10 Q 0 0 10 0 Z"
+                        : "M 9 0 L 175 0 L 175 34 L 0 34 L 0 9 Q 0 0 9 0 Z";
                     fill: GreenPalette.cream;
                 }
                 Text {
-                    x: island.width >= 1150px ? 6px : 4px;
-                    y: 3px;
-                    width: island.width >= 1150px ? 142px : 80px;
-                    height: 34px; text: "SST";
+                    x: 8px; y: 2px;
+                    width: island.width >= 900px ? 145px : 105px;
+                    height: 35px;
+                    text: "SST";
                     color: GreenPalette.black-ink;
                     font-family: GreenPalette.heading-font;
-                    font-size: island.width >= 1150px ? 34px : 21px;
-                    horizontal-alignment: center; vertical-alignment: center;
+                    font-size: island.width >= 900px ? 33px : 26px;
+                    font-weight: 800;
+                    horizontal-alignment: center;
+                    vertical-alignment: center;
                     overflow: elide;
                 }
                 Text {
-                    visible: island.width >= 540px;
-                    x: island.width >= 1150px ? 167px : 98px;
+                    x: island.width >= 900px ? 158px : 117px;
                     y: 2px;
-                    width: island.width >= 1150px ? 65px : 52px;
-                    height: 36px;
+                    width: island.width >= 900px ? 72px : 56px;
+                    height: 35px;
                     text: "SHELL\nSHOCK\nTOOL";
-                    color: GreenPalette.cream;
+                    color: GreenPalette.black-ink;
                     font-family: GreenPalette.interface-font;
-                    font-size: island.width >= 1150px ? 10px : 8px;
+                    font-size: island.width >= 900px ? 10px : 8px;
                     font-weight: 800;
                     vertical-alignment: center;
                 }
                 Rectangle {
-                    visible: island.width >= 1150px;
-                    x: 237px; y: 7px; width: 1px; height: 27px;
+                    visible: island.width >= 900px;
+                    x: 245px; y: 7px; width: 1px; height: 27px;
                     background: GreenPalette.cream;
                 }
                 Rectangle {
-                    visible: island.width >= 1150px;
-                    x: 249px; y: 5px; width: 229px; height: 30px;
+                    visible: island.width >= 900px;
+                    x: 254px; y: 5px; width: 166px; height: 30px;
                     background: transparent;
                     Path {
-                        x: 0px; y: 1px; width: 43px; height: 16px;
-                        commands: "M 7 0 L 13 0 L 7 16 L 1 16 Z M 17 0 L 23 0 L 17 16 L 11 16 Z M 27 0 L 33 0 L 27 16 L 21 16 Z M 37 0 L 43 0 L 37 16 L 31 16 Z";
+                        x: 0px; y: 1px; width: 36px; height: 16px;
+                        commands: "M 6 0 L 12 0 L 6 16 L 0 16 Z M 16 0 L 22 0 L 16 16 L 10 16 Z M 26 0 L 32 0 L 26 16 L 20 16 Z M 36 0 L 42 0 L 36 16 L 30 16 Z";
                         fill: GreenPalette.slant-blades;
                     }
                     Text {
-                        x: 46px; y: 0px; width: 177px; height: 16px;
+                        x: 43px; y: 0px; width: 123px; height: 16px;
                         text: "› ADVANCED SYSTEM CONSOLE";
-                        color: GreenPalette.cream; font-family: GreenPalette.interface-font;
-                        font-size: 9px; font-weight: 800;
-                        vertical-alignment: center; overflow: elide;
+                        color: GreenPalette.cream;
+                        font-family: GreenPalette.interface-font;
+                        font-size: 8px; font-weight: 800;
+                        vertical-alignment: center;
+                        overflow: elide;
                     }
                     Rectangle {
-                        x: 0px; y: 18px; width: 225px; height: 1px;
+                        x: 0px; y: 18px; width: 166px; height: 1px;
                         background: GreenPalette.header-rule;
                     }
                     Text {
-                        x: 0px; y: 19px; width: 225px; height: 11px;
-                        text: "VERSION " + root.header-version + "   |   " + root.header-arch + "   |   " + root.privilege-label;
-                        font-family: GreenPalette.interface-font; font-size: 8px;
-                        color: GreenPalette.secondary-text; overflow: elide;
+                        x: 0px; y: 19px; width: 166px; height: 11px;
+                        text: "VERSION " + root.header-version + " | " + root.header-arch;
+                        font-family: GreenPalette.interface-font;
+                        font-size: 8px; color: GreenPalette.secondary-text;
+                        overflow: elide;
                     }
                 }
                 GreenTelemetryRail {
                     visible: island.width >= 900px;
-                    x: island.width >= 1150px ? 483px : 260px;
-                    y: 4px;
-                    width: min(
-                        max(0px, island.width - (island.width >= 1150px ? 678px : 468px)),
-                        root.header-host-cell-width * 1px + 286px
-                    );
+                    x: 426px; y: 4px;
+                    width: min(max(0px, island.width - 622px),
+                        root.header-host-cell-width * 1px + 234px);
                     height: 32px;
                     host-text: root.header-host;
                     requested-host-width: root.header-host-cell-width * 1px;
@@ -930,9 +933,8 @@ slint::slint! {
                 }
                 Text {
                     visible: island.width >= 540px && island.width < 900px;
-                    x: 164px; y: 5px;
-                    width: max(0px, island.width -
-                        (island.width >= 880px ? 370px : 295px));
+                    x: 185px; y: 5px;
+                    width: max(0px, island.width - 315px);
                     height: 30px;
                     text: "HOST " + root.header-host + "   MEM " + root.header-memory + "   CPU " + root.header-cpu;
                     font-family: GreenPalette.interface-font; font-size: 11px; font-weight: 800;
