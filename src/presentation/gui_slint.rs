@@ -465,7 +465,10 @@ slint::slint! {
         in property <string> memory-text;
         in property <string> cpu-text;
         // Each metric has a content-driven width instead of a share of the window.
-        in property <length> host-width: 145px;
+        in property <length> requested-host-width: 145px;
+        in property <length> host-width: min(root.requested-host-width,
+            max(65px, root.width - root.uptime-width - root.arch-width
+                - root.mem-width - root.cpu-width - 2px));
         in property <length> uptime-width: 84px;
         in property <length> arch-width: 76px;
         in property <length> mem-width: 63px;
@@ -916,7 +919,7 @@ slint::slint! {
                         root.header-host-cell-width * 1px + 286px);
                     height: 32px;
                     host-text: root.header-host;
-                    host-width: root.header-host-cell-width * 1px;
+                    requested-host-width: root.header-host-cell-width * 1px;
                     uptime-text: root.header-uptime;
                     arch-text: root.header-arch;
                     memory-text: root.header-memory;
