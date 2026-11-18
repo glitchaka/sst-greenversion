@@ -65,12 +65,23 @@ impl CommandRegistry {
         let mut output = command.execute(name, args, context)?;
         // This presentation layer is shared by every builtin. It is never
         // applied to pipelines, scripts or machine-readable protocols.
+        let interactive = crate::adapters::terminal::io::output_sender().is_some();
         if should_style_stdout(
             name, args, context.stdin.is_some(),
-            crate::adapters::terminal::io::output_sender().is_some(),
-            output.status, output.stdout.len(),
+            interactive, output.status, output.stdout.len(),
         ) {
             output.stdout = crate::presentation::tool_screen::style_plain_output(&output.stdout);
+        }
+        if interactive && context.stdin.is_none() && output.status != 0
+            && !output.stderr.is_empty() && !output.stderr.contains('\x1b')
+            && !args.iter().any(|arg| matches!(arg.as_str(), "--json" | "--csv" | "--plain"))
+        {
+            output.stderr = format!(
+                "{}{}{}",
+                crate::presentation::theme::BAD,
+                output.stderr,
+                crate::presentation::theme::RESET,
+            );
         }
         Ok(output)
     }
