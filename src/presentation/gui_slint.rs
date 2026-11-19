@@ -1006,7 +1006,7 @@ slint::slint! {
                 GreenTelemetryRail {
                     visible: island.width >= 900px;
                     x: 382px; y: 4px;
-                    width: min(max(0px, island.width - 578px),
+                    width: min(max(0px, island.width - 586px),
                         root.header-host-cell-width * 1px + 234px);
                     height: 32px;
                     host-text: root.header-host;
