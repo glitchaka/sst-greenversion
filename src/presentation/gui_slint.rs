@@ -316,27 +316,27 @@ slint::slint! {
         // The rounded left shoulder is a real Slint rectangle; it never
         // leaves a dark triangular gap between the fascia and the bezel.
         Rectangle {
-            x: 3px; y: 3px;
-            width: 232px; height: 29px;
-            border-radius: 8px;
+            x: 6px; y: 6px;
+            width: 229px; height: 26px;
+            border-radius: 6px;
             background: GreenPalette.salmon;
         }
-        // A square lower edge prevents the unwanted black notch.
+        // Square the lower corners without touching the rounded top-left.
         Rectangle {
-            x: 3px; y: 14px;
-            width: 229px; height: 18px;
+            x: 6px; y: 13px;
+            width: 229px; height: 19px;
             background: GreenPalette.salmon;
         }
         // Only the right shoulder uses a path. It joins the rectangle
         // with an overlap, so there is no seam from pixel rounding.
         Path {
-            x: 225px; y: 3px;
-            width: 72px; height: 29px;
-            commands: "M 0 0 L 72 0 C 57 0 53 5 46 15 C 37 27 30 29 18 29 L 0 29 Z";
+            x: 225px; y: 6px;
+            width: 72px; height: 26px;
+            commands: "M 0 0 L 72 0 C 57 0 53 4 46 13 C 37 24 30 26 18 26 L 0 26 Z";
             fill: GreenPalette.salmon;
         }
         Text {
-            x: 15px; y: 6px; width: 88px; height: 22px;
+            x: 16px; y: 8px; width: 88px; height: 21px;
             text: "SES " + root.session-time-text;
             font-family: GreenPalette.interface-font;
             font-size: 11px; font-weight: 800;
@@ -344,7 +344,7 @@ slint::slint! {
             vertical-alignment: center;
         }
         Text {
-            x: 105px; y: 6px; width: 102px; height: 22px;
+            x: 107px; y: 8px; width: 102px; height: 21px;
             text: "TECLAS " + root.key-count-text;
             font-family: GreenPalette.interface-font;
             font-size: 11px; font-weight: 800;
@@ -353,7 +353,7 @@ slint::slint! {
             overflow: elide;
         }
         Text {
-            x: 210px; y: 6px; width: 56px; height: 22px;
+            x: 212px; y: 8px; width: 56px; height: 21px;
             text: "TPS " + root.key-rate-text;
             font-family: GreenPalette.interface-font;
             font-size: 11px; font-weight: 800;
@@ -914,9 +914,9 @@ slint::slint! {
                 // three lines on the dark island, as in the reference.
                 // All four words are native Slint text, never raster graphics.
                 Rectangle {
-                    x: 8px; y: 4px;
-                    width: 93px; height: 32px;
-                    border-radius: 8px;
+                    x: 11px; y: 4px;
+                    width: 90px; height: 32px;
+                    border-radius: 7px;
                     background: GreenPalette.cream;
                 }
                 // Square the right edge of the plate without disturbing
@@ -1018,7 +1018,7 @@ slint::slint! {
                 }
                 Text {
                     visible: island.width >= 540px && island.width < 900px;
-                    x: 165px; y: 5px;
+                    x: 176px; y: 5px;
                     width: max(0px, island.width - 315px);
                     height: 30px;
                     text: "HOST " + root.header-host + "   MEM " + root.header-memory + "   CPU " + root.header-cpu;
