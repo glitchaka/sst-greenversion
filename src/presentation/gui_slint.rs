@@ -311,12 +311,6 @@ slint::slint! {
         // The unselected area exposes the wallpaper-backed console.
         // Compact session instrument, using live key events and monotonic time.
         // The tab is shaped; everything beyond it is the terminal, not a strip.
-        Rectangle {
-            x: 279px; y: 3px;
-            width: max(0px, parent.width - 283px);
-            height: 1px;
-            background: GreenPalette.salmon;
-        }
         // Inset left edge follows the rounded chassis. The right shoulder
         // falls into the actual console, leaving no full-width orange banner.
         // The rounded left shoulder is a real Slint rectangle; it never
@@ -325,6 +319,12 @@ slint::slint! {
             x: 3px; y: 3px;
             width: 232px; height: 29px;
             border-radius: 8px;
+            background: GreenPalette.salmon;
+        }
+        // A square lower edge prevents the unwanted black notch.
+        Rectangle {
+            x: 3px; y: 14px;
+            width: 229px; height: 18px;
             background: GreenPalette.salmon;
         }
         // Only the right shoulder uses a path. It joins the rectangle
@@ -914,30 +914,30 @@ slint::slint! {
                 // elements for the stacked name, and a fourth for SST.
                 // The only Path is the cream backing plate, never letters.
                 Rectangle {
-                    x: 4px; y: 4px;
-                    width: island.width >= 900px ? 161px : 159px;
+                    x: 8px; y: 4px;
+                    width: 150px;
                     height: 32px;
                     border-radius: 8px;
                     background: GreenPalette.cream;
                 }
                 Text {
-                    x: island.width >= 900px ? 9px : 6px;
-                    y: 2px;
-                    width: island.width >= 900px ? 93px : 91px;
+                    x: 15px;
+                    y: 3px;
+                    width: 74px;
                     height: 35px;
                     text: "SST";
                     color: GreenPalette.black-ink;
                     font-family: GreenPalette.heading-font;
-                    font-size: island.width >= 900px ? 32px : 27px;
+                    font-size: 29px;
                     font-weight: 800;
-                    horizontal-alignment: center;
+                    horizontal-alignment: left;
                     vertical-alignment: center;
                     overflow: elide;
                 }
                 Text {
-                    x: island.width >= 900px ? 103px : 101px;
+                    x: 91px;
                     y: 4px;
-                    width: island.width >= 900px ? 59px : 57px;
+                    width: 62px;
                     height: 10px;
                     text: "SHELL";
                     color: GreenPalette.black-ink;
@@ -948,9 +948,9 @@ slint::slint! {
                     overflow: elide;
                 }
                 Text {
-                    x: island.width >= 900px ? 103px : 101px;
+                    x: 91px;
                     y: 14px;
-                    width: island.width >= 900px ? 59px : 57px;
+                    width: 62px;
                     height: 10px;
                     text: "SHOCK";
                     color: GreenPalette.black-ink;
@@ -961,9 +961,9 @@ slint::slint! {
                     overflow: elide;
                 }
                 Text {
-                    x: island.width >= 900px ? 103px : 101px;
+                    x: 91px;
                     y: 24px;
-                    width: island.width >= 900px ? 59px : 57px;
+                    width: 62px;
                     height: 10px;
                     text: "TOOL";
                     color: GreenPalette.black-ink;
@@ -975,12 +975,12 @@ slint::slint! {
                 }
                 Rectangle {
                     visible: island.width >= 900px;
-                    x: 174px; y: 7px; width: 1px; height: 27px;
+                    x: 166px; y: 7px; width: 1px; height: 27px;
                     background: GreenPalette.cream;
                 }
                 Rectangle {
                     visible: island.width >= 900px;
-                    x: 183px; y: 5px; width: 196px; height: 30px;
+                    x: 175px; y: 5px; width: 196px; height: 30px;
                     background: transparent;
                     Path {
                         x: 0px; y: 1px; width: 42px; height: 16px;
@@ -1010,8 +1010,8 @@ slint::slint! {
                 }
                 GreenTelemetryRail {
                     visible: island.width >= 900px;
-                    x: 390px; y: 4px;
-                    width: min(max(0px, island.width - 586px),
+                    x: 382px; y: 4px;
+                    width: min(max(0px, island.width - 578px),
                         root.header-host-cell-width * 1px + 234px);
                     height: 32px;
                     host-text: root.header-host;
@@ -1023,7 +1023,7 @@ slint::slint! {
                 }
                 Text {
                     visible: island.width >= 540px && island.width < 900px;
-                    x: 169px; y: 5px;
+                    x: 165px; y: 5px;
                     width: max(0px, island.width - 315px);
                     height: 30px;
                     text: "HOST " + root.header-host + "   MEM " + root.header-memory + "   CPU " + root.header-cpu;
