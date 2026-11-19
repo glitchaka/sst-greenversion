@@ -910,66 +910,61 @@ slint::slint! {
                 width: parent.width;
                 height: parent.height;
 
-                // The logo is live typography: three distinct Slint text
-                // elements for the stacked name, and a fourth for SST.
-                // The only Path is the cream backing plate, never letters.
+                // Compact two-part wordmark: SST on cream, full name in
+                // three lines on the dark island, as in the reference.
+                // All four words are native Slint text, never raster graphics.
                 Rectangle {
                     x: 8px; y: 4px;
-                    width: 150px;
-                    height: 32px;
+                    width: 93px; height: 32px;
                     border-radius: 8px;
                     background: GreenPalette.cream;
                 }
+                // Square the right edge of the plate without disturbing
+                // the rounded top-left and bottom-left corners.
+                Rectangle {
+                    x: 88px; y: 4px;
+                    width: 13px; height: 32px;
+                    background: GreenPalette.cream;
+                }
                 Text {
-                    x: 15px;
-                    y: 3px;
-                    width: 74px;
-                    height: 35px;
+                    x: 14px; y: 4px;
+                    width: 85px; height: 32px;
                     text: "SST";
                     color: GreenPalette.black-ink;
                     font-family: GreenPalette.heading-font;
                     font-size: 29px;
                     font-weight: 800;
-                    horizontal-alignment: left;
+                    horizontal-alignment: center;
                     vertical-alignment: center;
                     overflow: elide;
                 }
                 Text {
-                    x: 91px;
-                    y: 4px;
-                    width: 62px;
-                    height: 10px;
+                    x: 106px; y: 5px;
+                    width: 59px; height: 10px;
                     text: "SHELL";
-                    color: GreenPalette.black-ink;
+                    color: GreenPalette.cream;
                     font-family: GreenPalette.interface-font;
-                    font-size: island.width >= 900px ? 10px : 8px;
-                    font-weight: 800;
+                    font-size: 10px; font-weight: 800;
                     vertical-alignment: center;
                     overflow: elide;
                 }
                 Text {
-                    x: 91px;
-                    y: 14px;
-                    width: 62px;
-                    height: 10px;
+                    x: 106px; y: 15px;
+                    width: 59px; height: 10px;
                     text: "SHOCK";
-                    color: GreenPalette.black-ink;
+                    color: GreenPalette.cream;
                     font-family: GreenPalette.interface-font;
-                    font-size: island.width >= 900px ? 10px : 8px;
-                    font-weight: 800;
+                    font-size: 10px; font-weight: 800;
                     vertical-alignment: center;
                     overflow: elide;
                 }
                 Text {
-                    x: 91px;
-                    y: 24px;
-                    width: 62px;
-                    height: 10px;
+                    x: 106px; y: 25px;
+                    width: 59px; height: 10px;
                     text: "TOOL";
-                    color: GreenPalette.black-ink;
+                    color: GreenPalette.cream;
                     font-family: GreenPalette.interface-font;
-                    font-size: island.width >= 900px ? 10px : 8px;
-                    font-weight: 800;
+                    font-size: 10px; font-weight: 800;
                     vertical-alignment: center;
                     overflow: elide;
                 }
