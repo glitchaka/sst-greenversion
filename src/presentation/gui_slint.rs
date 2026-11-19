@@ -319,10 +319,20 @@ slint::slint! {
         }
         // Inset left edge follows the rounded chassis. The right shoulder
         // falls into the actual console, leaving no full-width orange banner.
+        // The rounded left shoulder is a real Slint rectangle; it never
+        // leaves a dark triangular gap between the fascia and the bezel.
+        Rectangle {
+            x: 3px; y: 3px;
+            width: 232px; height: 29px;
+            border-radius: 8px;
+            background: GreenPalette.salmon;
+        }
+        // Only the right shoulder uses a path. It joins the rectangle
+        // with an overlap, so there is no seam from pixel rounding.
         Path {
-            x: 4px; y: 4px;
-            width: 290px; height: 28px;
-            commands: "M 10 0 L 290 0 C 274 0 269 4 261 14 C 252 25 247 28 232 28 L 0 28 L 0 10 Q 0 0 10 0 Z";
+            x: 225px; y: 3px;
+            width: 72px; height: 29px;
+            commands: "M 0 0 L 72 0 C 57 0 53 5 46 15 C 37 27 30 29 18 29 L 0 29 Z";
             fill: GreenPalette.salmon;
         }
         Text {
